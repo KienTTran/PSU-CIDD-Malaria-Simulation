@@ -742,15 +742,25 @@ fraction_mosquitoes_interrupted_feeding: 0.0
 inflation_factor: 0.01
 
 events:
+  - name: change_interrupted_feeding_rate
+    info:
+      - location: 0
+        day: 2000/1/1
+        rate: 0.0
+  - name: change_interrupted_feeding_rate
+    info:
+      - location: 0
+        day: 2010/1/1
+        rate: 0.19
+
   - name: change_within_host_induced_recombination
     info:
       day: 2000/1/1
       value: false
-  - name: change_within_host_induced_recombination
-    info:
-      day: 2010/1/1
-      value: true
-
+#  - name: change_within_host_induced_recombination
+#    info:
+#      day: 2010/1/1
+#      value: true
   - name: turn_off_mutation
     info:
       - day: 2000/1/1

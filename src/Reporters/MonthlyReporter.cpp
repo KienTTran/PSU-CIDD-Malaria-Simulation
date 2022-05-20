@@ -119,10 +119,10 @@ void MonthlyReporter::after_run() {
     gene_db_file << g_id << sep << genotype->aa_sequence << std::endl;
   }
 
-  int count = 0;
-  for(const auto freq : genotype_alleles_freq){
-      allele_db_file << (count) << sep << freq.first << std::endl;
-      count++;
+  for(int i = 0; i < alleles_freq.size(); i++) {
+    for (auto data: alleles_freq[i]) {
+      allele_db_file << (i) << sep << data.first.c_str() << std::endl;
+    }
   }
 
   gene_freq_file.close();

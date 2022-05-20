@@ -104,6 +104,7 @@ void Mosquito::infect_new_cohort_in_PRMC(Config *config, Random *random, Populat
         std::tuple<Genotype *, double> second_genotype = std::make_tuple(nullptr, 0.0);
 
         if (interrupted_feeding_indices[if_index]) {
+          std::cout <<"Hello" << std::endl;
           auto temp_if = if_index;
           while (second_sampling[temp_if] == first_sampling[if_index]) {
             temp_if = random->random_uniform(second_sampling.size());
