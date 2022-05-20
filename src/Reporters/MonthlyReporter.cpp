@@ -23,10 +23,13 @@ MonthlyReporter::MonthlyReporter() = default;
 MonthlyReporter::~MonthlyReporter() = default;
 
 void MonthlyReporter::initialize() {
-  gene_freq_file.open(fmt::format("{}/gene_freq_{}.txt", Model::MODEL->output_path(), Model::MODEL->cluster_job_number()));
-  monthly_data_file.open(fmt::format("{}/monthly_data_{}.txt", Model::MODEL->output_path(), Model::MODEL->cluster_job_number()));
-  summary_data_file.open(fmt::format("{}/summary_{}.txt", Model::MODEL->output_path(), Model::MODEL->cluster_job_number()));
-  gene_db_file.open(fmt::format("{}/gene_db_{}.txt", Model::MODEL->output_path(), Model::MODEL->cluster_job_number()));
+    gene_freq_file.open(fmt::format("{}/gene_freq_{}.txt", Model::MODEL->output_path(), Model::MODEL->cluster_job_number()));
+    monthly_data_file.open(fmt::format("{}/monthly_data_{}.txt", Model::MODEL->output_path(), Model::MODEL->cluster_job_number()));
+    summary_data_file.open(fmt::format("{}/summary_{}.txt", Model::MODEL->output_path(), Model::MODEL->cluster_job_number()));
+    gene_db_file.open(fmt::format("{}/gene_db_{}.txt", Model::MODEL->output_path(), Model::MODEL->cluster_job_number()));
+
+    allele_freq_file.open(fmt::format("{}/allele_freq_{}.txt", Model::MODEL->output_path(), Model::MODEL->cluster_job_number()));
+    allele_db_file.open(fmt::format("{}/allele_db_{}.txt", Model::MODEL->output_path(), Model::MODEL->cluster_job_number()));
 }
 
 void MonthlyReporter::before_run() {}
@@ -66,6 +69,8 @@ void MonthlyReporter::monthly_report() {
   }
   ss << group_sep;
 
+  monthly_data_file << ss.str() << std::endl;
+
   // including total number of positive individuals
   //  ReporterUtils::output_genotype_frequency3(ss, Model::CONFIG->genotype_db.size(),
   //                                            Model::POPULATION->get_person_index<PersonIndexByLocationStateAgeClass>());
@@ -74,9 +79,12 @@ void MonthlyReporter::monthly_report() {
   ReporterUtils::output_genotype_frequency3(gene_freq_ss, Model::CONFIG->genotype_db.size(),
                                             Model::POPULATION->get_person_index<PersonIndexByLocationStateAgeClass>());
 
-  gene_freq_file << gene_freq_ss.str() << std::endl;
+    gene_freq_file << gene_freq_ss.str() << std::endl;
+    std::stringstream allele_freq_ss;
+  ReporterUtils::output_genotype_frequency4(allele_freq_ss, Model::CONFIG->genotype_db.size(),
+                                            Model::POPULATION->get_person_index<PersonIndexByLocationStateAgeClass>());
 
-  monthly_data_file << ss.str() << std::endl;
+    allele_freq_file << allele_freq_ss.str() << std::endl;
 }
 
 void MonthlyReporter::after_run() {
@@ -111,10 +119,18 @@ void MonthlyReporter::after_run() {
     gene_db_file << g_id << sep << genotype->aa_sequence << std::endl;
   }
 
+  int count = 0;
+  for(const auto freq : genotype_alleles_freq){
+      allele_db_file << (count) << sep << freq.first << std::endl;
+      count++;
+  }
+
   gene_freq_file.close();
+  allele_freq_file.close();
   monthly_data_file.close();
   summary_data_file.close();
   gene_db_file.close();
+  allele_db_file.close();
 }
 
 void MonthlyReporter::print_EIR_PfPR_by_location(std::stringstream& ss) {

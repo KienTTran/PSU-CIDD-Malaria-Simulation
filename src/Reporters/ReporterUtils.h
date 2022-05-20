@@ -7,6 +7,8 @@
 
 
 #include <sstream>
+#include <vector>
+#include <map>
 
 class PersonIndexByLocationStateAgeClass;
 
@@ -67,8 +69,21 @@ public:
 
   static void output_moi(std::stringstream& ss, PersonIndexByLocationStateAgeClass* pi);
 
+  static void setup_output_ld();
 
+    /// outputs genotype frequencies by the weighted number of parasite-positive individuals carrying genotype X / total number of
+    /// parasite-positive individuals (the weights for each person describe the fraction of their clonal
+    /// populations carrying genotype X; e.g. an individual host with five clonal infections two of which
+    /// carry genotype X would be given a weight of 2/5).
+    /// \param ss the output string stream
+    /// \param number_of_genotypes total number of genotypes defined in configuration
+    /// \param pi person index by location state and ageclass that obtained from the population object
+    static void output_genotype_frequency4(
+            std::stringstream& ss, const int& number_of_genotypes,
+            PersonIndexByLocationStateAgeClass* pi
+    );
 };
+extern std::map<std::string,double> genotype_alleles_freq;
 
 
 #endif //PCMS_REPORTERUTILS_H

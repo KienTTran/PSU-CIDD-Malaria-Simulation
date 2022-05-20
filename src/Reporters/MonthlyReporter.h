@@ -19,9 +19,11 @@ public:
   const std::string group_sep = "-1111\t";
   const std::string sep = "\t";
   std::ofstream gene_freq_file;
+  std::ofstream allele_freq_file;
   std::ofstream monthly_data_file;
   std::ofstream summary_data_file;
   std::ofstream gene_db_file;
+  std::ofstream allele_db_file;
 
 public:
   MonthlyReporter();
