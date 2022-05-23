@@ -346,7 +346,7 @@ inline std::vector<std::string> split (const std::string &s, char delim) {
     return result;
 }
 
-std::vector<std::map<std::string,double>> alleles_freq = std::vector<std::map<std::string,double>>();
+std::map<std::string,double> alleles_freq = std::map<std::string,double>();
 void ReporterUtils::output_genotype_frequency4(std::stringstream& ss, const int& number_of_genotypes,
                                                PersonIndexByLocationStateAgeClass* pi) {
     auto sum1_all = 0.0;
@@ -395,9 +395,20 @@ void ReporterUtils::output_genotype_frequency4(std::stringstream& ss, const int&
             }
         }
     }
+    std::string init_alleles_masked = "";
+    for(int j = 0; j < Model::CONFIG->mutation_mask().length(); j++){
+        if(Model::CONFIG->mutation_mask()[j] == '1') {
+            for (const auto p_info : Model::CONFIG->initial_parasite_info()) {
+                auto initial_genotype_aa = Model::CONFIG->genotype_db.at(p_info.parasite_type_id)->get_aa_sequence();
+                if (init_alleles_masked.find(initial_genotype_aa.substr(j, 1)) == std::string::npos) {
+                    init_alleles_masked += initial_genotype_aa.substr(j, 1);
+                }
+            }
+        }
+    }
+    printf("Day %d Init alleles masked %s\n",Model::SCHEDULER->current_time(),init_alleles_masked.c_str());
 
-    alleles_freq = std::vector<std::map<std::string,double>>();
-    double sum_genoype_freq = 0.0;
+    alleles_freq = std::map<std::string,double>();
     for(int i = 0; i < result3_all.size(); i++){
         auto genotype = Model::CONFIG->genotype_db.at(i);
         double genotype_freq = 0.0;
@@ -408,46 +419,90 @@ void ReporterUtils::output_genotype_frequency4(std::stringstream& ss, const int&
             genotype_freq = result3_all[i] / sum1_all;
         }
         printf("Day %d Genotype id %d %s freq %f\n",Model::SCHEDULER->current_time(),i,Model::CONFIG->genotype_db.at(i)->get_aa_sequence().c_str(),genotype_freq);
-        for(int j = 0; j < Model::CONFIG->mutation_mask().length(); j++){
-            if(Model::CONFIG->mutation_mask()[j] == '1'){
-                std::map<std::string,double> allele_map;
-                std::string key = std::to_string(j) + "-" + genotype->get_aa_sequence().substr(j,1);
-                if(alleles_freq.empty()){
-                    allele_map[key] = genotype_freq;
-                    alleles_freq.push_back(allele_map);
-                }
-                else{
-                    bool not_existed_allele = true;
-                    int existed_allele_pos = 0;
-                    for(int k = 0; k < alleles_freq.size(); k++){
-                        if (alleles_freq[k].find(key) != alleles_freq[k].end()) {
-                            not_existed_allele = false;
-                            existed_allele_pos = k;
-                        }
-                    }
-                    if(not_existed_allele){
-                        allele_map[key] = genotype_freq;
-                        alleles_freq.push_back(allele_map);
-                    }
-                    else{
-                        alleles_freq[existed_allele_pos][key] += genotype_freq;
+        for(int j = 0; j < Model::CONFIG->mutation_mask().length(); j++) {
+            if (Model::CONFIG->mutation_mask()[j] == '1') {
+                if (genotype->get_aa_sequence().substr(j, 1) != "|" &&
+                    genotype->get_aa_sequence().substr(j, 1) != ",") {
+                    std::string key = std::to_string(j) + "-" + genotype->get_aa_sequence().substr(j, 1);
+                    if (alleles_freq.find(key) == alleles_freq.end()) {
+                        alleles_freq[key] = genotype_freq;
+                    } else {
+                        alleles_freq[key] += genotype_freq;
                     }
                 }
             }
         }
-        sum_genoype_freq += genotype_freq;
     }
 
-    for(int i = 0; i < alleles_freq.size(); i++){
-        for (auto data : alleles_freq[i]){
-            double final_freq = sum_genoype_freq == 0.0 ? 0.0 : data.second / sum_genoype_freq;
-            printf("Day %d Allele %s freq = %f\n",Model::SCHEDULER->current_time(), data.first.c_str(), final_freq);
-            ss << final_freq << sep;
-        }
+    for (auto &data : alleles_freq){
+        printf("Day %d Allele %s freq = %f\n",Model::SCHEDULER->current_time(), data.first.c_str(), data.second);
+        ss << data.second << sep;
     }
 
     if(alleles_freq.size() == 0) ss << 0 << sep;
 
+    double LD = 0.0;
+    int person_id = 0;
+    for (auto loc = 0; loc < number_of_locations; loc++) {
+        for (auto hs = 0; hs < Person::NUMBER_OF_STATE - 1; hs++) {
+            for (auto ac = 0; ac < number_of_age_classes; ac++) {
+                const auto size = pi->vPerson()[loc][hs][ac].size();
+                for (auto i = 0ull; i < size; i++) {
+                    auto* person = pi->vPerson()[loc][hs][ac][i];
+
+                    LD = 0.0;
+                    double X_i_minus_P_i = 1.0;
+                    for (auto* parasite_population : *(person->all_clonal_parasite_populations()->parasites())) {
+                        std::string new_genotype = "";
+                        const std::string person_genotype_aa = parasite_population->genotype()->get_aa_sequence();
+                        for(int j = 0; j < person_genotype_aa.length(); j++) {
+                            std::string key = std::to_string(j) + "-" + person_genotype_aa.substr(j, 1);
+                            if(person_genotype_aa.substr(j,1) != "|" && person_genotype_aa.substr(j,1) != ","){
+                                double temp = 0.0;
+                                if (Model::CONFIG->mutation_mask().substr(j,1) == "1")
+                                {
+//                                    temp = (1.0 - alleles_freq[key]);
+                                    if (init_alleles_masked.find(person_genotype_aa.substr(j, 1)) == std::string::npos) {
+                                        //Mutated allele
+//                                        X_i_minus_P_i *= (1.0 - alleles_freq[key]);
+//                                        new_genotype = person_genotype_aa;
+//                                        person_id++;
+                                        temp = (1.0 - alleles_freq[key]);
+//                                        printf("Day %d locus %d %s freq = %f temp = %f X_i_minus_P_i = %f LD = %f\n",
+//                                               Model::SCHEDULER->current_time(),j,person_genotype_aa.substr(j, 1).c_str(),alleles_freq[key],temp,X_i_minus_P_i,LD);
+                                    } else {
+//                                        X_i_minus_P_i *= (0.0 - alleles_freq[key]);
+                                        temp = (0.0 - alleles_freq[key]);
+                                    }
+                                    X_i_minus_P_i = X_i_minus_P_i * temp;
+                                }
+//                                else{
+//                                    temp = (0.0 - alleles_freq[key]);
+//                                }
+                            }
+                        }
+//                        printf("Day %d %s X_i_minus_P_i = %f LD = %f\n",
+//                               Model::SCHEDULER->current_time(),person_genotype_aa.c_str(),X_i_minus_P_i,LD);
+//                        printf("End 1 parasite\n\n");
+//                        if(!new_genotype.empty())
+//                        {
+//                            printf("Day %d p_size %d %s X_i_minus_P_i = %f\n",
+//                                   Model::SCHEDULER->current_time(), person->all_clonal_parasite_populations()->parasites()->size(), new_genotype.c_str(), X_i_minus_P_i);
+//                        }
+                    }
+                    LD += (person->all_clonal_parasite_populations()->parasites()->size()*X_i_minus_P_i);
+                }
+            }
+        }
+    }
+
+//    if(Model::SCHEDULER->current_time() >= 90) {
+//        exit(0);
+//    }
+
+    printf("Day %d total person with mutated genotype %d LD = %f\n",Model::SCHEDULER->current_time(),person_id,LD);
+
+    ss << LD << sep;
 
     std::cout << ss.str() << std::endl;
 

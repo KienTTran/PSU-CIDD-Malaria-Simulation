@@ -83,7 +83,7 @@ public:
             PersonIndexByLocationStateAgeClass* pi
     );
 };
-extern std::vector<std::map<std::string,double>> alleles_freq;
+extern std::map<std::string,double> alleles_freq;
 
 
 #endif //PCMS_REPORTERUTILS_H
