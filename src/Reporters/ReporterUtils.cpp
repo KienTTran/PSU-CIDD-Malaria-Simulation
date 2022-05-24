@@ -346,6 +346,37 @@ inline std::vector<std::string> split (const std::string &s, char delim) {
     return result;
 }
 
+inline bool is_mutant_allele(std::string aa_sequence, int pos){
+    int chromosome_id = 0;
+    int chromosome_pos = 0;
+    for(int i = 0; i < aa_sequence.length(); i++){
+        if(i == pos){
+            break;
+        }
+        if(aa_sequence.substr(i,1) == "|"){
+            chromosome_pos = 0;
+            chromosome_id++;
+        }
+        else{
+            chromosome_pos++;
+        }
+    }
+//    printf("Genotype %s pos %d chromosome %d chromosome_pos %d\n",aa_sequence.c_str(),pos,(chromosome_id+1),chromosome_pos);
+    for (auto &gene_info : Model::CONFIG->pf_genotype_info().chromosome_infos.at(chromosome_id).gene_infos){
+        if(std::isdigit(aa_sequence.substr(pos, 1)[0])){
+            if(std::stoi(aa_sequence.substr(pos, 1)) > 1){
+                return true;
+            }
+        }
+        else{
+            if(gene_info.aa_position_infos[chromosome_pos].amino_acids[1] == aa_sequence.substr(pos, 1)[0]){
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
 std::map<std::string,double> alleles_freq = std::map<std::string,double>();
 void ReporterUtils::output_genotype_frequency4(std::stringstream& ss, const int& number_of_genotypes,
                                                PersonIndexByLocationStateAgeClass* pi) {
@@ -418,11 +449,11 @@ void ReporterUtils::output_genotype_frequency4(std::stringstream& ss, const int&
         else{
             genotype_freq = result3_all[i] / sum1_all;
         }
-        printf("Day %d Genotype id %d %s freq %f\n",Model::SCHEDULER->current_time(),i,Model::CONFIG->genotype_db.at(i)->get_aa_sequence().c_str(),genotype_freq);
-        for(int j = 0; j < Model::CONFIG->mutation_mask().length(); j++) {
+        printf("Day %d Genotype id %d %s freq %f\n",Model::SCHEDULER->current_time(),i,genotype->get_aa_sequence().c_str(),genotype_freq);
+        for(int j = 0; j < genotype->get_aa_sequence().length(); j++) {
             if (Model::CONFIG->mutation_mask()[j] == '1') {
-                if (genotype->get_aa_sequence().substr(j, 1) != "|" &&
-                    genotype->get_aa_sequence().substr(j, 1) != ",") {
+//                if (genotype->get_aa_sequence().substr(j, 1) != "|" && genotype->get_aa_sequence().substr(j, 1) != ",")
+                {
                     std::string key = std::to_string(j) + "-" + genotype->get_aa_sequence().substr(j, 1);
                     if (alleles_freq.find(key) == alleles_freq.end()) {
                         alleles_freq[key] = genotype_freq;
@@ -434,13 +465,6 @@ void ReporterUtils::output_genotype_frequency4(std::stringstream& ss, const int&
         }
     }
 
-    for (auto &data : alleles_freq){
-        printf("Day %d Allele %s freq = %f\n",Model::SCHEDULER->current_time(), data.first.c_str(), data.second);
-        ss << data.second << sep;
-    }
-
-    if(alleles_freq.size() == 0) ss << 0 << sep;
-
     double LD = 0.0;
     int person_id = 0;
     for (auto loc = 0; loc < number_of_locations; loc++) {
@@ -450,30 +474,29 @@ void ReporterUtils::output_genotype_frequency4(std::stringstream& ss, const int&
                 for (auto i = 0ull; i < size; i++) {
                     auto* person = pi->vPerson()[loc][hs][ac][i];
 
-                    LD = 0.0;
+//                    LD = 0.0;
                     double X_i_minus_P_i = 1.0;
                     for (auto* parasite_population : *(person->all_clonal_parasite_populations()->parasites())) {
+                        X_i_minus_P_i = 1.0;
                         std::string new_genotype = "";
                         const std::string person_genotype_aa = parasite_population->genotype()->get_aa_sequence();
                         for(int j = 0; j < person_genotype_aa.length(); j++) {
                             std::string key = std::to_string(j) + "-" + person_genotype_aa.substr(j, 1);
-                            if(person_genotype_aa.substr(j,1) != "|" && person_genotype_aa.substr(j,1) != ","){
+//                            if(person_genotype_aa.substr(j,1) != "|" && person_genotype_aa.substr(j,1) != ",")
+                            {
                                 double temp = 0.0;
                                 if (Model::CONFIG->mutation_mask().substr(j,1) == "1")
                                 {
 //                                    temp = (1.0 - alleles_freq[key]);
-                                    if (init_alleles_masked.find(person_genotype_aa.substr(j, 1)) == std::string::npos) {
-                                        //Mutated allele
-//                                        X_i_minus_P_i *= (1.0 - alleles_freq[key]);
-//                                        new_genotype = person_genotype_aa;
-//                                        person_id++;
+                                    bool is_mutant = is_mutant_allele(person_genotype_aa,j);
+                                    if(is_mutant){
                                         temp = (1.0 - alleles_freq[key]);
-//                                        printf("Day %d locus %d %s freq = %f temp = %f X_i_minus_P_i = %f LD = %f\n",
-//                                               Model::SCHEDULER->current_time(),j,person_genotype_aa.substr(j, 1).c_str(),alleles_freq[key],temp,X_i_minus_P_i,LD);
-                                    } else {
-//                                        X_i_minus_P_i *= (0.0 - alleles_freq[key]);
+                                    }
+                                    else{
                                         temp = (0.0 - alleles_freq[key]);
                                     }
+//                                    printf("Genotype %s pos %d allele %s (M: %d) freq = %f temp = %f X_i_minus_P_i = %f\n",
+//                                           person_genotype_aa.c_str(),j,person_genotype_aa.substr(j, 1).c_str(),is_mutant,alleles_freq[key],temp,X_i_minus_P_i);
                                     X_i_minus_P_i = X_i_minus_P_i * temp;
                                 }
 //                                else{
@@ -481,28 +504,27 @@ void ReporterUtils::output_genotype_frequency4(std::stringstream& ss, const int&
 //                                }
                             }
                         }
-//                        printf("Day %d %s X_i_minus_P_i = %f LD = %f\n",
-//                               Model::SCHEDULER->current_time(),person_genotype_aa.c_str(),X_i_minus_P_i,LD);
-//                        printf("End 1 parasite\n\n");
-//                        if(!new_genotype.empty())
-//                        {
-//                            printf("Day %d p_size %d %s X_i_minus_P_i = %f\n",
-//                                   Model::SCHEDULER->current_time(), person->all_clonal_parasite_populations()->parasites()->size(), new_genotype.c_str(), X_i_minus_P_i);
-//                        }
+                        LD += X_i_minus_P_i * size;
                     }
-                    LD += (person->all_clonal_parasite_populations()->parasites()->size()*X_i_minus_P_i);
                 }
             }
         }
     }
 
-//    if(Model::SCHEDULER->current_time() >= 90) {
+//    if(Model::SCHEDULER->current_time() >= 30) {
 //        exit(0);
 //    }
 
     printf("Day %d total person with mutated genotype %d LD = %f\n",Model::SCHEDULER->current_time(),person_id,LD);
 
     ss << LD << sep;
+
+    for (auto &data : alleles_freq){
+        printf("Day %d Allele %s freq = %f\n",Model::SCHEDULER->current_time(), data.first.c_str(), data.second);
+        ss << data.second << sep;
+    }
+
+    if(alleles_freq.size() == 0) ss << 0 << sep;
 
     std::cout << ss.str() << std::endl;
 

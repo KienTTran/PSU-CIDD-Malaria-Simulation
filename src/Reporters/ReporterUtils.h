@@ -9,6 +9,7 @@
 #include <sstream>
 #include <vector>
 #include <map>
+#include <ctype.h>
 
 class PersonIndexByLocationStateAgeClass;
 
