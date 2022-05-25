@@ -79,8 +79,8 @@ void MonthlyReporter::monthly_report() {
   ReporterUtils::output_genotype_frequency3(gene_freq_ss, Model::CONFIG->genotype_db.size(),
                                             Model::POPULATION->get_person_index<PersonIndexByLocationStateAgeClass>());
 
-    gene_freq_file << gene_freq_ss.str() << std::endl;
-    std::stringstream allele_freq_ss;
+  gene_freq_file << gene_freq_ss.str() << std::endl;
+  std::stringstream allele_freq_ss;
   ReporterUtils::output_genotype_frequency4(allele_freq_ss, Model::CONFIG->genotype_db.size(),
                                             Model::POPULATION->get_person_index<PersonIndexByLocationStateAgeClass>());
 
@@ -119,11 +119,9 @@ void MonthlyReporter::after_run() {
     gene_db_file << g_id << sep << genotype->aa_sequence << std::endl;
   }
 
-  allele_db_file << alleles_freq.size() << sep << "LD" << std::endl;
-
   int count = 0;
-  for (auto data: alleles_freq) {
-    allele_db_file << (count) << sep << data.first.c_str() << std::endl;
+  for (auto data: linkage_disequilibrium) {
+    allele_db_file << (count) << sep << data.first.c_str() << ".1" << std::endl;
     count++;
   }
 

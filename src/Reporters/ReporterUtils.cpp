@@ -378,6 +378,7 @@ inline bool is_mutant_allele(std::string aa_sequence, int pos){
 }
 
 std::map<std::string,double> alleles_freq = std::map<std::string,double>();
+std::map<std::string,double> linkage_disequilibrium = std::map<std::string,double>();
 void ReporterUtils::output_genotype_frequency4(std::stringstream& ss, const int& number_of_genotypes,
                                                PersonIndexByLocationStateAgeClass* pi) {
     auto sum1_all = 0.0;
@@ -426,39 +427,33 @@ void ReporterUtils::output_genotype_frequency4(std::stringstream& ss, const int&
             }
         }
     }
-    std::string init_alleles_masked = "";
-    for(int j = 0; j < Model::CONFIG->mutation_mask().length(); j++){
-        if(Model::CONFIG->mutation_mask()[j] == '1') {
-            for (const auto p_info : Model::CONFIG->initial_parasite_info()) {
-                auto initial_genotype_aa = Model::CONFIG->genotype_db.at(p_info.parasite_type_id)->get_aa_sequence();
-                if (init_alleles_masked.find(initial_genotype_aa.substr(j, 1)) == std::string::npos) {
-                    init_alleles_masked += initial_genotype_aa.substr(j, 1);
-                }
-            }
-        }
-    }
-    printf("Day %d Init alleles masked %s\n",Model::SCHEDULER->current_time(),init_alleles_masked.c_str());
 
     alleles_freq = std::map<std::string,double>();
+    std::map<std::string,double> genotype_freq;
     for(int i = 0; i < result3_all.size(); i++){
         auto genotype = Model::CONFIG->genotype_db.at(i);
-        double genotype_freq = 0.0;
+        double freq = 0.0;
         if(sum1_all == 0){
-            genotype_freq = 0.0;
+            freq = 0.0;
         }
         else{
-            genotype_freq = result3_all[i] / sum1_all;
+            freq = result3_all[i] / sum1_all;
         }
-        printf("Day %d Genotype id %d %s freq %f\n",Model::SCHEDULER->current_time(),i,genotype->get_aa_sequence().c_str(),genotype_freq);
+        if (genotype_freq.find(genotype->get_aa_sequence()) == genotype_freq.end()) {
+            genotype_freq[genotype->get_aa_sequence()] = freq;
+        } else {
+            genotype_freq[genotype->get_aa_sequence()] += freq;
+        }
+        printf("Day %d Genotype id %d %s freq %f\n",Model::SCHEDULER->current_time(),i,genotype->get_aa_sequence().c_str(),freq);
         for(int j = 0; j < genotype->get_aa_sequence().length(); j++) {
             if (Model::CONFIG->mutation_mask()[j] == '1') {
 //                if (genotype->get_aa_sequence().substr(j, 1) != "|" && genotype->get_aa_sequence().substr(j, 1) != ",")
                 {
                     std::string key = std::to_string(j) + "-" + genotype->get_aa_sequence().substr(j, 1);
                     if (alleles_freq.find(key) == alleles_freq.end()) {
-                        alleles_freq[key] = genotype_freq;
+                        alleles_freq[key] = freq;
                     } else {
-                        alleles_freq[key] += genotype_freq;
+                        alleles_freq[key] += freq;
                     }
                 }
             }
@@ -467,6 +462,7 @@ void ReporterUtils::output_genotype_frequency4(std::stringstream& ss, const int&
 
     double LD = 0.0;
     int person_id = 0;
+    linkage_disequilibrium = std::map<std::string,double>();
     for (auto loc = 0; loc < number_of_locations; loc++) {
         for (auto hs = 0; hs < Person::NUMBER_OF_STATE - 1; hs++) {
             for (auto ac = 0; ac < number_of_age_classes; ac++) {
@@ -504,27 +500,30 @@ void ReporterUtils::output_genotype_frequency4(std::stringstream& ss, const int&
 //                                }
                             }
                         }
-                        LD += X_i_minus_P_i * size;
+                        if (linkage_disequilibrium.find(person_genotype_aa) == linkage_disequilibrium.end()) {
+                            linkage_disequilibrium[person_genotype_aa] = X_i_minus_P_i;
+                        } else {
+                            linkage_disequilibrium[person_genotype_aa] += X_i_minus_P_i;
+                        }
                     }
                 }
             }
         }
     }
 
-//    if(Model::SCHEDULER->current_time() >= 30) {
-//        exit(0);
-//    }
-
-    printf("Day %d total person with mutated genotype %d LD = %f\n",Model::SCHEDULER->current_time(),person_id,LD);
-
-    ss << LD << sep;
+//    ss << LD << sep;
 
     for (auto &data : alleles_freq){
         printf("Day %d Allele %s freq = %f\n",Model::SCHEDULER->current_time(), data.first.c_str(), data.second);
-        ss << data.second << sep;
+//        ss << data.second << sep;
     }
 
-    if(alleles_freq.size() == 0) ss << 0 << sep;
+    if(linkage_disequilibrium.size() == 0) ss << 0 << sep;
+
+    for (auto &linkage_disequilibrium : linkage_disequilibrium){
+        printf("Day %d Genotype %s LD = %f\n",Model::SCHEDULER->current_time(), linkage_disequilibrium.first.c_str(), linkage_disequilibrium.second);
+        ss << linkage_disequilibrium.second << sep;
+    }
 
     std::cout << ss.str() << std::endl;
 
