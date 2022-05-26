@@ -85,6 +85,7 @@ public:
     );
 };
 extern std::map<std::string,double> alleles_freq;
+extern std::map<std::string,double> alleles_freq_acc;
 extern std::map<std::string,double> linkage_disequilibrium;
 
 

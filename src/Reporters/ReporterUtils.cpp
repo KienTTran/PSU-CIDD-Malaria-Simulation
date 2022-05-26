@@ -378,6 +378,7 @@ inline bool is_mutant_allele(std::string aa_sequence, int pos){
 }
 
 std::map<std::string,double> alleles_freq = std::map<std::string,double>();
+std::map<std::string,double> alleles_freq_acc = std::map<std::string,double>();
 std::map<std::string,double> linkage_disequilibrium = std::map<std::string,double>();
 void ReporterUtils::output_genotype_frequency4(std::stringstream& ss, const int& number_of_genotypes,
                                                PersonIndexByLocationStateAgeClass* pi) {
@@ -429,6 +430,10 @@ void ReporterUtils::output_genotype_frequency4(std::stringstream& ss, const int&
     }
 
     alleles_freq = std::map<std::string,double>();
+    alleles_freq_acc = std::map<std::string,double>();
+    linkage_disequilibrium = std::map<std::string,double>();
+    std::map<std::string,int> linkage_disequilibrium_size = std::map<std::string,int>();
+    std::map<std::string,int> allele_size = std::map<std::string,int>();
     std::map<std::string,double> genotype_freq;
     for(int i = 0; i < result3_all.size(); i++){
         auto genotype = Model::CONFIG->genotype_db.at(i);
@@ -455,26 +460,34 @@ void ReporterUtils::output_genotype_frequency4(std::stringstream& ss, const int&
                     } else {
                         alleles_freq[key] += freq;
                     }
+                    alleles_freq_acc[key] = 1.0;
+                    allele_size[key] = 0;
                 }
             }
         }
+        linkage_disequilibrium[genotype->get_aa_sequence()] = 0.0;
+        linkage_disequilibrium_size[genotype->get_aa_sequence()] = 0;
     }
+
+
+//    for (auto &data : alleles_freq_acc){
+//        printf("Day %d Allele %s freq_acc = %f\n",Model::SCHEDULER->current_time(), data.first.c_str(), data.second);
+//    }
+//
+//    for (auto &linkage_disequilibrium : linkage_disequilibrium){
+//        printf("Day %d Genotype %s LD = %.20f\n",Model::SCHEDULER->current_time(), linkage_disequilibrium.first.c_str(), linkage_disequilibrium.second);
+//    }
 
     double LD = 0.0;
     int person_id = 0;
-    linkage_disequilibrium = std::map<std::string,double>();
     for (auto loc = 0; loc < number_of_locations; loc++) {
         for (auto hs = 0; hs < Person::NUMBER_OF_STATE - 1; hs++) {
             for (auto ac = 0; ac < number_of_age_classes; ac++) {
                 const auto size = pi->vPerson()[loc][hs][ac].size();
+                double X_i_minus_P_i = 0.0;
                 for (auto i = 0ull; i < size; i++) {
                     auto* person = pi->vPerson()[loc][hs][ac][i];
-
-//                    LD = 0.0;
-                    double X_i_minus_P_i = 1.0;
                     for (auto* parasite_population : *(person->all_clonal_parasite_populations()->parasites())) {
-                        X_i_minus_P_i = 1.0;
-                        std::string new_genotype = "";
                         const std::string person_genotype_aa = parasite_population->genotype()->get_aa_sequence();
                         for(int j = 0; j < person_genotype_aa.length(); j++) {
                             std::string key = std::to_string(j) + "-" + person_genotype_aa.substr(j, 1);
@@ -494,36 +507,51 @@ void ReporterUtils::output_genotype_frequency4(std::stringstream& ss, const int&
 //                                    printf("Genotype %s pos %d allele %s (M: %d) freq = %f temp = %f X_i_minus_P_i = %f\n",
 //                                           person_genotype_aa.c_str(),j,person_genotype_aa.substr(j, 1).c_str(),is_mutant,alleles_freq[key],temp,X_i_minus_P_i);
                                     X_i_minus_P_i = X_i_minus_P_i * temp;
+                                    alleles_freq_acc[key] *= temp;
+                                    allele_size[key] += 1;
                                 }
 //                                else{
 //                                    temp = (0.0 - alleles_freq[key]);
 //                                }
                             }
                         }
-                        if (linkage_disequilibrium.find(person_genotype_aa) == linkage_disequilibrium.end()) {
-                            linkage_disequilibrium[person_genotype_aa] = X_i_minus_P_i;
-                        } else {
-                            linkage_disequilibrium[person_genotype_aa] += X_i_minus_P_i;
-                        }
+                        linkage_disequilibrium[person_genotype_aa] += X_i_minus_P_i;
+                        linkage_disequilibrium_size[person_genotype_aa] += 1;
                     }
                 }
+                for (auto &linkage_disequilibrium : linkage_disequilibrium){
+                    linkage_disequilibrium.second  = linkage_disequilibrium_size[linkage_disequilibrium.first] == 0 ? 0.0 : linkage_disequilibrium.second / linkage_disequilibrium_size[linkage_disequilibrium.first];
+                }
+//                LD = X_i_minus_P_i / size;
             }
         }
     }
 
-//    ss << LD << sep;
+    for (auto data : linkage_disequilibrium_size){
+        printf("Day %d Genotype %s Size = %d\n",Model::SCHEDULER->current_time(), data.first.c_str(), data.second);
+    }
 
     for (auto &data : alleles_freq){
         printf("Day %d Allele %s freq = %f\n",Model::SCHEDULER->current_time(), data.first.c_str(), data.second);
-//        ss << data.second << sep;
+    }
+
+    for (auto &data : alleles_freq_acc){
+        printf("Day %d Allele %s freq_acc = %.20f\n",Model::SCHEDULER->current_time(), data.first.c_str(), data.second);
+        ss << data.second << sep;
+    }
+
+    for (auto &data : allele_size){
+        printf("Day %d Allele %s size = %d\n",Model::SCHEDULER->current_time(), data.first.c_str(), data.second);
     }
 
     if(linkage_disequilibrium.size() == 0) ss << 0 << sep;
 
-    for (auto &linkage_disequilibrium : linkage_disequilibrium){
-        printf("Day %d Genotype %s LD = %f\n",Model::SCHEDULER->current_time(), linkage_disequilibrium.first.c_str(), linkage_disequilibrium.second);
-        ss << linkage_disequilibrium.second << sep;
+    for (auto data : linkage_disequilibrium){
+        printf("Day %d Genotype %s LD = %.20f\n",Model::SCHEDULER->current_time(), data.first.c_str(), data.second);
+//        ss << data.second << sep;
     }
+
+//    ss << LD << sep;
 
     std::cout << ss.str() << std::endl;
 

@@ -120,10 +120,12 @@ void MonthlyReporter::after_run() {
   }
 
   int count = 0;
-  for (auto data: linkage_disequilibrium) {
-    allele_db_file << (count) << sep << data.first.c_str() << ".1" << std::endl;
+  for (auto data: alleles_freq_acc) {
+    allele_db_file << (count) << sep << data.first.c_str() << std::endl;
     count++;
   }
+
+//  allele_db_file << (count) << sep << "LD";
 
 
   gene_freq_file.close();
