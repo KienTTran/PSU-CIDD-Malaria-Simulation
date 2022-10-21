@@ -165,22 +165,21 @@ void ReporterUtils::output_genotype_frequency3(
         }
       }
     }
-    // output per location
-    for (auto& i : result3) {
-      i /= sum1;
-      ss << (sum1 == 0 ? 0 : i) << sep;
-    }
+//    // output per location
+//    for (auto& i : result3) {
+//      i /= sum1;
+//      ss << (sum1 == 0 ? 0 : i) << sep;
+//    }
   }
 
   //this is for all locations
-  ss << group_sep;
+//  ss << group_sep;
   for (auto& i : result3_all) {
     i /= sum1_all;
     ss << (sum1_all == 0 ? 0 : i) << sep;
   }
-
-  ss << group_sep;
-  ss << sum1_all << sep;
+//  ss << group_sep;
+//  ss << sum1_all << sep;
 }
 
 void ReporterUtils::output_3_genotype_frequency(

@@ -157,6 +157,7 @@ void handle_cli(Model *model, int argc, char **argv) {
   
   // Set the remaining values if given
   path = input_path ? args::get(input_path) : path;
+  Model::MODEL->set_output_path(path);
   job_number = cluster_job_number ? args::get(cluster_job_number) : 0;
   model->set_cluster_job_number(job_number);
   const auto reporter_type = reporter ? args::get(reporter) : "";
