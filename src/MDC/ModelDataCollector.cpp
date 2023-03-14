@@ -151,6 +151,8 @@ void ModelDataCollector::initialize() {
     number_of_treatments_success_with_therapy_ID_ = IntVector(Model::CONFIG->therapy_db().size(), 0);
     number_of_treatments_fail_with_therapy_ID_ = IntVector(Model::CONFIG->therapy_db().size(), 0);
 
+    mosquito_double_resistant_count_ = IntVector(Model::CONFIG->number_of_locations(), 0);
+
     AMU_per_parasite_pop_ = 0;
     AMU_per_person_ = 0;
     AMU_for_clinical_caused_parasite_ = 0;
@@ -247,6 +249,7 @@ void ModelDataCollector::initialize() {
 
     current_number_of_mutation_events_in_this_year_ = 0;
     number_of_mutation_events_by_year_ = LongVector();
+
   }
 }
 

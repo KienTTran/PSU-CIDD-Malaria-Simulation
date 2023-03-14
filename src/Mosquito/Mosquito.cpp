@@ -7,8 +7,10 @@
 #include "Core/Config/Config.h"
 #include "Core/Random.h"
 #include "Model.h"
+#include "MDC/ModelDataCollector.h"
 #include "Population/Population.h"
 #include "Population/SingleHostClonalParasitePopulations.h"
+#include "Therapies/SCTherapy.h"
 #include "easylogging++.h"
 
 Mosquito::Mosquito(Model *model) : model { model } {}
@@ -50,9 +52,10 @@ void Mosquito::infect_new_cohort_in_PRMC(Config *config, Random *random, Populat
       return;
     }
     // multinomial sampling based on relative infectivity
-    auto first_sampling = random->roulette_sampling<Person>(
-        config->mosquito_config().prmc_size, population->individual_foi_by_location[loc],
-        population->all_alive_persons_by_location[loc], false, population->current_force_of_infection_by_location[loc]);
+    auto first_sampling = random->roulette_sampling<Person>(config->mosquito_config().prmc_size,
+                                                            population->individual_foi_by_location[loc],
+                                                            population->all_alive_persons_by_location[loc], false,
+                                                            population->current_force_of_infection_by_location[loc]);
 
     std::vector<unsigned int> interrupted_feeding_indices = build_interrupted_feeding_indices(
         random, config->mosquito_config().interrupted_feeding_rate[loc], config->mosquito_config().prmc_size);
@@ -93,6 +96,10 @@ void Mosquito::infect_new_cohort_in_PRMC(Config *config, Random *random, Populat
         if (sampling_genotypes.empty()) {
           LOG(FATAL) << "sampling_genotypes should not be empty";
         }
+//        printf("[Within-host TRUE] sampling_genotypes.size() = %d\n", sampling_genotypes.size());
+//        for(int i = 0; i < sampling_genotypes.size(); i++){
+//          printf("sampling_genotypes[%d] = %s\n", i, sampling_genotypes[i]->get_aa_sequence().c_str());
+//        }
       } else {
         sampling_genotypes.clear();
         relative_infectivity_each_pp.clear();
@@ -127,15 +134,75 @@ void Mosquito::infect_new_cohort_in_PRMC(Config *config, Random *random, Populat
           sampling_genotypes.push_back(std::get<0>(second_genotype));
           relative_infectivity_each_pp.push_back(std::get<1>(second_genotype));
         }
+//        printf("[Within-host FALSE] sampling_genotypes.size() = %d\n", sampling_genotypes.size());
+//        for(int i = 0; i < sampling_genotypes.size(); i++){
+//          printf("sampling_genotypes[%d] = %s\n", i, sampling_genotypes[i]->get_aa_sequence().c_str());
+//        }
       }
 
       auto parent_genotypes =
           random->roulette_sampling<Genotype>(2, relative_infectivity_each_pp, sampling_genotypes, false);
+      bool valid1 = false;
+      bool valid2 = false;
+      std::vector<std::string> therapies = {"A-L","AS-AQ","DHA-PPQ"};
+      std::vector<bool> resist_therapies = {false,false,false};
+      if(parent_genotypes[0]->get_aa_sequence() != parent_genotypes[1]->get_aa_sequence()){
+        for (int therapy_id = 6; therapy_id <= 8; therapy_id++) {
+          auto* sc_therapy = dynamic_cast<SCTherapy*>(Model::CONFIG->therapy_db()[therapy_id]);
+            if((parent_genotypes[0]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[0])) == get_min_EC50(sampling_genotypes,sc_therapy->drug_ids[0]))
+            && (parent_genotypes[0]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1])) != get_min_EC50(sampling_genotypes,sc_therapy->drug_ids[1]))
+            && (parent_genotypes[1]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[0])) != get_min_EC50(sampling_genotypes,sc_therapy->drug_ids[0]))
+            && (parent_genotypes[1]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1])) == get_min_EC50(sampling_genotypes,sc_therapy->drug_ids[1]))){
+//                printf("[VALID1] %s genotype1 single resist to ART & genotype2 single resist to PD\n",therapies[therapy_id - 6].c_str());
+//                printf("[VALID1] genotype1: %s\n",parent_genotypes[0]->aa_sequence.c_str());
+//                printf("[VALID1] genotype2: %s\n",parent_genotypes[1]->aa_sequence.c_str());
+                valid1 = true;
+                resist_therapies[therapy_id - 6] = true;
+            }
+            if((parent_genotypes[1]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[0])) == get_min_EC50(sampling_genotypes,sc_therapy->drug_ids[0]))
+            && (parent_genotypes[1]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1])) != get_min_EC50(sampling_genotypes,sc_therapy->drug_ids[1]))
+            && (parent_genotypes[0]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[0])) != get_min_EC50(sampling_genotypes,sc_therapy->drug_ids[0]))
+            && (parent_genotypes[0]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1])) == get_min_EC50(sampling_genotypes,sc_therapy->drug_ids[1]))){
+//                printf("[VALID2] %s genotype1 single resist to PD & genotype2 single resist to ART\n",therapies[therapy_id - 6].c_str());
+//                printf("[VALID2] genotype1: %s\n",parent_genotypes[0]->aa_sequence.c_str());
+//                printf("[VALID2] genotype2: %s\n",parent_genotypes[1]->aa_sequence.c_str());
+                valid2 = true;
+                resist_therapies[therapy_id - 6] = true;
+            }
+        }
+      }
 
       Genotype *sampled_genotype =
           (parent_genotypes[0]->aa_sequence == parent_genotypes[1]->aa_sequence)
               ? parent_genotypes[0]
               : Genotype::free_recombine(config, random, parent_genotypes[0], parent_genotypes[1]);
+
+        if(valid1){
+            for (int i = 0; i < resist_therapies.size(); i++){
+                if (resist_therapies[i]){
+//                    printf("[VALID1] therapy: %s\n",therapies[i].c_str());
+//                    printf("[VALID1] parent1: %s\n",parent_genotypes[0]->aa_sequence.c_str());
+//                    printf("[VALID1] parent2: %s\n",parent_genotypes[1]->aa_sequence.c_str());
+                    if(split_string(get_resistant_strength(sampled_genotype,therapies[i]),'-')[0] == "2"){
+                        Model::DATA_COLLECTOR->mosquito_double_resistant_count()[0] += 1;
+                    }
+//                    printf("\n");
+                }
+            }
+        }
+        if(valid2){
+            for (int i = 0; i < resist_therapies.size(); i++){
+                if (resist_therapies[i]){
+//                    printf("[VALID2] therapy: %s\n",therapies[i].c_str());
+//                    printf("[VALID2] parent1: %s\n",parent_genotypes[0]->aa_sequence.c_str());
+//                    printf("[VALID2] parent2: %s\n",parent_genotypes[1]->aa_sequence.c_str());
+                    if(split_string(get_resistant_strength(sampled_genotype,therapies[i]),'-')[0] == "2"){
+                        Model::DATA_COLLECTOR->mosquito_double_resistant_count()[0] += 1;
+                    }
+//                    printf("\n");
+                }
+            }
+        }
       genotypes_table[tracking_index][loc][if_index] = sampled_genotype;
     }
   }
@@ -168,4 +235,125 @@ void Mosquito::get_genotypes_profile_from_person(Person *person, std::vector<Gen
       sampling_genotypes.push_back(pp->genotype());
     }
   }
+}
+
+double Mosquito::get_min_EC50(std::vector<Genotype*> genotypes, int drug_id) {
+  double min_EC50 = 1000;
+  for (auto genotype : genotypes) {
+    if (genotype->get_EC50_power_n(Model::CONFIG->drug_db()->at(drug_id)) < min_EC50) {
+      min_EC50 = genotype->get_EC50_power_n(Model::CONFIG->drug_db()->at(drug_id));
+    }
+  }
+  return min_EC50;
+}
+
+std::vector<std::string> Mosquito::split_string(std::string str, char delimiter) {
+  std::vector<std::string> internal;
+  std::stringstream ss(str); // Turn the string into a stream.
+  std::string tok;
+  while (getline(ss, tok, delimiter)) {
+    internal.push_back(tok);
+  }
+  return internal;
+}
+
+bool Mosquito::string_contain(std::string str, std::string pattern) {
+  if (str.find(pattern) != std::string::npos) {
+    return true;
+  }
+  return false;
+}
+
+std::string Mosquito::get_resistant_strength(Genotype* genotype, std::string therapy) {
+  std::string aa_seq = genotype->get_aa_sequence();
+  std::vector<std::string> pattern_chromosome = split_string(aa_seq,'|');
+  std::vector<std::string> chromosome_allele;
+  int drug_num = 0;
+  int allele_num = 0;
+//  printf("Therapy: %s\n",therapy.c_str());
+//  for(int i = 0; i < pattern_chromosome.size(); i++){
+//    printf("%s|",pattern_chromosome[i].c_str());
+//  }
+//  printf("\n");
+  for(int i = 0; i < pattern_chromosome.size(); i++){
+    std::string chromosome = "";
+    for(int j = 0; j < pattern_chromosome[i].size(); j++){
+      chromosome += "0";
+    }
+    chromosome_allele.push_back(chromosome);
+  }
+  if(string_contain(split_string(therapy,'-')[0],"A")) //ART
+  {
+    if (pattern_chromosome[12].substr(10,1) == "Y"){
+        chromosome_allele[12].replace(10,1,"1");
+        drug_num += 1;
+        allele_num += 1;
+    }
+  }
+  if(string_contain(split_string(therapy,'-')[1],"L")) //LUM
+  {
+    if (pattern_chromosome[4].substr(0,2) != "YY"){
+      drug_num += 1;
+    }
+    else if (pattern_chromosome[6].substr(0,1) != "T"){
+      drug_num += 1;
+    }
+    else{
+        drug_num = drug_num;
+    }
+    if (drug_num > 0){
+      if (pattern_chromosome[6].substr(0,1) == "K"){ // K76T
+          chromosome_allele[6].replace(0,1,"1");
+          allele_num += 1;
+      }
+      if (pattern_chromosome[4].substr(0,1) == "N") {  // N86Y
+          chromosome_allele[4].replace(0, 1, "1");
+          allele_num += 1;
+      }
+      if (pattern_chromosome[4].substr(1,1) == "F") {  // Y184F
+          chromosome_allele[4].replace(1, 1, "1");
+          allele_num += 1;
+      }
+    }
+  }
+  if(string_contain(split_string(therapy,'-')[1],"AQ")) //AQ
+  {
+    if (pattern_chromosome[4].substr(0,2) != "NF"){
+      drug_num += 1;
+    }
+    else if (pattern_chromosome[6].substr(0,1) != "K"){
+      drug_num += 1;
+    }
+    else{
+        drug_num = drug_num;
+    }
+      if (drug_num > 0){
+          if (pattern_chromosome[6].substr(0,1) == "T"){ // K76T
+              chromosome_allele[6].replace(0,1,"1");
+              allele_num += 1;
+          }
+          if (pattern_chromosome[4].substr(0,1) == "Y") {  // N86Y
+              chromosome_allele[4].replace(0, 1, "1");
+              allele_num += 1;
+          }
+          if (pattern_chromosome[4].substr(1,1) == "Y") {  // Y184F
+              chromosome_allele[4].replace(1, 1, "1");
+              allele_num += 1;
+          }
+      }
+  }
+  if(string_contain(split_string(therapy,'-')[1],"PPQ")) //PPQ
+  {
+    if (pattern_chromosome[13].substr(0,1) == "2"){
+        chromosome_allele[13].replace(0,1,"1");
+        drug_num += 1;
+        allele_num += 1;
+    }
+  }
+  std::string pattern = std::to_string(drug_num) + "-" + std::to_string(allele_num);
+//  printf("aa_seq: %s, pattern: %s, chromosome_allele:\n",aa_seq.c_str(),pattern.c_str());
+//  for(int i = 0; i < pattern_chromosome.size(); i++){
+//    printf("%s|",chromosome_allele[i].c_str());
+//  }
+  return pattern;
 }

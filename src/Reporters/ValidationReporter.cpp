@@ -221,6 +221,10 @@ void ValidationReporter::after_run() {
     }
     ss << group_sep;//100
 
+    for (auto location = 0; location < Model::CONFIG->number_of_locations(); location++) {
+        ss << Model::DATA_COLLECTOR->mosquito_double_resistant_count()[location]<< sep;
+    }
+
     summary_data_file << ss.str() << std::endl;
 
     for (auto [g_id, genotype] : Model::CONFIG->genotype_db) {

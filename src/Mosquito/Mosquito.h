@@ -41,6 +41,14 @@ public:
   // this function will populate values for both parasite densities and genotypes that carried by a person
   void get_genotypes_profile_from_person(Person *person, std::vector<Genotype *> &sampling_genotypes,
                                          std::vector<double> &relative_infectivity_each_pp);
+
+  double get_min_EC50(std::vector<Genotype *> genotypes, int drug_id);
+
+  std::string get_resistant_strength(Genotype *genotype, std::string therapy);
+
+  std::vector<std::string> split_string(std::string str, char delimiter);
+
+  bool string_contain(std::string str, std::string pattern);
 };
 
 #endif  // POMS_SRC_MOSQUITO_MOSQUITO_H
