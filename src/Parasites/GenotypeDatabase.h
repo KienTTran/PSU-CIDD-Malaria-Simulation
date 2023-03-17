@@ -30,6 +30,7 @@ class GenotypeDatabase : public GenotypePtrMap {
 
 public:
   std::map<std::string, Genotype*> aa_sequence_id_map;
+  std::map<int,std::map<std::string,double>> drug_id_ec50;
 
 public:
   GenotypeDatabase();
@@ -43,6 +44,8 @@ public:
   unsigned int get_id(const std::string& aa_sequence, Config* config);
 
   Genotype* get_genotype_from_alleles_structure(const IntVector& alleles);
+
+  double get_min_ec50(int drug_id);
 
 private:
   unsigned int auto_id {0};

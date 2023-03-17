@@ -42,8 +42,6 @@ public:
   void get_genotypes_profile_from_person(Person *person, std::vector<Genotype *> &sampling_genotypes,
                                          std::vector<double> &relative_infectivity_each_pp);
 
-  double get_min_EC50(std::vector<Genotype *> genotypes, int drug_id);
-
   std::string get_resistant_strength(Genotype *genotype, std::string therapy);
 
   std::vector<std::string> split_string(std::string str, char delimiter);

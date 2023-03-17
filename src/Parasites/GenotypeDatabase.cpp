@@ -57,6 +57,20 @@ Genotype *GenotypeDatabase::get_genotype(const std::string &aa_sequence, Config 
     // calculate ec50
     new_genotype->calculate_EC50_power_n(config->pf_genotype_info(), config->drug_db());
 
+    // add min ec50 of each drug to db
+    for(int drug_id = 0; drug_id <  config->drug_db()->size(); drug_id++){
+      if (drug_id_ec50.find(drug_id) == drug_id_ec50.end()){
+        if (drug_id_ec50[drug_id].find(new_genotype->get_aa_sequence()) == drug_id_ec50[drug_id].end()){
+          drug_id_ec50[drug_id][new_genotype->get_aa_sequence()] = new_genotype->get_EC50_power_n(config->drug_db()->at(drug_id));
+        }
+        else{
+            if (drug_id_ec50[drug_id][new_genotype->get_aa_sequence()] > new_genotype->get_EC50_power_n(config->drug_db()->at(drug_id))){
+                drug_id_ec50[drug_id][new_genotype->get_aa_sequence()] = new_genotype->get_EC50_power_n(config->drug_db()->at(drug_id));
+            }
+        }
+      }
+    }
+
     new_genotype->override_EC50_power_n(config->override_ec50_patterns(), config->drug_db());
 
     aa_sequence_id_map[aa_sequence] = new_genotype;
@@ -68,3 +82,11 @@ Genotype *GenotypeDatabase::get_genotype(const std::string &aa_sequence, Config 
     return aa_sequence_id_map[aa_sequence];
   }
 }
+
+double GenotypeDatabase::get_min_ec50(int drug_id){
+  auto it = min_element(drug_id_ec50[drug_id].begin(), drug_id_ec50[drug_id].end(),
+                                                 [](const auto& l, const auto& r) { return l.second < r.second; });
+
+  return it->second;
+}
+

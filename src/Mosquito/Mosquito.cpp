@@ -149,13 +149,13 @@ void Mosquito::infect_new_cohort_in_PRMC(Config *config, Random *random, Populat
       if(parent_genotypes[0]->get_aa_sequence() != parent_genotypes[1]->get_aa_sequence()){
         for (int therapy_id = 6; therapy_id <= 8; therapy_id++) {
           auto* sc_therapy = dynamic_cast<SCTherapy*>(Model::CONFIG->therapy_db()[therapy_id]);
-            if((parent_genotypes[0]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[0])) == get_min_EC50(sampling_genotypes,sc_therapy->drug_ids[0]))
-            && (parent_genotypes[0]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1])) != get_min_EC50(sampling_genotypes,sc_therapy->drug_ids[1]))
-            && (parent_genotypes[1]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[0])) != get_min_EC50(sampling_genotypes,sc_therapy->drug_ids[0]))
-            && (parent_genotypes[1]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1])) == get_min_EC50(sampling_genotypes,sc_therapy->drug_ids[1]))){
+            if((parent_genotypes[0]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[0])) == Model::CONFIG->genotype_db.get_min_ec50(sc_therapy->drug_ids[0]))
+            && (parent_genotypes[0]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1])) != Model::CONFIG->genotype_db.get_min_ec50(sc_therapy->drug_ids[1]))
+            && (parent_genotypes[1]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[0])) != Model::CONFIG->genotype_db.get_min_ec50(sc_therapy->drug_ids[0]))
+            && (parent_genotypes[1]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1])) == Model::CONFIG->genotype_db.get_min_ec50(sc_therapy->drug_ids[1]))){
                 printf("[VALID1] therapy: %s\n",therapies[therapy_id - 6].c_str());
-                printf("[VALID1] minEC50 ART: %f\n",get_min_EC50(sampling_genotypes,sc_therapy->drug_ids[0]));
-                printf("[VALID1] minEC50 PD: %f\n",get_min_EC50(sampling_genotypes,sc_therapy->drug_ids[1]));
+                printf("[VALID1] minEC50 ART: %f\n",Model::CONFIG->genotype_db.get_min_ec50(sc_therapy->drug_ids[0]));
+                printf("[VALID1] minEC50 PD: %f\n",Model::CONFIG->genotype_db.get_min_ec50(sc_therapy->drug_ids[1]));
                 printf("[VALID1] genotype1 EC50 ART: %f\n",parent_genotypes[0]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[0])));
                 printf("[VALID1] genotype1 EC50 PD: %f\n",parent_genotypes[0]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1])));
                 printf("[VALID1] genotype2 EC50 ART: %f\n",parent_genotypes[1]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[0])));
@@ -163,13 +163,13 @@ void Mosquito::infect_new_cohort_in_PRMC(Config *config, Random *random, Populat
                 valid1 = true;
                 resist_therapies[therapy_id - 6] = true;
             }
-            if((parent_genotypes[1]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[0])) == get_min_EC50(sampling_genotypes,sc_therapy->drug_ids[0]))
-            && (parent_genotypes[1]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1])) != get_min_EC50(sampling_genotypes,sc_therapy->drug_ids[1]))
-            && (parent_genotypes[0]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[0])) != get_min_EC50(sampling_genotypes,sc_therapy->drug_ids[0]))
-            && (parent_genotypes[0]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1])) == get_min_EC50(sampling_genotypes,sc_therapy->drug_ids[1]))){
+            if((parent_genotypes[1]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[0])) == Model::CONFIG->genotype_db.get_min_ec50(sc_therapy->drug_ids[0]))
+            && (parent_genotypes[1]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1])) != Model::CONFIG->genotype_db.get_min_ec50(sc_therapy->drug_ids[1]))
+            && (parent_genotypes[0]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[0])) != Model::CONFIG->genotype_db.get_min_ec50(sc_therapy->drug_ids[0]))
+            && (parent_genotypes[0]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1])) == Model::CONFIG->genotype_db.get_min_ec50(sc_therapy->drug_ids[1]))){
                 printf("[VALID2] therapy: %s\n",therapies[therapy_id - 6].c_str());
-                printf("[VALID2] minEC50 ART: %f\n",get_min_EC50(sampling_genotypes,sc_therapy->drug_ids[0]));
-                printf("[VALID2] minEC50 PD: %f\n",get_min_EC50(sampling_genotypes,sc_therapy->drug_ids[1]));
+                printf("[VALID2] minEC50 ART: %f\n",Model::CONFIG->genotype_db.get_min_ec50(sc_therapy->drug_ids[0]));
+                printf("[VALID2] minEC50 PD: %f\n",Model::CONFIG->genotype_db.get_min_ec50(sc_therapy->drug_ids[1]));
                 printf("[VALID2] genotype2 EC50 ART: %f\n",parent_genotypes[1]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[0])));
                 printf("[VALID2] genotype2 EC50 PD: %f\n",parent_genotypes[1]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1])));
                 printf("[VALID2] genotype1 EC50 ART: %f\n",parent_genotypes[0]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[0])));
@@ -245,16 +245,6 @@ void Mosquito::get_genotypes_profile_from_person(Person *person, std::vector<Gen
       sampling_genotypes.push_back(pp->genotype());
     }
   }
-}
-
-double Mosquito::get_min_EC50(std::vector<Genotype*> genotypes, int drug_id) {
-  double min_EC50 = 1000;
-  for (auto genotype : genotypes) {
-    if (genotype->get_EC50_power_n(Model::CONFIG->drug_db()->at(drug_id)) < min_EC50) {
-      min_EC50 = genotype->get_EC50_power_n(Model::CONFIG->drug_db()->at(drug_id));
-    }
-  }
-  return min_EC50;
 }
 
 std::vector<std::string> Mosquito::split_string(std::string str, char delimiter) {
