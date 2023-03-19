@@ -748,7 +748,7 @@ void ModelDataCollector::record_1_mutation(const int& location, Genotype* from, 
 }
 
 void ModelDataCollector::record_1_mutation_with_drug(const int& location, int drug_id, Genotype* from, Genotype* to) {
-  auto mutation_tracker_info = std::make_tuple(drug_id, from->get_aa_sequence(), to->get_aa_sequence());
+  auto mutation_tracker_info = std::make_tuple(drug_id, from->genotype_id, to->genotype_id);
   mutation_tracker[location].push_back(mutation_tracker_info);
 }
 
