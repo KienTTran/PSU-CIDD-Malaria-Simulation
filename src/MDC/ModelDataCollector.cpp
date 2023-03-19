@@ -158,6 +158,8 @@ void ModelDataCollector::initialize() {
               Model::CONFIG->number_of_locations(),
               IntVector2(Model::CONFIG->therapy_db().size(), IntVector(3, 0)));
 
+    mutation_tracker = std::vector<std::vector<mutation_tracker_info>>(Model::CONFIG->number_of_locations());
+
     AMU_per_parasite_pop_ = 0;
     AMU_per_person_ = 0;
     AMU_for_clinical_caused_parasite_ = 0;
@@ -743,6 +745,11 @@ void ModelDataCollector::record_1_mutation(const int& location, Genotype* from, 
   if (Model::SCHEDULER->current_time() >= Model::CONFIG->start_of_comparison_period()) {
     current_number_of_mutation_events_in_this_year_ += 1;
   }
+}
+
+void ModelDataCollector::record_1_mutation_with_drug(const int& location, int drug_id, Genotype* from, Genotype* to) {
+  auto mutation_tracker_info = std::make_tuple(drug_id, from->get_aa_sequence(), to->get_aa_sequence());
+  mutation_tracker[location].push_back(mutation_tracker_info);
 }
 
 void ModelDataCollector::update_UTL_vector() {

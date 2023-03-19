@@ -29,6 +29,7 @@ void ValidationReporter::initialize() {
     gene_db_file.open(fmt::format("{}/validation_gene_db_{}.txt", Model::MODEL->output_path(), Model::MODEL->cluster_job_number()));
     prmc_freq_file.open(fmt::format("{}/validation_prmc_freq_{}.txt", Model::MODEL->output_path(), Model::MODEL->cluster_job_number()));
     prmc_db_file.open(fmt::format("{}/validation_prmc_db_{}.txt", Model::MODEL->output_path(), Model::MODEL->cluster_job_number()));
+    mutation_tracker_file.open(fmt::format("{}/validation_monthly_mutation_{}.txt", Model::MODEL->output_path(), Model::MODEL->cluster_job_number()));
 }
 
 void ValidationReporter::before_run() {}
@@ -160,6 +161,20 @@ void ValidationReporter::monthly_report() {
     ss << group_sep;
 
     monthly_data_file << ss.str() << std::endl;
+
+    ss.str("");
+    int sum = 0;
+    for (auto loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
+        sum += Model::DATA_COLLECTOR->mutation_tracker[loc].size();
+        for (int i = 0; i < Model::DATA_COLLECTOR->mutation_tracker[loc].size(); i++) {
+            ss << std::get<0>(Model::DATA_COLLECTOR->mutation_tracker[loc][i]) << sep;
+            ss << std::get<1>(Model::DATA_COLLECTOR->mutation_tracker[loc][i]) << sep;
+            ss << std::get<2>(Model::DATA_COLLECTOR->mutation_tracker[loc][i]) << '\n';
+        }
+    }
+    if(sum > 0){
+        mutation_tracker_file << ss.str() << std::endl;
+    }
 
     std::stringstream gene_freq_ss;
 //    ReporterUtils::output_genotype_frequency3(gene_freq_ss, Model::CONFIG->genotype_db.size(),

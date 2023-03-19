@@ -158,6 +158,7 @@ void SingleHostClonalParasitePopulations::update_by_drugs(DrugsInBlood* drugs_in
         if (new_genotype != blood_parasite->genotype()) {
           // mutation occurs
           Model::DATA_COLLECTOR->record_1_mutation(person_->location(), blood_parasite->genotype(), new_genotype);
+          Model::DATA_COLLECTOR->record_1_mutation_with_drug(person_->location(), drug_id, blood_parasite->genotype(), new_genotype);
           //          LOG(TRACE) << Model::SCHEDULER->current_time() << "\t" << blood_parasite->genotype()->genotype_id
           //          << "\t"
           //                     << new_genotype->genotype_id << "\t"
