@@ -220,9 +220,21 @@ void ValidationReporter::after_run() {
         }
     }
     ss << group_sep;//100
-
     for (auto location = 0; location < Model::CONFIG->number_of_locations(); location++) {
-        ss << Model::DATA_COLLECTOR->mosquito_double_resistant_count()[location]<< sep;
+        for(int therapy_used = 6; therapy_used <= 8; therapy_used++){
+            ss << Model::DATA_COLLECTOR->mosquito_single_resistant_count()[location][therapy_used][0] << sep;
+            ss << Model::DATA_COLLECTOR->mosquito_single_resistant_count()[location][therapy_used][1] << sep;
+            ss << Model::DATA_COLLECTOR->mosquito_single_resistant_count()[location][therapy_used][2] << sep;
+        }
+        ss << group_sep;
+    }
+    for (auto location = 0; location < Model::CONFIG->number_of_locations(); location++) {
+        for(int therapy_used = 6; therapy_used <= 8; therapy_used++){
+            ss << Model::DATA_COLLECTOR->mosquito_recombined_resistant_count()[location][therapy_used][0] << sep;
+            ss << Model::DATA_COLLECTOR->mosquito_recombined_resistant_count()[location][therapy_used][1] << sep;
+            ss << Model::DATA_COLLECTOR->mosquito_recombined_resistant_count()[location][therapy_used][2] << sep;
+        }
+        ss << group_sep;
     }
 
     summary_data_file << ss.str() << std::endl;

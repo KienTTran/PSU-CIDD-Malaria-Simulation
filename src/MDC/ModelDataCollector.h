@@ -216,7 +216,8 @@ PROPERTY_REF(LongVector, number_of_mutation_events_by_year)
 
 PROPERTY_REF(long, current_number_of_mutation_events_in_this_year)
 
-PROPERTY_REF(IntVector, mosquito_double_resistant_count)
+PROPERTY_REF(IntVector3, mosquito_single_resistant_count)
+PROPERTY_REF(IntVector3, mosquito_recombined_resistant_count)
 
 
   static const int number_of_reported_MOI = 10;
