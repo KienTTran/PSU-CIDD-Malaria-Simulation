@@ -156,7 +156,7 @@ void ModelDataCollector::initialize() {
             IntVector2(Model::CONFIG->therapy_db().size(), IntVector(3, 0)));
     mosquito_recombined_resistant_count_ = IntVector3(
               Model::CONFIG->number_of_locations(),
-              IntVector2(Model::CONFIG->therapy_db().size(), IntVector(3, 0)));
+              IntVector2(Model::CONFIG->therapy_db().size(), IntVector(4, 0)));
 
     mutation_tracker = std::vector<std::vector<mutation_tracker_info>>(Model::CONFIG->number_of_locations());
 

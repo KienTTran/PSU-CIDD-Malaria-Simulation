@@ -222,15 +222,26 @@ void Mosquito::infect_new_cohort_in_PRMC(Config *config, Random *random, Populat
                     printf("[VALID1] genotype1 single resist to PD & genotype2 single resist to ART\n");
                     printf("[VALID1] genotype1: %s\n",parent_genotypes[0]->aa_sequence.c_str());
                     printf("[VALID1] genotype2: %s\n",parent_genotypes[1]->aa_sequence.c_str());
-                    printf("[VALID1] recombine: %s\n\n",sampled_genotype->aa_sequence.c_str());
+                    printf("[VALID1] recombine: %s\n",sampled_genotype->aa_sequence.c_str());
+                    printf("[VALID1] res-pattern: %s\n", get_resistant_strength(sampled_genotype, therapies[therapy_id - 6]).c_str());
                     std::string res_pattern = split_string(get_resistant_strength(sampled_genotype, therapies[therapy_id - 6]), '-')[0];
-                    if (res_pattern == "1") {
+                    if (res_pattern == "0") {
                         Model::DATA_COLLECTOR->mosquito_recombined_resistant_count()[loc][therapy_id][0] += 1;
-                    } else if (res_pattern == "2") {
+                    }
+                    if (res_pattern == "1") {
                         Model::DATA_COLLECTOR->mosquito_recombined_resistant_count()[loc][therapy_id][1] += 1;
-                    } else {
+                    }
+                    if (res_pattern == "2") {
                         Model::DATA_COLLECTOR->mosquito_recombined_resistant_count()[loc][therapy_id][2] += 1;
                     }
+                    if (res_pattern == "3") {
+                        Model::DATA_COLLECTOR->mosquito_recombined_resistant_count()[loc][therapy_id][3] += 1;
+                    }
+                    printf("[VALID1] resistant count: 0: %d 1: %d 2: %d 3: %d\n\n",
+                           Model::DATA_COLLECTOR->mosquito_recombined_resistant_count()[loc][therapy_id][0],
+                           Model::DATA_COLLECTOR->mosquito_recombined_resistant_count()[loc][therapy_id][1],
+                           Model::DATA_COLLECTOR->mosquito_recombined_resistant_count()[loc][therapy_id][2],
+                           Model::DATA_COLLECTOR->mosquito_recombined_resistant_count()[loc][therapy_id][3]);
                 }
             }
         }
@@ -241,15 +252,26 @@ void Mosquito::infect_new_cohort_in_PRMC(Config *config, Random *random, Populat
                     printf("[VALID2] genotype1 single resist to ART & genotype2 single resist to PD\n");
                     printf("[VALID2] genotype1: %s\n", parent_genotypes[0]->aa_sequence.c_str());
                     printf("[VALID2] genotype2: %s\n", parent_genotypes[1]->aa_sequence.c_str());
-                    printf("[VALID2] recombine: %s\n\n", sampled_genotype->aa_sequence.c_str());
+                    printf("[VALID2] recombine: %s\n", sampled_genotype->aa_sequence.c_str());
+                    printf("[VALID2] res-pattern: %s\n", get_resistant_strength(sampled_genotype, therapies[therapy_id - 6]).c_str());
                     std::string res_pattern = split_string(get_resistant_strength(sampled_genotype, therapies[therapy_id - 6]), '-')[0];
-                    if (res_pattern == "1") {
+                    if (res_pattern == "0") {
                         Model::DATA_COLLECTOR->mosquito_recombined_resistant_count()[loc][therapy_id][0] += 1;
-                    } else if (res_pattern == "2") {
+                    }
+                    if (res_pattern == "1") {
                         Model::DATA_COLLECTOR->mosquito_recombined_resistant_count()[loc][therapy_id][1] += 1;
-                    } else {
+                    }
+                    if (res_pattern == "2") {
                         Model::DATA_COLLECTOR->mosquito_recombined_resistant_count()[loc][therapy_id][2] += 1;
                     }
+                    if (res_pattern == "3") {
+                        Model::DATA_COLLECTOR->mosquito_recombined_resistant_count()[loc][therapy_id][3] += 1;
+                    }
+                    printf("[VALID2] resistant count: 0: %d 1: %d 2: %d 3: %d\n\n",
+                           Model::DATA_COLLECTOR->mosquito_recombined_resistant_count()[loc][therapy_id][0],
+                           Model::DATA_COLLECTOR->mosquito_recombined_resistant_count()[loc][therapy_id][1],
+                           Model::DATA_COLLECTOR->mosquito_recombined_resistant_count()[loc][therapy_id][2],
+                           Model::DATA_COLLECTOR->mosquito_recombined_resistant_count()[loc][therapy_id][3]);
                 }
             }
         }

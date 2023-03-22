@@ -249,6 +249,7 @@ void ValidationReporter::after_run() {
             ss << Model::DATA_COLLECTOR->mosquito_recombined_resistant_count()[location][therapy_used][0] << sep;
             ss << Model::DATA_COLLECTOR->mosquito_recombined_resistant_count()[location][therapy_used][1] << sep;
             ss << Model::DATA_COLLECTOR->mosquito_recombined_resistant_count()[location][therapy_used][2] << sep;
+            ss << Model::DATA_COLLECTOR->mosquito_recombined_resistant_count()[location][therapy_used][3] << sep;
         }
         ss << group_sep;
     }
