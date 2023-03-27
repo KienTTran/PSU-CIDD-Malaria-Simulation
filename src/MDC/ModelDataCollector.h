@@ -216,8 +216,8 @@ PROPERTY_REF(LongVector, number_of_mutation_events_by_year)
 
 PROPERTY_REF(long, current_number_of_mutation_events_in_this_year)
 
-PROPERTY_REF(IntVector3, mosquito_single_resistant_count)
-PROPERTY_REF(IntVector3, mosquito_recombined_resistant_count)
+PROPERTY_REF(IntVector3, mosquito_single_genotype_resistant_count)
+PROPERTY_REF(IntVector3, mosquito_recombined_genotype_resistant_count)
 typedef std::tuple<int, int, int> mutation_tracker_info;
 std::vector<std::vector<mutation_tracker_info>> mutation_tracker;
 

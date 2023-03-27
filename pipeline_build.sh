@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+git fetch
 git pull
 mkdir -p build
 cd build
