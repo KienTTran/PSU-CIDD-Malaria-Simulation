@@ -31,6 +31,9 @@ public:
   void infect_new_cohort_in_PRMC(Config *config, Random *random, Population *population, const int &tracking_index);
 
 public:
+    std::map<int,double> drug_id_min_ec50;
+
+public:
   std::vector<std::vector<std::vector<Genotype *>>> genotypes_table; /* Mosquito table */
 
   [[nodiscard]] static std::vector<unsigned int> build_interrupted_feeding_indices(
