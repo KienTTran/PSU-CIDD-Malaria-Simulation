@@ -142,140 +142,16 @@ void Mosquito::infect_new_cohort_in_PRMC(Config *config, Random *random, Populat
 
       auto parent_genotypes =
           random->roulette_sampling<Genotype>(2, relative_infectivity_each_pp, sampling_genotypes, false);
-      bool valid1 = false;
-      bool valid2 = false;
-      std::vector<std::string> therapies = {"A-L","AS-AQ","DHA-PPQ"};
-      std::vector<bool> resist_therapies = {false,false,false};
-      if(parent_genotypes[0]->get_aa_sequence() != parent_genotypes[1]->get_aa_sequence()){
-        for (int therapy_id = 6; therapy_id <= 8; therapy_id++) {
-          auto* sc_therapy = dynamic_cast<SCTherapy*>(Model::CONFIG->therapy_db()[therapy_id]);
-            if((parent_genotypes[0]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[0])) != Model::CONFIG->genotype_db.get_min_ec50(sc_therapy->drug_ids[0]))
-            && (parent_genotypes[0]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1])) == Model::CONFIG->genotype_db.get_min_ec50(sc_therapy->drug_ids[1]))){
-                for(auto loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
-                    Model::DATA_COLLECTOR->mosquito_single_resistant_count()[loc][therapy_id][0] += 1;
-                }
-            }
-            if((parent_genotypes[0]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[0])) == Model::CONFIG->genotype_db.get_min_ec50(sc_therapy->drug_ids[0]))
-            && (parent_genotypes[0]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1])) != Model::CONFIG->genotype_db.get_min_ec50(sc_therapy->drug_ids[1]))){
-                for(auto loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
-                    Model::DATA_COLLECTOR->mosquito_single_resistant_count()[loc][therapy_id][1] += 1;
-                }
-            }
-            if((parent_genotypes[1]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[0])) != Model::CONFIG->genotype_db.get_min_ec50(sc_therapy->drug_ids[0]))
-            && (parent_genotypes[1]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1])) == Model::CONFIG->genotype_db.get_min_ec50(sc_therapy->drug_ids[1]))){
-                for(auto loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
-                    Model::DATA_COLLECTOR->mosquito_single_resistant_count()[loc][therapy_id][0] += 1;
-                }
-            }
-            if((parent_genotypes[1]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[0])) == Model::CONFIG->genotype_db.get_min_ec50(sc_therapy->drug_ids[0]))
-            && (parent_genotypes[1]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1])) != Model::CONFIG->genotype_db.get_min_ec50(sc_therapy->drug_ids[1]))){
-                for(auto loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
-                    Model::DATA_COLLECTOR->mosquito_single_resistant_count()[loc][therapy_id][1] += 1;
-                }
-            }
-            if((parent_genotypes[0]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[0])) == Model::CONFIG->genotype_db.get_min_ec50(sc_therapy->drug_ids[0]))
-            && (parent_genotypes[0]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1])) != Model::CONFIG->genotype_db.get_min_ec50(sc_therapy->drug_ids[1]))
-            && (parent_genotypes[1]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[0])) != Model::CONFIG->genotype_db.get_min_ec50(sc_therapy->drug_ids[0]))
-            && (parent_genotypes[1]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1])) == Model::CONFIG->genotype_db.get_min_ec50(sc_therapy->drug_ids[1]))){
-                printf("[VALID1] therapy: %s\n",therapies[therapy_id - 6].c_str());
-                printf("[VALID1] minEC50 ART: %f\n",Model::CONFIG->genotype_db.get_min_ec50(sc_therapy->drug_ids[0]));
-                printf("[VALID1] minEC50 PD: %f\n",Model::CONFIG->genotype_db.get_min_ec50(sc_therapy->drug_ids[1]));
-                printf("[VALID1] genotype1 EC50 ART: %f\n",parent_genotypes[0]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[0])));
-                printf("[VALID1] genotype1 EC50 PD: %f\n",parent_genotypes[0]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1])));
-                printf("[VALID1] genotype2 EC50 ART: %f\n",parent_genotypes[1]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[0])));
-                printf("[VALID1] genotype2 EC50 PD: %f\n",parent_genotypes[1]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1])));
-                valid1 = true;
-                resist_therapies[therapy_id - 6] = true;
-                for(auto loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
-                    Model::DATA_COLLECTOR->mosquito_single_resistant_count()[loc][therapy_id][2] += 1;
-                }
-            }
-            if((parent_genotypes[1]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[0])) == Model::CONFIG->genotype_db.get_min_ec50(sc_therapy->drug_ids[0]))
-            && (parent_genotypes[1]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1])) != Model::CONFIG->genotype_db.get_min_ec50(sc_therapy->drug_ids[1]))
-            && (parent_genotypes[0]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[0])) != Model::CONFIG->genotype_db.get_min_ec50(sc_therapy->drug_ids[0]))
-            && (parent_genotypes[0]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1])) == Model::CONFIG->genotype_db.get_min_ec50(sc_therapy->drug_ids[1]))){
-                printf("[VALID2] therapy: %s\n",therapies[therapy_id - 6].c_str());
-                printf("[VALID2] minEC50 ART: %f\n",Model::CONFIG->genotype_db.get_min_ec50(sc_therapy->drug_ids[0]));
-                printf("[VALID2] minEC50 PD: %f\n",Model::CONFIG->genotype_db.get_min_ec50(sc_therapy->drug_ids[1]));
-                printf("[VALID2] genotype2 EC50 ART: %f\n",parent_genotypes[1]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[0])));
-                printf("[VALID2] genotype2 EC50 PD: %f\n",parent_genotypes[1]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1])));
-                printf("[VALID2] genotype1 EC50 ART: %f\n",parent_genotypes[0]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[0])));
-                printf("[VALID2] genotype1 EC50 PD: %f\n",parent_genotypes[0]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1])));
-                valid2 = true;
-                resist_therapies[therapy_id - 6] = true;
-                for(auto loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
-                    Model::DATA_COLLECTOR->mosquito_single_resistant_count()[loc][therapy_id][2] += 1;
-                }
-            }
-        }
-      }
 
       Genotype *sampled_genotype =
           (parent_genotypes[0]->aa_sequence == parent_genotypes[1]->aa_sequence)
               ? parent_genotypes[0]
               : Genotype::free_recombine(config, random, parent_genotypes[0], parent_genotypes[1]);
 
-        if(valid1){
-            for (int therapy_id = 6; therapy_id <= 8; therapy_id++){
-                if (resist_therapies[therapy_id - 6]){
-                    printf("[VALID1] therapy: %s\n",therapies[therapy_id - 6].c_str());
-                    printf("[VALID1] genotype1 single resist to PD & genotype2 single resist to ART\n");
-                    printf("[VALID1] genotype1: %s\n",parent_genotypes[0]->aa_sequence.c_str());
-                    printf("[VALID1] genotype2: %s\n",parent_genotypes[1]->aa_sequence.c_str());
-                    printf("[VALID1] recombine: %s\n",sampled_genotype->aa_sequence.c_str());
-                    printf("[VALID1] res-pattern: %s\n", get_resistant_strength(sampled_genotype, therapies[therapy_id - 6]).c_str());
-                    std::string res_pattern = split_string(get_resistant_strength(sampled_genotype, therapies[therapy_id - 6]), '-')[0];
-                    if (res_pattern == "0") {
-                        Model::DATA_COLLECTOR->mosquito_recombined_resistant_count()[loc][therapy_id][0] += 1;
-                    }
-                    if (res_pattern == "1") {
-                        Model::DATA_COLLECTOR->mosquito_recombined_resistant_count()[loc][therapy_id][1] += 1;
-                    }
-                    if (res_pattern == "2") {
-                        Model::DATA_COLLECTOR->mosquito_recombined_resistant_count()[loc][therapy_id][2] += 1;
-                    }
-                    if (res_pattern == "3") {
-                        Model::DATA_COLLECTOR->mosquito_recombined_resistant_count()[loc][therapy_id][3] += 1;
-                    }
-                    printf("[VALID1] resistant count: 0: %d 1: %d 2: %d 3: %d\n\n",
-                           Model::DATA_COLLECTOR->mosquito_recombined_resistant_count()[loc][therapy_id][0],
-                           Model::DATA_COLLECTOR->mosquito_recombined_resistant_count()[loc][therapy_id][1],
-                           Model::DATA_COLLECTOR->mosquito_recombined_resistant_count()[loc][therapy_id][2],
-                           Model::DATA_COLLECTOR->mosquito_recombined_resistant_count()[loc][therapy_id][3]);
-                }
-            }
-        }
-        if(valid2){
-            for (int therapy_id = 6; therapy_id <= 8; therapy_id++) {
-                if (resist_therapies[therapy_id - 6]) {
-                    printf("[VALID2] therapy: %s\n", therapies[therapy_id - 6].c_str());
-                    printf("[VALID2] genotype1 single resist to ART & genotype2 single resist to PD\n");
-                    printf("[VALID2] genotype1: %s\n", parent_genotypes[0]->aa_sequence.c_str());
-                    printf("[VALID2] genotype2: %s\n", parent_genotypes[1]->aa_sequence.c_str());
-                    printf("[VALID2] recombine: %s\n", sampled_genotype->aa_sequence.c_str());
-                    printf("[VALID2] res-pattern: %s\n", get_resistant_strength(sampled_genotype, therapies[therapy_id - 6]).c_str());
-                    std::string res_pattern = split_string(get_resistant_strength(sampled_genotype, therapies[therapy_id - 6]), '-')[0];
-                    if (res_pattern == "0") {
-                        Model::DATA_COLLECTOR->mosquito_recombined_resistant_count()[loc][therapy_id][0] += 1;
-                    }
-                    if (res_pattern == "1") {
-                        Model::DATA_COLLECTOR->mosquito_recombined_resistant_count()[loc][therapy_id][1] += 1;
-                    }
-                    if (res_pattern == "2") {
-                        Model::DATA_COLLECTOR->mosquito_recombined_resistant_count()[loc][therapy_id][2] += 1;
-                    }
-                    if (res_pattern == "3") {
-                        Model::DATA_COLLECTOR->mosquito_recombined_resistant_count()[loc][therapy_id][3] += 1;
-                    }
-                    printf("[VALID2] resistant count: 0: %d 1: %d 2: %d 3: %d\n\n",
-                           Model::DATA_COLLECTOR->mosquito_recombined_resistant_count()[loc][therapy_id][0],
-                           Model::DATA_COLLECTOR->mosquito_recombined_resistant_count()[loc][therapy_id][1],
-                           Model::DATA_COLLECTOR->mosquito_recombined_resistant_count()[loc][therapy_id][2],
-                           Model::DATA_COLLECTOR->mosquito_recombined_resistant_count()[loc][therapy_id][3]);
-                }
-            }
-        }
       genotypes_table[tracking_index][loc][if_index] = sampled_genotype;
+
+      auto resistant_tracker_info = std::make_tuple(parent_genotypes[0]->genotype_id, parent_genotypes[1]->genotype_id, sampled_genotype->genotype_id);
+      Model::DATA_COLLECTOR->mosquito_resistant_tracker[loc].push_back(resistant_tracker_info);
     }
   }
 }

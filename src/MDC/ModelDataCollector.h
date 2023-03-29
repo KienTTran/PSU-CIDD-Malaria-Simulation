@@ -216,10 +216,8 @@ PROPERTY_REF(LongVector, number_of_mutation_events_by_year)
 
 PROPERTY_REF(long, current_number_of_mutation_events_in_this_year)
 
-PROPERTY_REF(IntVector3, mosquito_single_resistant_count)
-PROPERTY_REF(IntVector3, mosquito_recombined_resistant_count)
-typedef std::tuple<int, int, int> mutation_tracker_info;
-std::vector<std::vector<mutation_tracker_info>> mutation_tracker;
+typedef std::tuple<int, int, int> resistant_tracker_info;
+std::vector<std::vector<resistant_tracker_info>> mosquito_resistant_tracker;
 
 static const int number_of_reported_MOI = 10;
 
@@ -262,8 +260,6 @@ public:
   void record_1_non_treated_case(const int& location, const int& age);
 
   void record_1_mutation(const int& location, Genotype* from, Genotype* to);
-
-  void record_1_mutation_with_drug(const int& location, int drug_id, Genotype* from, Genotype* to);
 
   void record_1_migration(Person* pPerson, const int& from, const int& to);
 
