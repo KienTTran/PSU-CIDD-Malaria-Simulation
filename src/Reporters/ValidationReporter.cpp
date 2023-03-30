@@ -248,22 +248,12 @@ void ValidationReporter::after_run() {
         prmc_db_file << g_id << sep << genotype->aa_sequence << std::endl;
     }
 
-//    ss.str("");
-//    for(auto genotype : Model::CONFIG->genotype_db){
-//        ss << genotype.second->genotype_id << sep;
-//        ss << genotype.second->aa_sequence << '\n';
-//    }
-//
-//    genotype_id_file << ss.str() << std::endl;
-
     gene_db_file.close();
     gene_freq_file.close();
     prmc_db_file.close();
     prmc_freq_file.close();
     monthly_data_file.close();
     summary_data_file.close();
-//    monthly_mutation_file.close();
-//    genotype_id_file.close();
 }
 
 void ValidationReporter::print_EIR_PfPR_by_location(std::stringstream& ss) {
