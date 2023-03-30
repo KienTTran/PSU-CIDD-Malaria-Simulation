@@ -32,6 +32,8 @@ public:
 
 public:
     std::map<int,double> drug_id_min_ec50;
+    std::vector<std::string> therapies = {"A-L", "AS-AQ", "DHA-PPQ"};
+    std::vector<std::string> res_23_list = {"AL:2", "ASAQ:2", "DHA-PPQ:2", "DHA-PPQ-LUM:3", "DHA-PPQ-AQ:3"};
 
 public:
   std::vector<std::vector<std::vector<Genotype *>>> genotypes_table; /* Mosquito table */

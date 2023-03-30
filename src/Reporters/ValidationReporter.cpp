@@ -168,13 +168,18 @@ void ValidationReporter::monthly_report() {
     for (auto loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
         sum += Model::DATA_COLLECTOR->mosquito_resistant_tracker[loc].size();
         for (int i = 0; i < Model::DATA_COLLECTOR->mosquito_resistant_tracker[loc].size(); i++) {
-            ss << std::get<0>(Model::DATA_COLLECTOR->mosquito_resistant_tracker[loc][i]) << sep;
-            ss << std::get<1>(Model::DATA_COLLECTOR->mosquito_resistant_tracker[loc][i]) << sep;
-            ss << std::get<2>(Model::DATA_COLLECTOR->mosquito_resistant_tracker[loc][i]) << '\n';
+            ss << std::get<0>(Model::DATA_COLLECTOR->mosquito_resistant_tracker[loc][i]) << " ";
+            ss << std::get<1>(Model::DATA_COLLECTOR->mosquito_resistant_tracker[loc][i]) << " ";
+            ss << std::get<2>(Model::DATA_COLLECTOR->mosquito_resistant_tracker[loc][i]) << " ";
+            ss << std::get<3>(Model::DATA_COLLECTOR->mosquito_resistant_tracker[loc][i]) << " ";
+            ss << std::get<4>(Model::DATA_COLLECTOR->mosquito_resistant_tracker[loc][i]) << '\n';
         }
     }
     if(sum > 0){
         mosquito_recombination_file << ss.str() << std::endl;
+    }
+    for (auto loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
+        Model::DATA_COLLECTOR->mosquito_resistant_tracker[loc].clear();
     }
 
     std::stringstream gene_freq_ss;
