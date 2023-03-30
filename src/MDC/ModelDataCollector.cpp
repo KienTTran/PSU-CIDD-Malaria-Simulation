@@ -151,6 +151,9 @@ void ModelDataCollector::initialize() {
     number_of_treatments_success_with_therapy_ID_ = IntVector(Model::CONFIG->therapy_db().size(), 0);
     number_of_treatments_fail_with_therapy_ID_ = IntVector(Model::CONFIG->therapy_db().size(), 0);
 
+    mosquito_recombined_genotype_resistant_count_ = IntVector2(
+            Model::CONFIG->number_of_locations(),
+            IntVector(5, 0));
     mosquito_resistant_tracker = std::vector<std::vector<resistant_tracker_info>>(Model::CONFIG->number_of_locations());
 
     AMU_per_parasite_pop_ = 0;

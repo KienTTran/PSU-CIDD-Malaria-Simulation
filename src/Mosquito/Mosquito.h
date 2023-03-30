@@ -45,7 +45,9 @@ public:
   void get_genotypes_profile_from_person(Person *person, std::vector<Genotype *> &sampling_genotypes,
                                          std::vector<double> &relative_infectivity_each_pp);
 
-  std::string get_resistant_strength(Genotype *genotype, std::string therapy);
+  std::string get_resistant_strength_1(Genotype *genotype, std::string therapy);
+
+  bool get_resistant_strength_23(Genotype *genotype, std::string resistance);
 
   std::vector<std::string> split_string(std::string str, char delimiter);
 
