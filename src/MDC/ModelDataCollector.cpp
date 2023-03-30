@@ -151,14 +151,10 @@ void ModelDataCollector::initialize() {
     number_of_treatments_success_with_therapy_ID_ = IntVector(Model::CONFIG->therapy_db().size(), 0);
     number_of_treatments_fail_with_therapy_ID_ = IntVector(Model::CONFIG->therapy_db().size(), 0);
 
-    mosquito_single_genotype_resistant_count_ = IntVector3(
+    mosquito_recombined_genotype_resistant_count_ = IntVector2(
             Model::CONFIG->number_of_locations(),
-            IntVector2(Model::CONFIG->therapy_db().size(), IntVector(3, 0)));
-    mosquito_recombined_genotype_resistant_count_ = IntVector3(
-              Model::CONFIG->number_of_locations(),
-              IntVector2(Model::CONFIG->therapy_db().size(), IntVector(4, 0)));
-
-    mutation_tracker = std::vector<std::vector<mutation_tracker_info>>(Model::CONFIG->number_of_locations());
+            IntVector(5, 0));
+    mosquito_resistant_tracker = std::vector<std::vector<resistant_tracker_info>>(Model::CONFIG->number_of_locations());
 
     AMU_per_parasite_pop_ = 0;
     AMU_per_person_ = 0;
@@ -745,11 +741,6 @@ void ModelDataCollector::record_1_mutation(const int& location, Genotype* from, 
   if (Model::SCHEDULER->current_time() >= Model::CONFIG->start_of_comparison_period()) {
     current_number_of_mutation_events_in_this_year_ += 1;
   }
-}
-
-void ModelDataCollector::record_1_mutation_with_drug(const int& location, int drug_id, Genotype* from, Genotype* to) {
-  auto mutation_tracker_info = std::make_tuple(drug_id, from->genotype_id, to->genotype_id);
-  mutation_tracker[location].push_back(mutation_tracker_info);
 }
 
 void ModelDataCollector::update_UTL_vector() {

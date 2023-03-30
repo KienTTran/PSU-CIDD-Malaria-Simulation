@@ -23,8 +23,6 @@ public:
     std::ofstream gene_freq_file;
     std::ofstream prmc_db_file;
     std::ofstream prmc_freq_file;
-    std::ofstream monthly_mutation_file;
-    std::ofstream genotype_id_file;
 
 public:
     ValidationReporter();

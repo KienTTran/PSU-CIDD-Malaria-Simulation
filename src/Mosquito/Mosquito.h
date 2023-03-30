@@ -23,6 +23,11 @@ public:
   Model *model { nullptr };
 
 public:
+    std::map<int,double> drug_id_min_ec50;
+    std::vector<std::string> therapies = {"A-L", "AS-AQ", "DHA-PPQ"};
+    std::vector<std::string> res_23_list = {"AL:2", "ASAQ:2", "DHA-PPQ:2", "DHA-PPQ-LUM:3", "DHA-PPQ-AQ:3"};
+
+public:
   explicit Mosquito(Model *model = nullptr);
   virtual ~Mosquito() = default;
 
@@ -42,7 +47,9 @@ public:
   void get_genotypes_profile_from_person(Person *person, std::vector<Genotype *> &sampling_genotypes,
                                          std::vector<double> &relative_infectivity_each_pp);
 
-  std::string get_resistant_strength(Genotype *genotype, std::string therapy);
+  std::string get_resistant_strength_1(Genotype *genotype, std::string therapy);
+
+  bool get_resistant_strength_23(Genotype *genotype, std::string resistance);
 
   std::vector<std::string> split_string(std::string str, char delimiter);
 

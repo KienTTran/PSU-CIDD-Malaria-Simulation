@@ -29,8 +29,6 @@ void ValidationReporter::initialize() {
     gene_db_file.open(fmt::format("{}/validation_gene_db_{}.txt", Model::MODEL->output_path(), Model::MODEL->cluster_job_number()));
     prmc_freq_file.open(fmt::format("{}/validation_prmc_freq_{}.txt", Model::MODEL->output_path(), Model::MODEL->cluster_job_number()));
     prmc_db_file.open(fmt::format("{}/validation_prmc_db_{}.txt", Model::MODEL->output_path(), Model::MODEL->cluster_job_number()));
-    monthly_mutation_file.open(fmt::format("{}/validation_monthly_mutation_{}.txt", Model::MODEL->output_path(), Model::MODEL->cluster_job_number()));
-    genotype_id_file.open(fmt::format("{}/validation_genotype_id_{}.txt", Model::MODEL->output_path(), Model::MODEL->cluster_job_number()));
 }
 
 void ValidationReporter::before_run() {}
@@ -237,19 +235,8 @@ void ValidationReporter::after_run() {
     }
     ss << group_sep;//100
     for (auto location = 0; location < Model::CONFIG->number_of_locations(); location++) {
-        for(int therapy_used = 6; therapy_used <= 8; therapy_used++){
-            ss << Model::DATA_COLLECTOR->mosquito_single_genotype_resistant_count()[location][therapy_used][0] << sep;
-            ss << Model::DATA_COLLECTOR->mosquito_single_genotype_resistant_count()[location][therapy_used][1] << sep;
-            ss << Model::DATA_COLLECTOR->mosquito_single_genotype_resistant_count()[location][therapy_used][2] << sep;
-        }
-        ss << group_sep;
-    }
-    for (auto location = 0; location < Model::CONFIG->number_of_locations(); location++) {
-        for(int therapy_used = 6; therapy_used <= 8; therapy_used++){
-            ss << Model::DATA_COLLECTOR->mosquito_recombined_genotype_resistant_count()[location][therapy_used][0] << sep;
-            ss << Model::DATA_COLLECTOR->mosquito_recombined_genotype_resistant_count()[location][therapy_used][1] << sep;
-            ss << Model::DATA_COLLECTOR->mosquito_recombined_genotype_resistant_count()[location][therapy_used][2] << sep;
-            ss << Model::DATA_COLLECTOR->mosquito_recombined_genotype_resistant_count()[location][therapy_used][3] << sep;
+        for(int res_id = 0; res_id < 5; res_id++){
+            ss << Model::DATA_COLLECTOR->mosquito_recombined_genotype_resistant_count()[location][res_id] << sep;
         }
         ss << group_sep;
     }
