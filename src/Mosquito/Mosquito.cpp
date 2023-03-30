@@ -293,7 +293,7 @@ void Mosquito::infect_new_cohort_in_PRMC(Config *config, Random *random, Populat
                                                                       sampled_genotype->genotype_id);
                         Model::DATA_COLLECTOR->mosquito_resistant_tracker[loc].push_back(resistant_tracker_info);
                     }
-                    print("\n");
+                    printf("\n");
                 }
             }
         }
