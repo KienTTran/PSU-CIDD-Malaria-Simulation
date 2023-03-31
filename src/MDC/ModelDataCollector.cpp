@@ -153,7 +153,7 @@ void ModelDataCollector::initialize() {
 
     mosquito_recombined_genotype_resistant_count_ = IntVector2(
             Model::CONFIG->number_of_locations(),
-            IntVector(5, 0));
+            IntVector(15, 0));
     mosquito_resistant_tracker = std::vector<std::vector<resistant_tracker_info>>(Model::CONFIG->number_of_locations());
 
     AMU_per_parasite_pop_ = 0;

@@ -183,28 +183,29 @@ void Mosquito::infect_new_cohort_in_PRMC(Config *config, Random *random, Populat
                          && (parent_genotypes[1]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1])) != drug_id_min_ec50[sc_therapy->drug_ids[1]])
                          && (parent_genotypes[0]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[0])) != drug_id_min_ec50[sc_therapy->drug_ids[0]])
                          && (parent_genotypes[0]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1])) == drug_id_min_ec50[sc_therapy->drug_ids[1]])))
-                    &&
-                    (((parent_genotypes[0]->resist_to(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[0])) && !parent_genotypes[0]->resist_to(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1]))
-                       && parent_genotypes[1]->resist_to(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1])) && !parent_genotypes[1]->resist_to(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[0]))))
-                     || (parent_genotypes[1]->resist_to(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[0])) && !parent_genotypes[1]->resist_to(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1]))
-                         && parent_genotypes[0]->resist_to(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1])) && !parent_genotypes[0]->resist_to(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[0]))))) {
-                    printf("[SINGLE] therapy: %s\n", therapies[therapy_id - 6].c_str());
-                    printf("[SINGLE] minEC50 ART: %f\n", drug_id_min_ec50[sc_therapy->drug_ids[0]]);
-                    printf("[SINGLE] minEC50 PD: %f\n", drug_id_min_ec50[sc_therapy->drug_ids[1]]);
-                    printf("[SINGLE] genotype1 EC50 ART: %f\n", parent_genotypes[0]->get_EC50_power_n(
-                            Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[0])));
-                    printf("[SINGLE] genotype1 EC50 PD: %f\n", parent_genotypes[0]->get_EC50_power_n(
-                            Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1])));
-                    printf("[SINGLE] genotype2 EC50 ART: %f\n", parent_genotypes[1]->get_EC50_power_n(
-                            Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[0])));
-                    printf("[SINGLE] genotype2 EC50 PD: %f\n", parent_genotypes[1]->get_EC50_power_n(
-                            Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1])));
-                    printf("[SINGLE] genotype2 EC50 PD: %f\n", parent_genotypes[1]->get_EC50_power_n(
-                            Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1])));
-                    printf("[SINGLE] genotype1: %s\n", parent_genotypes[0]->aa_sequence.c_str());
-                    printf("[SINGLE] genotype2: %s\n", parent_genotypes[1]->aa_sequence.c_str());
-                    printf("[SINGLE] recombine: %s\n", sampled_genotype->aa_sequence.c_str());
-                    printf("[SINGLE] %d %d %s %s %d %d %d\n",
+//                    &&
+//                    (((parent_genotypes[0]->resist_to(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[0])) && !parent_genotypes[0]->resist_to(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1]))
+//                       && parent_genotypes[1]->resist_to(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1])) && !parent_genotypes[1]->resist_to(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[0]))))
+//                     || (parent_genotypes[1]->resist_to(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[0])) && !parent_genotypes[1]->resist_to(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1]))
+//                         && parent_genotypes[0]->resist_to(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1])) && !parent_genotypes[0]->resist_to(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[0]))))
+                        ) {
+//                    printf("[SINGLE] therapy: %s\n", therapies[therapy_id - 6].c_str());
+//                    printf("[SINGLE] minEC50 ART: %f\n", drug_id_min_ec50[sc_therapy->drug_ids[0]]);
+//                    printf("[SINGLE] minEC50 PD: %f\n", drug_id_min_ec50[sc_therapy->drug_ids[1]]);
+//                    printf("[SINGLE] genotype1 EC50 ART: %f\n", parent_genotypes[0]->get_EC50_power_n(
+//                            Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[0])));
+//                    printf("[SINGLE] genotype1 EC50 PD: %f\n", parent_genotypes[0]->get_EC50_power_n(
+//                            Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1])));
+//                    printf("[SINGLE] genotype2 EC50 ART: %f\n", parent_genotypes[1]->get_EC50_power_n(
+//                            Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[0])));
+//                    printf("[SINGLE] genotype2 EC50 PD: %f\n", parent_genotypes[1]->get_EC50_power_n(
+//                            Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1])));
+//                    printf("[SINGLE] genotype2 EC50 PD: %f\n", parent_genotypes[1]->get_EC50_power_n(
+//                            Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1])));
+//                    printf("[SINGLE] genotype1: %s\n", parent_genotypes[0]->aa_sequence.c_str());
+//                    printf("[SINGLE] genotype2: %s\n", parent_genotypes[1]->aa_sequence.c_str());
+                    printf("[SINGLE1] recombine: %s\n", sampled_genotype->aa_sequence.c_str());
+                    printf("[SINGLE1] %d %d %s %s %d %d %d\n",
                            Model::SCHEDULER->current_time(),
                            if_index,
                            Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[0])->name().c_str(),
@@ -216,10 +217,10 @@ void Mosquito::infect_new_cohort_in_PRMC(Config *config, Random *random, Populat
 //                    Model::DATA_COLLECTOR->mosquito_resistant_tracker[loc].push_back(resistant_tracker_info);
                     for(int res_id = 0; res_id < res_23_list.size(); res_id++){
                         if(get_resistant_strength_23(sampled_genotype,res_23_list[res_id])){
-                            printf("[DOUBLE] genotype1: %s\n", parent_genotypes[0]->aa_sequence.c_str());
-                            printf("[DOUBLE] genotype2: %s\n", parent_genotypes[1]->aa_sequence.c_str());
-                            printf("[DOUBLE] recombine: %s\n", sampled_genotype->aa_sequence.c_str());
-                            printf("[DOUBLE] %d %d %d %d %d %s\n",
+//                            printf("[DOUBLE] genotype1: %s\n", parent_genotypes[0]->aa_sequence.c_str());
+//                            printf("[DOUBLE] genotype2: %s\n", parent_genotypes[1]->aa_sequence.c_str());
+                            printf("[DOUBLE1] recombine: %s\n", sampled_genotype->aa_sequence.c_str());
+                            printf("[DOUBLE1] %d %d %d %d %d %s\n",
                                    Model::SCHEDULER->current_time(),
                                    if_index,
                                    parent_genotypes[0]->genotype_id,
@@ -227,6 +228,121 @@ void Mosquito::infect_new_cohort_in_PRMC(Config *config, Random *random, Populat
                                    sampled_genotype->genotype_id,
                                    res_23_list[res_id].c_str());
                             Model::DATA_COLLECTOR->mosquito_recombined_genotype_resistant_count()[loc][res_id]++;
+                        }
+                    }
+                    printf("\n");
+                }
+                if (
+//                        (((parent_genotypes[0]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[0])) == drug_id_min_ec50[sc_therapy->drug_ids[0]])
+//                      && (parent_genotypes[0]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1])) != drug_id_min_ec50[sc_therapy->drug_ids[1]])
+//                      && (parent_genotypes[1]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[0])) != drug_id_min_ec50[sc_therapy->drug_ids[0]])
+//                      && (parent_genotypes[1]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1])) == drug_id_min_ec50[sc_therapy->drug_ids[1]]))
+//                     || ((parent_genotypes[1]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[0])) == drug_id_min_ec50[sc_therapy->drug_ids[0]])
+//                         && (parent_genotypes[1]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1])) != drug_id_min_ec50[sc_therapy->drug_ids[1]])
+//                         && (parent_genotypes[0]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[0])) != drug_id_min_ec50[sc_therapy->drug_ids[0]])
+//                         && (parent_genotypes[0]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1])) == drug_id_min_ec50[sc_therapy->drug_ids[1]])))
+//                    &&
+                    (((parent_genotypes[0]->resist_to(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[0])) && !parent_genotypes[0]->resist_to(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1]))
+                       && parent_genotypes[1]->resist_to(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1])) && !parent_genotypes[1]->resist_to(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[0]))))
+                     || (parent_genotypes[1]->resist_to(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[0])) && !parent_genotypes[1]->resist_to(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1]))
+                         && parent_genotypes[0]->resist_to(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1])) && !parent_genotypes[0]->resist_to(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[0]))))
+                        ) {
+//                    printf("[SINGLE] therapy: %s\n", therapies[therapy_id - 6].c_str());
+//                    printf("[SINGLE] minEC50 ART: %f\n", drug_id_min_ec50[sc_therapy->drug_ids[0]]);
+//                    printf("[SINGLE] minEC50 PD: %f\n", drug_id_min_ec50[sc_therapy->drug_ids[1]]);
+//                    printf("[SINGLE] genotype1 EC50 ART: %f\n", parent_genotypes[0]->get_EC50_power_n(
+//                            Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[0])));
+//                    printf("[SINGLE] genotype1 EC50 PD: %f\n", parent_genotypes[0]->get_EC50_power_n(
+//                            Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1])));
+//                    printf("[SINGLE] genotype2 EC50 ART: %f\n", parent_genotypes[1]->get_EC50_power_n(
+//                            Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[0])));
+//                    printf("[SINGLE] genotype2 EC50 PD: %f\n", parent_genotypes[1]->get_EC50_power_n(
+//                            Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1])));
+//                    printf("[SINGLE] genotype2 EC50 PD: %f\n", parent_genotypes[1]->get_EC50_power_n(
+//                            Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1])));
+//                    printf("[SINGLE] genotype1: %s\n", parent_genotypes[0]->aa_sequence.c_str());
+//                    printf("[SINGLE] genotype2: %s\n", parent_genotypes[1]->aa_sequence.c_str());
+                    printf("[SINGLE2] recombine: %s\n", sampled_genotype->aa_sequence.c_str());
+                    printf("[SINGLE2] %d %d %s %s %d %d %d\n",
+                           Model::SCHEDULER->current_time(),
+                           if_index,
+                           Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[0])->name().c_str(),
+                           Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1])->name().c_str(),
+                           parent_genotypes[0]->genotype_id,parent_genotypes[1]->genotype_id,sampled_genotype->genotype_id);
+//                    auto resistant_tracker_info = std::make_tuple(parent_genotypes[0]->genotype_id,
+//                                                                  parent_genotypes[1]->genotype_id,
+//                                                                  sampled_genotype->genotype_id);
+//                    Model::DATA_COLLECTOR->mosquito_resistant_tracker[loc].push_back(resistant_tracker_info);
+                    for(int res_id = 0; res_id < res_23_list.size(); res_id++){
+                        if(get_resistant_strength_23(sampled_genotype,res_23_list[res_id])){
+//                            printf("[DOUBLE] genotype1: %s\n", parent_genotypes[0]->aa_sequence.c_str());
+//                            printf("[DOUBLE] genotype2: %s\n", parent_genotypes[1]->aa_sequence.c_str());
+                            printf("[DOUBLE2] recombine: %s\n", sampled_genotype->aa_sequence.c_str());
+                            printf("[DOUBLE2] %d %d %d %d %d %s\n",
+                                   Model::SCHEDULER->current_time(),
+                                   if_index,
+                                   parent_genotypes[0]->genotype_id,
+                                   parent_genotypes[1]->genotype_id,
+                                   sampled_genotype->genotype_id,
+                                   res_23_list[res_id].c_str());
+                            Model::DATA_COLLECTOR->mosquito_recombined_genotype_resistant_count()[loc][5+res_id]++;
+                        }
+                    }
+                    printf("\n");
+                }
+                if ((((parent_genotypes[0]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[0])) == drug_id_min_ec50[sc_therapy->drug_ids[0]])
+                      && (parent_genotypes[0]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1])) != drug_id_min_ec50[sc_therapy->drug_ids[1]])
+                      && (parent_genotypes[1]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[0])) != drug_id_min_ec50[sc_therapy->drug_ids[0]])
+                      && (parent_genotypes[1]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1])) == drug_id_min_ec50[sc_therapy->drug_ids[1]]))
+                     || ((parent_genotypes[1]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[0])) == drug_id_min_ec50[sc_therapy->drug_ids[0]])
+                         && (parent_genotypes[1]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1])) != drug_id_min_ec50[sc_therapy->drug_ids[1]])
+                         && (parent_genotypes[0]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[0])) != drug_id_min_ec50[sc_therapy->drug_ids[0]])
+                         && (parent_genotypes[0]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1])) == drug_id_min_ec50[sc_therapy->drug_ids[1]])))
+                    &&
+                    (((parent_genotypes[0]->resist_to(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[0])) && !parent_genotypes[0]->resist_to(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1]))
+                       && parent_genotypes[1]->resist_to(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1])) && !parent_genotypes[1]->resist_to(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[0]))))
+                     || (parent_genotypes[1]->resist_to(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[0])) && !parent_genotypes[1]->resist_to(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1]))
+                         && parent_genotypes[0]->resist_to(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1])) && !parent_genotypes[0]->resist_to(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[0]))))
+                         ) {
+//                    printf("[SINGLE] therapy: %s\n", therapies[therapy_id - 6].c_str());
+//                    printf("[SINGLE] minEC50 ART: %f\n", drug_id_min_ec50[sc_therapy->drug_ids[0]]);
+//                    printf("[SINGLE] minEC50 PD: %f\n", drug_id_min_ec50[sc_therapy->drug_ids[1]]);
+//                    printf("[SINGLE] genotype1 EC50 ART: %f\n", parent_genotypes[0]->get_EC50_power_n(
+//                            Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[0])));
+//                    printf("[SINGLE] genotype1 EC50 PD: %f\n", parent_genotypes[0]->get_EC50_power_n(
+//                            Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1])));
+//                    printf("[SINGLE] genotype2 EC50 ART: %f\n", parent_genotypes[1]->get_EC50_power_n(
+//                            Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[0])));
+//                    printf("[SINGLE] genotype2 EC50 PD: %f\n", parent_genotypes[1]->get_EC50_power_n(
+//                            Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1])));
+//                    printf("[SINGLE] genotype2 EC50 PD: %f\n", parent_genotypes[1]->get_EC50_power_n(
+//                            Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1])));
+//                    printf("[SINGLE] genotype1: %s\n", parent_genotypes[0]->aa_sequence.c_str());
+//                    printf("[SINGLE] genotype2: %s\n", parent_genotypes[1]->aa_sequence.c_str());
+                    printf("[SINGLE3] recombine: %s\n", sampled_genotype->aa_sequence.c_str());
+                    printf("[SINGLE3] %d %d %s %s %d %d %d\n",
+                           Model::SCHEDULER->current_time(),
+                           if_index,
+                           Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[0])->name().c_str(),
+                           Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1])->name().c_str(),
+                           parent_genotypes[0]->genotype_id,parent_genotypes[1]->genotype_id,sampled_genotype->genotype_id);
+//                    auto resistant_tracker_info = std::make_tuple(parent_genotypes[0]->genotype_id,
+//                                                                  parent_genotypes[1]->genotype_id,
+//                                                                  sampled_genotype->genotype_id);
+//                    Model::DATA_COLLECTOR->mosquito_resistant_tracker[loc].push_back(resistant_tracker_info);
+                    for(int res_id = 0; res_id < res_23_list.size(); res_id++){
+                        if(get_resistant_strength_23(sampled_genotype,res_23_list[res_id])){
+//                            printf("[DOUBLE] genotype1: %s\n", parent_genotypes[0]->aa_sequence.c_str());
+//                            printf("[DOUBLE] genotype2: %s\n", parent_genotypes[1]->aa_sequence.c_str());
+                            printf("[DOUBLE3] recombine: %s\n", sampled_genotype->aa_sequence.c_str());
+                            printf("[DOUBLE3] %d %d %d %d %d %s\n",
+                                   Model::SCHEDULER->current_time(),
+                                   if_index,
+                                   parent_genotypes[0]->genotype_id,
+                                   parent_genotypes[1]->genotype_id,
+                                   sampled_genotype->genotype_id,
+                                   res_23_list[res_id].c_str());
+                            Model::DATA_COLLECTOR->mosquito_recombined_genotype_resistant_count()[loc][10+res_id]++;
                         }
                     }
                     printf("\n");
