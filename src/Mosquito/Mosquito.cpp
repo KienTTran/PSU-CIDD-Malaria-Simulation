@@ -208,13 +208,14 @@ void Mosquito::infect_new_cohort_in_PRMC(Config *config, Random *random, Populat
                        parent_genotypes[1]->genotype_id,
                        sampled_genotype->genotype_id,
                        res_23_list[res_id].c_str());
-                Model::DATA_COLLECTOR->mosquito_recombined_genotype_resistant_count()[loc][res_id]++;
+                  Model::DATA_COLLECTOR->mosquito_recombined_resistant_genotype_count()[loc][res_id]++;
               }
             }
             printf("\n");
           }
         }
       }
+      Model::DATA_COLLECTOR->mosquito_recombined_resistant_genotype_count()[loc][res_23_list.size()]++;
     }
   }
 }
