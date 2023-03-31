@@ -98,7 +98,9 @@ void Mosquito::infect_new_cohort_in_PRMC(Config *config, Random *random, Populat
           }
           // interrupted feeding occurs
           get_genotypes_profile_from_person(second_sampling[temp_if], sampling_genotypes, relative_infectivity_each_pp);
+          Model::DATA_COLLECTOR->mosquito_recombined_resistant_genotype_count()[loc][res_23_list.size()]++;
         }
+        Model::DATA_COLLECTOR->mosquito_recombined_resistant_genotype_count()[loc][res_23_list.size()+1]++;
 
         if (sampling_genotypes.empty()) {
           LOG(FATAL) << "sampling_genotypes should not be empty";
@@ -130,7 +132,9 @@ void Mosquito::infect_new_cohort_in_PRMC(Config *config, Random *random, Populat
             second_genotype = random->roulette_sampling_tuple<Genotype>(1, relative_infectivity_each_pp,
                                                                         sampling_genotypes, false)[0];
           }
+          Model::DATA_COLLECTOR->mosquito_recombined_resistant_genotype_count()[loc][res_23_list.size()]++;
         }
+        Model::DATA_COLLECTOR->mosquito_recombined_resistant_genotype_count()[loc][res_23_list.size()+1]++;
 
         sampling_genotypes.clear();
         relative_infectivity_each_pp.clear();
@@ -215,7 +219,7 @@ void Mosquito::infect_new_cohort_in_PRMC(Config *config, Random *random, Populat
           }
         }
       }
-      Model::DATA_COLLECTOR->mosquito_recombined_resistant_genotype_count()[loc][res_23_list.size()]++;
+      Model::DATA_COLLECTOR->mosquito_recombined_resistant_genotype_count()[loc][res_23_list.size()+2]++;
     }
   }
 }
