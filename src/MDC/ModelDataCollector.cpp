@@ -153,7 +153,7 @@ void ModelDataCollector::initialize() {
 
       mosquito_recombined_resistant_genotype_count_ = IntVector2(
             Model::CONFIG->number_of_locations(),
-            IntVector(8, 0));
+            IntVector(6, 0));
 
     AMU_per_parasite_pop_ = 0;
     AMU_per_person_ = 0;
