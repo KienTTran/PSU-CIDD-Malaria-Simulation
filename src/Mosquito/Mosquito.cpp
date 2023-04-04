@@ -184,27 +184,27 @@ void Mosquito::infect_new_cohort_in_PRMC(Config *config, Random *random, Populat
 //                      Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1])));
 //              printf("[SINGLE] genotype2 EC50 PD: %f\n", parent_genotypes[1]->get_EC50_power_n(
 //                      Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1])));
-              printf("[SINGLE] genotype1: %s\n", parent_genotypes[0]->aa_sequence.c_str());
-              printf("[SINGLE] genotype2: %s\n", parent_genotypes[1]->aa_sequence.c_str());
-              printf("[SINGLE] recombine: %s\n", sampled_genotype->aa_sequence.c_str());
-              printf("[SINGLE] %d %d %s %s %d %d %d\n",
-                   Model::SCHEDULER->current_time(),
-                   if_index,
-                   Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[0])->name().c_str(),
-                   Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1])->name().c_str(),
-                   parent_genotypes[0]->genotype_id,parent_genotypes[1]->genotype_id,sampled_genotype->genotype_id);
+//              printf("[SINGLE] genotype1: %s\n", parent_genotypes[0]->aa_sequence.c_str());
+//              printf("[SINGLE] genotype2: %s\n", parent_genotypes[1]->aa_sequence.c_str());
+//              printf("[SINGLE] recombine: %s\n", sampled_genotype->aa_sequence.c_str());
+//              printf("[SINGLE] %d %d %s %s %d %d %d\n",
+//                   Model::SCHEDULER->current_time(),
+//                   if_index,
+//                   Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[0])->name().c_str(),
+//                   Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1])->name().c_str(),
+//                   parent_genotypes[0]->genotype_id,parent_genotypes[1]->genotype_id,sampled_genotype->genotype_id);
             for(int res_id = 0; res_id < res_23_list.size(); res_id++){
               if(get_resistant_strength_23(sampled_genotype,res_23_list[res_id])){
-                printf("[DOUBLE] genotype1: %s\n", parent_genotypes[0]->aa_sequence.c_str());
-                printf("[DOUBLE] genotype2: %s\n", parent_genotypes[1]->aa_sequence.c_str());
-                printf("[DOUBLE] recombine: %s\n", sampled_genotype->aa_sequence.c_str());
-                printf("[DOUBLE] %d %d %d %d %d %s\n",
-                       Model::SCHEDULER->current_time(),
-                       if_index,
-                       parent_genotypes[0]->genotype_id,
-                       parent_genotypes[1]->genotype_id,
-                       sampled_genotype->genotype_id,
-                       res_23_list[res_id].c_str());
+//                printf("[DOUBLE] genotype1: %s\n", parent_genotypes[0]->aa_sequence.c_str());
+//                printf("[DOUBLE] genotype2: %s\n", parent_genotypes[1]->aa_sequence.c_str());
+//                printf("[DOUBLE] recombine: %s\n", sampled_genotype->aa_sequence.c_str());
+//                printf("[DOUBLE] %d %d %d %d %d %s\n",
+//                       Model::SCHEDULER->current_time(),
+//                       if_index,
+//                       parent_genotypes[0]->genotype_id,
+//                       parent_genotypes[1]->genotype_id,
+//                       sampled_genotype->genotype_id,
+//                       res_23_list[res_id].c_str());
                   Model::DATA_COLLECTOR->mosquito_recombined_resistant_genotype_count()[loc][res_id]++;
               }
             }

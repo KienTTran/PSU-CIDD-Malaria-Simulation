@@ -235,10 +235,16 @@ void ValidationReporter::after_run() {
     }
     ss << group_sep;//100
     for (auto location = 0; location < Model::CONFIG->number_of_locations(); location++) {
-        for(int res_id = 0; res_id < 6; res_id++){
+        for(int res_id = 0; res_id < Model::DATA_COLLECTOR->mosquito_recombined_resistant_genotype_count()[location].size(); res_id++){
             ss << Model::DATA_COLLECTOR->mosquito_recombined_resistant_genotype_count()[location][res_id] << sep;
         }
-        ss << group_sep;
+        ss << group_sep;//107
+    }
+    for (auto location = 0; location < Model::CONFIG->number_of_locations(); location++) {
+        for(int res_id = 0; res_id < Model::DATA_COLLECTOR->within_host_resistant_genotype_count()[location].size(); res_id++){
+            ss << Model::DATA_COLLECTOR->within_host_resistant_genotype_count()[location][res_id] << sep;
+        }
+        ss << group_sep;//112
     }
 
     summary_data_file << ss.str() << std::endl;

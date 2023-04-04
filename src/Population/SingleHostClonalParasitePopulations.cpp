@@ -20,6 +20,7 @@
 #include "Parasites/Genotype.h"
 #include "Person.h"
 #include "Therapies/Drug.h"
+#include "Mosquito/Mosquito.h"
 
 OBJECTPOOL_IMPL(SingleHostClonalParasitePopulations)
 
@@ -158,6 +159,11 @@ void SingleHostClonalParasitePopulations::update_by_drugs(DrugsInBlood* drugs_in
         if (new_genotype != blood_parasite->genotype()) {
           // mutation occurs
           Model::DATA_COLLECTOR->record_1_mutation(person_->location(), blood_parasite->genotype(), new_genotype);
+          for(int res_id = 0; res_id < Model::MOSQUITO->res_23_list.size(); res_id++){
+            if(Model::MOSQUITO->get_resistant_strength_23(new_genotype,Model::MOSQUITO->res_23_list[res_id])){
+              Model::DATA_COLLECTOR->within_host_resistant_genotype_count()[0][res_id]++;
+            }
+          }
           //          LOG(TRACE) << Model::SCHEDULER->current_time() << "\t" << blood_parasite->genotype()->genotype_id
           //          << "\t"
           //                     << new_genotype->genotype_id << "\t"

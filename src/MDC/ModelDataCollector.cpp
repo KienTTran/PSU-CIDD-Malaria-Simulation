@@ -151,9 +151,13 @@ void ModelDataCollector::initialize() {
     number_of_treatments_success_with_therapy_ID_ = IntVector(Model::CONFIG->therapy_db().size(), 0);
     number_of_treatments_fail_with_therapy_ID_ = IntVector(Model::CONFIG->therapy_db().size(), 0);
 
-      mosquito_recombined_resistant_genotype_count_ = IntVector2(
+    mosquito_recombined_resistant_genotype_count_ = IntVector2(
+        Model::CONFIG->number_of_locations(),
+        IntVector(6, 0));
+
+    within_host_resistant_genotype_count_ = IntVector2(
             Model::CONFIG->number_of_locations(),
-            IntVector(6, 0));
+            IntVector(5, 0));
 
     AMU_per_parasite_pop_ = 0;
     AMU_per_person_ = 0;
