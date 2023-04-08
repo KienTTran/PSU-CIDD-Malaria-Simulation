@@ -171,7 +171,7 @@ void Mosquito::infect_new_cohort_in_PRMC(Config *config, Random *random, Populat
                    && (parent_genotypes[1]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1])) != drug_id_min_ec50[sc_therapy->drug_ids[1]])
                    && (parent_genotypes[0]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[0])) != drug_id_min_ec50[sc_therapy->drug_ids[0]])
                    && (parent_genotypes[0]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1])) == drug_id_min_ec50[sc_therapy->drug_ids[1]])))) {
-              printf("[SINGLE] therapy: %s\n", therapies[therapy_id - 6].c_str());
+//              printf("[SINGLE] therapy: %s\n", therapies[therapy_id - 6].c_str());
 //              printf("[SINGLE] minEC50 ART: %f\n", drug_id_min_ec50[sc_therapy->drug_ids[0]]);
 //              printf("[SINGLE] minEC50 PD: %f\n", drug_id_min_ec50[sc_therapy->drug_ids[1]]);
 //              printf("[SINGLE] genotype1 EC50 ART: %f\n", parent_genotypes[0]->get_EC50_power_n(
