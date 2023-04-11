@@ -137,7 +137,6 @@ PROPERTY_REF(DoubleVector, current_EIR_by_location)
 
 PROPERTY_REF(LongVector, last_update_total_number_of_bites_by_location)
 
-
 PROPERTY_REF(DoubleVector2, last_10_blood_slide_prevalence_by_location)
 
 PROPERTY_REF(DoubleVector2, last_10_blood_slide_prevalence_by_location_age_class)
@@ -218,7 +217,10 @@ PROPERTY_REF(long, current_number_of_mutation_events_in_this_year)
 
 PROPERTY_REF(IntVector2, mosquito_recombined_resistant_genotype_count)
 
-PROPERTY_REF(IntVector2, within_host_resistant_genotype_count)
+PROPERTY_REF(IntVector2, clonal_resistant_genotype_count)
+
+typedef std::tuple<int, int, int> tracker_info;
+std::vector<std::vector<tracker_info>> mosquito_resistant_tracker;
 
 static const int number_of_reported_MOI = 10;
 
