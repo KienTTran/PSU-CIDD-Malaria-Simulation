@@ -153,7 +153,7 @@ void ModelDataCollector::initialize() {
 
     mosquito_recombined_resistant_genotype_count_ = IntVector2(
         Model::CONFIG->number_of_locations(),
-        IntVector(6, 0));
+        IntVector(5, 0));
 
     within_host_resistant_genotype_count_ = IntVector2(
             Model::CONFIG->number_of_locations(),
