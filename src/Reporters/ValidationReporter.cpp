@@ -16,6 +16,7 @@
 #include "Population/Population.h"
 #include "Population/Properties/PersonIndexByLocationStateAgeClass.h"
 #include "ReporterUtils.h"
+#include "Mosquito/Mosquito.h"
 #include "easylogging++.h"
 
 ValidationReporter::ValidationReporter() = default;
@@ -30,7 +31,8 @@ void ValidationReporter::initialize() {
     prmc_freq_file.open(fmt::format("{}/validation_prmc_freq_{}.txt", Model::MODEL->output_path(), Model::MODEL->cluster_job_number()));
     prmc_db_file.open(fmt::format("{}/validation_prmc_db_{}.txt", Model::MODEL->output_path(), Model::MODEL->cluster_job_number()));
     mosquito_recombination_file.open(fmt::format("{}/validation_mosquito_recombination_{}.txt", Model::MODEL->output_path(), Model::MODEL->cluster_job_number()));
-    mosquito_genotype_id_file.open(fmt::format("{}/validation_mosquito_genotype_id_{}.txt", Model::MODEL->output_path(), Model::MODEL->cluster_job_number()));
+    clonal_mutation_file.open(fmt::format("{}/validation_clonal_mutation_{}.txt", Model::MODEL->output_path(), Model::MODEL->cluster_job_number()));
+    genotype_id_file.open(fmt::format("{}/validation_genotype_id_{}.txt", Model::MODEL->output_path(), Model::MODEL->cluster_job_number()));
 }
 
 void ValidationReporter::before_run() {}
@@ -170,16 +172,27 @@ void ValidationReporter::monthly_report() {
         for (int i = 0; i < Model::DATA_COLLECTOR->mosquito_resistant_tracker[loc].size(); i++) {
             ss << std::get<0>(Model::DATA_COLLECTOR->mosquito_resistant_tracker[loc][i]) << " ";
             ss << std::get<1>(Model::DATA_COLLECTOR->mosquito_resistant_tracker[loc][i]) << " ";
-            ss << std::get<2>(Model::DATA_COLLECTOR->mosquito_resistant_tracker[loc][i]) << " ";
-            ss << std::get<3>(Model::DATA_COLLECTOR->mosquito_resistant_tracker[loc][i]) << " ";
-            ss << std::get<4>(Model::DATA_COLLECTOR->mosquito_resistant_tracker[loc][i]) << '\n';
+            ss << std::get<2>(Model::DATA_COLLECTOR->mosquito_resistant_tracker[loc][i]) << '\n';
         }
     }
     if(sum > 0){
         mosquito_recombination_file << ss.str() << std::endl;
     }
+    sum = 0;
+    for (auto loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
+        sum += Model::DATA_COLLECTOR->clonal_mutation_tracker[loc].size();
+        for (int i = 0; i < Model::DATA_COLLECTOR->clonal_mutation_tracker[loc].size(); i++) {
+            ss << std::get<0>(Model::DATA_COLLECTOR->clonal_mutation_tracker[loc][i]) << " ";
+            ss << std::get<1>(Model::DATA_COLLECTOR->clonal_mutation_tracker[loc][i]) << " ";
+            ss << std::get<2>(Model::DATA_COLLECTOR->clonal_mutation_tracker[loc][i]) << '\n';
+        }
+    }
+    if(sum > 0){
+        clonal_mutation_file << ss.str() << std::endl;
+    }
     for (auto loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
         Model::DATA_COLLECTOR->mosquito_resistant_tracker[loc].clear();
+        Model::DATA_COLLECTOR->clonal_mutation_tracker[loc].clear();
     }
 
     std::stringstream gene_freq_ss;
@@ -242,7 +255,13 @@ void ValidationReporter::after_run() {
     }
     ss << group_sep;//100
     for (auto location = 0; location < Model::CONFIG->number_of_locations(); location++) {
-        for(int res_id = 0; res_id < 15; res_id++){
+        for(int res_id = 0; res_id < Model::MOSQUITO->res_23_list.size(); res_id++){
+            ss << Model::DATA_COLLECTOR->clonal_genotype_resistant_count()[location][res_id] << sep;
+        }
+        ss << group_sep;
+    }
+    for (auto location = 0; location < Model::CONFIG->number_of_locations(); location++) {
+        for(int res_id = 0; res_id < 17; res_id++){
             ss << Model::DATA_COLLECTOR->mosquito_recombined_genotype_resistant_count()[location][res_id] << sep;
         }
         ss << group_sep;
@@ -261,7 +280,7 @@ void ValidationReporter::after_run() {
         ss << genotype.second->aa_sequence << '\n';
     }
 
-    mosquito_genotype_id_file << ss.str() << std::endl;
+    genotype_id_file << ss.str() << std::endl;
 
     gene_db_file.close();
     gene_freq_file.close();
@@ -270,7 +289,8 @@ void ValidationReporter::after_run() {
     monthly_data_file.close();
     summary_data_file.close();
     mosquito_recombination_file.close();
-    mosquito_genotype_id_file.close();
+    clonal_mutation_file.close();
+    genotype_id_file.close();
 }
 
 void ValidationReporter::print_EIR_PfPR_by_location(std::stringstream& ss) {
