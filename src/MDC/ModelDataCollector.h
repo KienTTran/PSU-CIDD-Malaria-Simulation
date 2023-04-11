@@ -219,9 +219,6 @@ PROPERTY_REF(IntVector2, mosquito_recombined_resistant_genotype_count)
 
 PROPERTY_REF(IntVector2, clonal_resistant_genotype_count)
 
-typedef std::tuple<int, int, int> tracker_info;
-std::vector<std::vector<tracker_info>> mosquito_resistant_tracker;
-
 static const int number_of_reported_MOI = 10;
 
 public:

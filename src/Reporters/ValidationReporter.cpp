@@ -29,8 +29,6 @@ void ValidationReporter::initialize() {
     gene_db_file.open(fmt::format("{}/validation_gene_db_{}.txt", Model::MODEL->output_path(), Model::MODEL->cluster_job_number()));
     prmc_freq_file.open(fmt::format("{}/validation_prmc_freq_{}.txt", Model::MODEL->output_path(), Model::MODEL->cluster_job_number()));
     prmc_db_file.open(fmt::format("{}/validation_prmc_db_{}.txt", Model::MODEL->output_path(), Model::MODEL->cluster_job_number()));
-    mosquito_recombination_file.open(fmt::format("{}/validation_mosquito_recombination_{}.txt", Model::MODEL->output_path(), Model::MODEL->cluster_job_number()));
-    genotype_id_file.open(fmt::format("{}/validation_genotype_id_{}.txt", Model::MODEL->output_path(), Model::MODEL->cluster_job_number()));
 }
 
 void ValidationReporter::before_run() {}
@@ -163,23 +161,6 @@ void ValidationReporter::monthly_report() {
 
     monthly_data_file << ss.str() << std::endl;
 
-    ss.str("");
-    int sum = 0;
-    for (auto loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
-        sum += Model::DATA_COLLECTOR->mosquito_resistant_tracker[loc].size();
-        for (int i = 0; i < Model::DATA_COLLECTOR->mosquito_resistant_tracker[loc].size(); i++) {
-            ss << std::get<0>(Model::DATA_COLLECTOR->mosquito_resistant_tracker[loc][i]) << " ";
-            ss << std::get<1>(Model::DATA_COLLECTOR->mosquito_resistant_tracker[loc][i]) << " ";
-            ss << std::get<2>(Model::DATA_COLLECTOR->mosquito_resistant_tracker[loc][i]) << '\n';
-        }
-    }
-    if(sum > 0){
-        mosquito_recombination_file << ss.str() << std::endl;
-    }
-    for (auto loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
-        Model::DATA_COLLECTOR->mosquito_resistant_tracker[loc].clear();
-    }
-
     std::stringstream gene_freq_ss;
 //    ReporterUtils::output_genotype_frequency3(gene_freq_ss, Model::CONFIG->genotype_db.size(),
 //                                              Model::POPULATION->get_person_index<PersonIndexByLocationStateAgeClass>());
@@ -259,22 +240,12 @@ void ValidationReporter::after_run() {
         prmc_db_file << g_id << sep << genotype->aa_sequence << std::endl;
     }
 
-    ss.str("");
-    for(auto genotype : Model::CONFIG->genotype_db){
-        ss << genotype.second->genotype_id << sep;
-        ss << genotype.second->aa_sequence << '\n';
-    }
-
-    genotype_id_file << ss.str() << std::endl;
-
     gene_db_file.close();
     gene_freq_file.close();
     prmc_db_file.close();
     prmc_freq_file.close();
     monthly_data_file.close();
     summary_data_file.close();
-    mosquito_recombination_file.close();
-    genotype_id_file.close();
 }
 
 void ValidationReporter::print_EIR_PfPR_by_location(std::stringstream& ss) {

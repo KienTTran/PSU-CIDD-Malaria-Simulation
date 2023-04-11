@@ -159,8 +159,6 @@ void ModelDataCollector::initialize() {
             Model::CONFIG->number_of_locations(),
             IntVector(5, 0));
 
-    mosquito_resistant_tracker = std::vector<std::vector<tracker_info>>(Model::CONFIG->number_of_locations());
-
     AMU_per_parasite_pop_ = 0;
     AMU_per_person_ = 0;
     AMU_for_clinical_caused_parasite_ = 0;

@@ -151,29 +151,24 @@ void Mosquito::infect_new_cohort_in_PRMC(Config *config, Random *random, Populat
 
       genotypes_table[tracking_index][loc][if_index] = sampled_genotype;
 
-      auto resistant_tracker_info = std::make_tuple(parent_genotypes[0]->genotype_id,
-                                                    parent_genotypes[1]->genotype_id,
-                                                    sampled_genotype->genotype_id);
-      Model::DATA_COLLECTOR->mosquito_resistant_tracker[loc].push_back(resistant_tracker_info);
-
-        for (int therapy_id = 6; therapy_id <= 8; therapy_id++) {
-            auto *sc_therapy = dynamic_cast<SCTherapy *>(Model::CONFIG->therapy_db()[therapy_id]);
-            if ((((parent_genotypes[0]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[0])) == drug_id_min_ec50[sc_therapy->drug_ids[0]])
-                  && (parent_genotypes[0]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1])) != drug_id_min_ec50[sc_therapy->drug_ids[1]])
-                  && (parent_genotypes[1]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[0])) != drug_id_min_ec50[sc_therapy->drug_ids[0]])
-                  && (parent_genotypes[1]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1])) == drug_id_min_ec50[sc_therapy->drug_ids[1]]))
-                 || ((parent_genotypes[1]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[0])) == drug_id_min_ec50[sc_therapy->drug_ids[0]])
-                     && (parent_genotypes[1]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1])) != drug_id_min_ec50[sc_therapy->drug_ids[1]])
-                     && (parent_genotypes[0]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[0])) != drug_id_min_ec50[sc_therapy->drug_ids[0]])
-                     && (parent_genotypes[0]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1])) == drug_id_min_ec50[sc_therapy->drug_ids[1]])))) {
-                for(int res_id = 0; res_id < res_23_list.size(); res_id++){
-                    if(get_resistant_strength_23(sampled_genotype,res_23_list[res_id])){
-                        Model::DATA_COLLECTOR->mosquito_recombined_resistant_genotype_count()[loc][res_id]++;
-                    }
-                }
-            }
-        }
-        Model::DATA_COLLECTOR->mosquito_recombined_resistant_genotype_count()[loc][res_23_list.size()+1]++;
+      for (int therapy_id = 6; therapy_id <= 8; therapy_id++) {
+          auto *sc_therapy = dynamic_cast<SCTherapy *>(Model::CONFIG->therapy_db()[therapy_id]);
+          if ((((parent_genotypes[0]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[0])) == drug_id_min_ec50[sc_therapy->drug_ids[0]])
+                && (parent_genotypes[0]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1])) != drug_id_min_ec50[sc_therapy->drug_ids[1]])
+                && (parent_genotypes[1]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[0])) != drug_id_min_ec50[sc_therapy->drug_ids[0]])
+                && (parent_genotypes[1]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1])) == drug_id_min_ec50[sc_therapy->drug_ids[1]]))
+               || ((parent_genotypes[1]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[0])) == drug_id_min_ec50[sc_therapy->drug_ids[0]])
+                   && (parent_genotypes[1]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1])) != drug_id_min_ec50[sc_therapy->drug_ids[1]])
+                   && (parent_genotypes[0]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[0])) != drug_id_min_ec50[sc_therapy->drug_ids[0]])
+                   && (parent_genotypes[0]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1])) == drug_id_min_ec50[sc_therapy->drug_ids[1]])))) {
+              for(int res_id = 0; res_id < res_23_list.size(); res_id++){
+                  if(get_resistant_strength_23(sampled_genotype,res_23_list[res_id])){
+                      Model::DATA_COLLECTOR->mosquito_recombined_resistant_genotype_count()[loc][res_id]++;
+                  }
+              }
+          }
+      }
+      Model::DATA_COLLECTOR->mosquito_recombined_resistant_genotype_count()[loc][res_23_list.size()+1]++;
     }
   }
 }
