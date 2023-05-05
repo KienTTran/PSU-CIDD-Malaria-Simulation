@@ -159,6 +159,23 @@ void ValidationReporter::monthly_report() {
     }
     ss << group_sep;
 
+    for (auto tf_by_therapy : Model::DATA_COLLECTOR->current_tf_by_therapy()) {
+        ss << tf_by_therapy << sep;
+    }
+    ss << group_sep;
+    for (auto location = 0; location < Model::CONFIG->number_of_locations(); location++) {
+        for(int res_id = 0; res_id < Model::DATA_COLLECTOR->clonal_resistant_genotype_count()[location].size(); res_id++){
+            ss << Model::DATA_COLLECTOR->clonal_resistant_genotype_count()[location][res_id] << sep;
+        }
+        ss << group_sep;//112
+    }
+    for (auto location = 0; location < Model::CONFIG->number_of_locations(); location++) {
+        for(int res_id = 0; res_id < 7; res_id++){
+            ss << Model::DATA_COLLECTOR->mosquito_recombined_resistant_genotype_count()[location][res_id] << sep;
+        }
+        ss << group_sep;//107
+    }
+
     monthly_data_file << ss.str() << std::endl;
 
     std::stringstream gene_freq_ss;
