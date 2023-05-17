@@ -66,6 +66,8 @@ class Scheduler {
 
   int current_day_in_year() const;
 
+  int current_month_in_year() const;
+
   bool is_today_last_day_of_month() const;
 
   bool is_today_first_day_of_month() const;

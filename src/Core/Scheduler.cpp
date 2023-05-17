@@ -171,6 +171,10 @@ int Scheduler::current_day_in_year() const {
   return TimeHelpers::day_of_year(calendar_date);
 }
 
+int Scheduler::current_month_in_year() const {
+  return TimeHelpers::month_of_year(calendar_date);
+}
+
 bool Scheduler::is_today_last_day_of_year() const {
   year_month_day ymd { calendar_date };
   return ymd.month() == month { 12 } && ymd.day() == day { 31 };

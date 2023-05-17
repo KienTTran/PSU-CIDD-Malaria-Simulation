@@ -156,6 +156,8 @@ void SingleHostClonalParasitePopulations::update_by_drugs(DrugsInBlood* drugs_in
         if (new_genotype != blood_parasite->genotype()) {
           // mutation occurs
           Model::DATA_COLLECTOR->record_1_mutation(person_->location(), blood_parasite->genotype(), new_genotype);
+          Model::DATA_COLLECTOR->record_1_mutation_by_drug(person_->location(), blood_parasite->genotype(), new_genotype, drug_id);
+
           for(int res_id = 0; res_id < Model::MOSQUITO->res_23_list.size(); res_id++){
             if(Model::MOSQUITO->get_resistant_strength_23(new_genotype,Model::MOSQUITO->res_23_list[res_id])){
               Model::DATA_COLLECTOR->clonal_resistant_genotype_count()[0][res_id]++;

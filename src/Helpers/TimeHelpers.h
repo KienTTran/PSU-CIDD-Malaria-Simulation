@@ -33,6 +33,8 @@ class TimeHelpers {
 
   static int day_of_year(const date::sys_days &day);
 
+  static int month_of_year(const date::sys_days &day);
+
 };
 
 inline int TimeHelpers::number_of_days(const int &y1, const unsigned int &m1, const unsigned int &d1, const int &y2,
@@ -80,6 +82,11 @@ inline int TimeHelpers::day_of_year(const int &y, const unsigned &m, const unsig
 inline int TimeHelpers::day_of_year(const date::sys_days &day) {
   date::year_month_day ymd{day};
   return number_of_days(date::sys_days{ymd.year()/1/0}, day);
+}
+
+inline int TimeHelpers::month_of_year(const date::sys_days &day) {
+  date::year_month_day ymd{day};
+  return static_cast<unsigned>(ymd.month());
 }
 
 #endif //PCMS_TIMEHELPERS_H

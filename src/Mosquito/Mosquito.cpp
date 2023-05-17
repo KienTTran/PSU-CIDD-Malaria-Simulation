@@ -151,6 +151,7 @@ void Mosquito::infect_new_cohort_in_PRMC(Config *config, Random *random, Populat
 
       genotypes_table[tracking_index][loc][if_index] = sampled_genotype;
 
+      //Count DHA-PPQ, ASAQ and AL only
       for (int therapy_id = 6; therapy_id <= 8; therapy_id++) {
           auto *sc_therapy = dynamic_cast<SCTherapy *>(Model::CONFIG->therapy_db()[therapy_id]);
           if ((((parent_genotypes[0]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[0])) == drug_id_min_ec50[sc_therapy->drug_ids[0]])

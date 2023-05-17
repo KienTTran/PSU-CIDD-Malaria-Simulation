@@ -221,6 +221,9 @@ PROPERTY_REF(IntVector2, clonal_resistant_genotype_count)
 
 static const int number_of_reported_MOI = 10;
 
+typedef std::tuple<int, int, int, int, int> mutation_tracker_info;
+std::vector<std::vector<mutation_tracker_info>> mutation_tracker;
+
 public:
   explicit ModelDataCollector(Model* model = nullptr);
 
@@ -260,6 +263,8 @@ public:
   void record_1_non_treated_case(const int& location, const int& age);
 
   void record_1_mutation(const int& location, Genotype* from, Genotype* to);
+
+  void record_1_mutation_by_drug(const int& location, Genotype* from, Genotype* to, int drug_id);
 
   void record_1_migration(Person* pPerson, const int& from, const int& to);
 
