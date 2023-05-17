@@ -21,7 +21,6 @@ public:
     std::ofstream summary_data_file;
     std::ofstream gene_db_file;
     std::ofstream gene_freq_file;
-    std::ofstream gene_ec50_file;
     std::ofstream prmc_db_file;
     std::ofstream prmc_freq_file;
     std::ofstream monthly_mutation_file;

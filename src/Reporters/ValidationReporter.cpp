@@ -27,7 +27,6 @@ void ValidationReporter::initialize() {
     monthly_data_file.open(fmt::format("{}/validation_monthly_data_{}.txt", Model::MODEL->output_path(), Model::MODEL->cluster_job_number()));
     summary_data_file.open(fmt::format("{}/validation_summary_{}.txt", Model::MODEL->output_path(), Model::MODEL->cluster_job_number()));
     gene_freq_file.open(fmt::format("{}/validation_gene_freq_{}.txt", Model::MODEL->output_path(), Model::MODEL->cluster_job_number()));
-    gene_ec50_file.open(fmt::format("{}/validation_gene_ec50_{}.txt", Model::MODEL->output_path(), Model::MODEL->cluster_job_number()));
     gene_db_file.open(fmt::format("{}/validation_gene_db_{}.txt", Model::MODEL->output_path(), Model::MODEL->cluster_job_number()));
     prmc_freq_file.open(fmt::format("{}/validation_prmc_freq_{}.txt", Model::MODEL->output_path(), Model::MODEL->cluster_job_number()));
     prmc_db_file.open(fmt::format("{}/validation_prmc_db_{}.txt", Model::MODEL->output_path(), Model::MODEL->cluster_job_number()));
@@ -223,14 +222,6 @@ void ValidationReporter::monthly_report() {
             Model::DATA_COLLECTOR->mutation_tracker[loc].clear();
         }
     }
-
-    ss.str("");
-    for (auto [g_id, genotype] : Model::CONFIG->genotype_db) {
-        auto *sc_therapy = dynamic_cast<SCTherapy *>(Model::CONFIG->therapy_db()[7]);
-        ss << g_id << ":"  << 0 << ":" << genotype->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[0])) << sep;
-        ss << g_id << ":"  << 1 << ":" << genotype->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1])) << sep;
-    }
-    gene_ec50_file << ss.str() << std::endl;
 }
 
 void ValidationReporter::after_run() {
@@ -306,7 +297,6 @@ void ValidationReporter::after_run() {
     prmc_freq_file.close();
     monthly_data_file.close();
     summary_data_file.close();
-    gene_ec50_file.close();
     monthly_mutation_file.close();
 }
 
