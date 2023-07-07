@@ -30,7 +30,7 @@ void ValidationReporter::initialize() {
     gene_db_file.open(fmt::format("{}/validation_gene_db_{}.txt", Model::MODEL->output_path(), Model::MODEL->cluster_job_number()));
     prmc_freq_file.open(fmt::format("{}/validation_prmc_freq_{}.txt", Model::MODEL->output_path(), Model::MODEL->cluster_job_number()));
     prmc_db_file.open(fmt::format("{}/validation_prmc_db_{}.txt", Model::MODEL->output_path(), Model::MODEL->cluster_job_number()));
-    monthly_mutation_file.open(fmt::format("{}/validation_monthly_mutation_{}.txt", Model::MODEL->output_path(), Model::MODEL->cluster_job_number()));
+//    monthly_mutation_file.open(fmt::format("{}/validation_monthly_mutation_{}.txt", Model::MODEL->output_path(), Model::MODEL->cluster_job_number()));
 }
 
 void ValidationReporter::before_run() {}
@@ -205,23 +205,23 @@ void ValidationReporter::monthly_report() {
     prmc_freq_file << prmc_freq_ss.str() << std::endl;
 
     ss.str("");
-    int sum = 0;
-    for (auto loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
-        sum += Model::DATA_COLLECTOR->mutation_tracker[loc].size();
-        for (int i = 0; i < Model::DATA_COLLECTOR->mutation_tracker[loc].size(); i++) {
-            ss << std::get<0>(Model::DATA_COLLECTOR->mutation_tracker[loc][i]) << sep;
-            ss << std::get<1>(Model::DATA_COLLECTOR->mutation_tracker[loc][i]) << sep;
-            ss << std::get<2>(Model::DATA_COLLECTOR->mutation_tracker[loc][i]) << sep;
-            ss << std::get<3>(Model::DATA_COLLECTOR->mutation_tracker[loc][i]) << sep;
-            ss << std::get<4>(Model::DATA_COLLECTOR->mutation_tracker[loc][i]) << '\n';
-        }
-    }
-    if(sum > 0){
-        monthly_mutation_file << ss.str() << std::endl;
-        for (auto loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
-            Model::DATA_COLLECTOR->mutation_tracker[loc].clear();
-        }
-    }
+//    int sum = 0;
+//    for (auto loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
+//        sum += Model::DATA_COLLECTOR->mutation_tracker[loc].size();
+//        for (int i = 0; i < Model::DATA_COLLECTOR->mutation_tracker[loc].size(); i++) {
+//            ss << std::get<0>(Model::DATA_COLLECTOR->mutation_tracker[loc][i]) << sep;
+//            ss << std::get<1>(Model::DATA_COLLECTOR->mutation_tracker[loc][i]) << sep;
+//            ss << std::get<2>(Model::DATA_COLLECTOR->mutation_tracker[loc][i]) << sep;
+//            ss << std::get<3>(Model::DATA_COLLECTOR->mutation_tracker[loc][i]) << sep;
+//            ss << std::get<4>(Model::DATA_COLLECTOR->mutation_tracker[loc][i]) << '\n';
+//        }
+//    }
+//    if(sum > 0){
+//        monthly_mutation_file << ss.str() << std::endl;
+//        for (auto loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
+//            Model::DATA_COLLECTOR->mutation_tracker[loc].clear();
+//        }
+//    }
 }
 
 void ValidationReporter::after_run() {
@@ -289,6 +289,10 @@ void ValidationReporter::after_run() {
     for (auto [g_id, genotype] : Model::CONFIG->genotype_db) {
         gene_db_file << g_id << sep << genotype->aa_sequence << std::endl;
         prmc_db_file << g_id << sep << genotype->aa_sequence << std::endl;
+    }
+
+    for (auto [g_id, genotype] : Model::CONFIG->genotype_db) {
+        LOG(INFO) << genotype->aa_sequence << ": " << genotype->daily_fitness_multiple_infection;
     }
 
     gene_db_file.close();
