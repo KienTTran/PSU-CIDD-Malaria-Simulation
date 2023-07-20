@@ -275,13 +275,19 @@ void ValidationReporter::after_run() {
         for(int res_id = 0; res_id < Model::DATA_COLLECTOR->clonal_resistant_genotype_count()[location].size(); res_id++){
             ss << Model::DATA_COLLECTOR->clonal_resistant_genotype_count()[location][res_id] << sep;
         }
-        ss << group_sep;//112
+        ss << group_sep;//106
     }
     for (auto location = 0; location < Model::CONFIG->number_of_locations(); location++) {
-        for(int res_id = 0; res_id < 7; res_id++){
+        for(int res_id = 0; res_id < Model::DATA_COLLECTOR->mosquito_recombined_resistant_genotype_count()[location].size(); res_id++){
             ss << Model::DATA_COLLECTOR->mosquito_recombined_resistant_genotype_count()[location][res_id] << sep;
         }
-        ss << group_sep;//107
+        ss << group_sep;//113
+    }
+    for (auto location = 0; location < Model::CONFIG->number_of_locations(); location++) {
+        for(int res_id = 0; res_id < Model::DATA_COLLECTOR->mosquito_inflict_resistant_genotype_count()[location].size(); res_id++){
+            ss << Model::DATA_COLLECTOR->mosquito_inflict_resistant_genotype_count()[location][res_id] << sep;
+        }
+        ss << group_sep;//118
     }
 
     summary_data_file << ss.str() << std::endl;

@@ -155,6 +155,10 @@ void ModelDataCollector::initialize() {
         Model::CONFIG->number_of_locations(),
         IntVector(7, 0));
 
+    mosquito_inflict_resistant_genotype_count_ = IntVector2(
+              Model::CONFIG->number_of_locations(),
+              IntVector(5, 0));
+
     clonal_resistant_genotype_count_ = IntVector2(
             Model::CONFIG->number_of_locations(),
             IntVector(5, 0));
