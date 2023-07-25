@@ -47,7 +47,7 @@ void ValidationReporter::monthly_report() {
     ss << Model::TREATMENT_COVERAGE->get_probability_to_be_treated(0, 1) << sep;
     ss << Model::TREATMENT_COVERAGE->get_probability_to_be_treated(0, 10) << sep;
     ss << Model::POPULATION->size() << sep;
-    ss << group_sep;//10
+    ss << group_sep;//10 (col index is 9)
     print_EIR_PfPR_by_location(ss);//12
     ss << group_sep;//16
     for (auto loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
@@ -161,28 +161,28 @@ void ValidationReporter::monthly_report() {
     for (auto loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
         ss << Model::DATA_COLLECTOR->cumulative_NTF_by_location()[loc] << sep;
     }
-    ss << group_sep;
+    ss << group_sep;//344 (col 343 in 0 index)
 
     for (auto tf_by_therapy : Model::DATA_COLLECTOR->current_tf_by_therapy()) {
         ss << tf_by_therapy << sep;
     }
-    ss << group_sep;
+    ss << group_sep;//359
     for (auto location = 0; location < Model::CONFIG->number_of_locations(); location++) {
         for(int res_id = 0; res_id < Model::DATA_COLLECTOR->clonal_resistant_genotype_count()[location].size(); res_id++){
             ss << Model::DATA_COLLECTOR->clonal_resistant_genotype_count()[location][res_id] << sep;
         }
-        ss << group_sep;//112
-    }
+        ss << group_sep;
+    }//365
     for (auto location = 0; location < Model::CONFIG->number_of_locations(); location++) {
         for(int res_id = 0; res_id < 7; res_id++){
             ss << Model::DATA_COLLECTOR->mosquito_recombined_resistant_genotype_count()[location][res_id] << sep;
         }
         ss << group_sep;
-    }
+    }//373
     for (auto location = 0; location < Model::CONFIG->number_of_locations(); location++) {
         ss << Model::DATA_COLLECTOR->monthly_number_of_TF_by_location()[location] << sep;
         ss << group_sep;
-    }
+    }//375
     for (int t_id = 0; t_id < Model::CONFIG->therapy_db().size(); t_id++) {
         int nTreaments = Model::DATA_COLLECTOR->number_of_treatments_with_therapy_ID()[t_id];
         int nSuccess = Model::DATA_COLLECTOR->number_of_treatments_success_with_therapy_ID()[t_id];
@@ -190,7 +190,7 @@ void ValidationReporter::monthly_report() {
         double pSuccess = (nTreaments == 0) ? 0 : nSuccess * 100.0 / nTreaments;
         ss << nTreaments << sep << nSuccess << sep << nFail << sep << pSuccess << sep;
     }
-    ss << group_sep;
+    ss << group_sep;//432
     monthly_data_file << ss.str() << std::endl;
 
     std::stringstream gene_freq_ss;
