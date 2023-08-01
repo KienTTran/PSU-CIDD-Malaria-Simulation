@@ -141,14 +141,11 @@ void SingleHostClonalParasitePopulations::update_by_drugs(DrugsInBlood* drugs_in
 
     double percent_parasite_remove = 0;
     for (auto& [drug_id, drug] : *drugs_in_blood->drugs()) {
-      const auto p = Model::RANDOM->random_flat(0.0, 1.0);
-
-      if (p < drug->get_mutation_probability()) {
-        // select all locus
-        // remember to use mask to turn on and off mutation location
-        // for a specific time
-        Genotype* candidate_genotype =
-            new_genotype->perform_mutation_by_drug(Model::CONFIG, Model::RANDOM, drug->drug_type());
+      // select all locus
+      // remember to use mask to turn on and off mutation location
+      // for a specific time
+      Genotype* candidate_genotype = new_genotype->perform_mutation_by_drug(Model::CONFIG, Model::RANDOM, drug->drug_type(),
+                                                                            Model::CONFIG->mutation_probability_by_locus());
 
         if (candidate_genotype->get_EC50_power_n(drug->drug_type())
             > new_genotype->get_EC50_power_n(drug->drug_type())) {
@@ -165,7 +162,7 @@ void SingleHostClonalParasitePopulations::update_by_drugs(DrugsInBlood* drugs_in
           //                     << new_genotype->get_EC50_power_n(drug->drug_type());
           blood_parasite->set_genotype(new_genotype);
         }
-      }
+
 
       const auto p_temp = drug->get_parasite_killing_rate(blood_parasite->genotype()->genotype_id);
       percent_parasite_remove = percent_parasite_remove + p_temp - percent_parasite_remove * p_temp;
