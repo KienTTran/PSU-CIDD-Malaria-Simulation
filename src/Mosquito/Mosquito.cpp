@@ -58,7 +58,7 @@ void Mosquito::infect_new_cohort_in_PRMC(Config *config, Random *random, Populat
       }
       return;
     }
-    // multinomial sampling based on relative infectivity
+    // multinomial sampling of people based on their relative infectivity (summing across all clones inside that person)
     auto first_sampling = random->roulette_sampling<Person>(config->mosquito_config().prmc_size,
                                                             population->individual_foi_by_location[loc],
                                                             population->all_alive_persons_by_location[loc], false,
@@ -77,7 +77,7 @@ void Mosquito::infect_new_cohort_in_PRMC(Config *config, Random *random, Populat
     std::vector<Genotype *> sampling_genotypes;
     std::vector<double> relative_infectivity_each_pp;
 
-    for (int if_index = 0; if_index < interrupted_feeding_indices.size(); ++if_index) {
+    for (int if_index = 0; if_index < interrupted_feeding_indices.size(); if_index++) {
       // clear() is used to avoid memory reallocation
       sampling_genotypes.clear();
       relative_infectivity_each_pp.clear();
@@ -92,12 +92,8 @@ void Mosquito::infect_new_cohort_in_PRMC(Config *config, Random *random, Populat
         }
 
         if (interrupted_feeding_indices[if_index]) {
-          auto temp_if = if_index;
-          while (second_sampling[temp_if] == first_sampling[if_index]) {
-            temp_if = random->random_uniform(second_sampling.size());
-          }
           // interrupted feeding occurs
-          get_genotypes_profile_from_person(second_sampling[temp_if], sampling_genotypes, relative_infectivity_each_pp);
+          get_genotypes_profile_from_person(second_sampling[if_index], sampling_genotypes, relative_infectivity_each_pp);
           Model::DATA_COLLECTOR->mosquito_recombined_resistant_genotype_count()[loc][res_23_list.size()]++;
         }
 
@@ -115,13 +111,9 @@ void Mosquito::infect_new_cohort_in_PRMC(Config *config, Random *random, Populat
         std::tuple<Genotype *, double> second_genotype = std::make_tuple(nullptr, 0.0);
 
         if (interrupted_feeding_indices[if_index]) {
-          auto temp_if = if_index;
-          while (second_sampling[temp_if] == first_sampling[if_index]) {
-            temp_if = random->random_uniform(second_sampling.size());
-          }
           sampling_genotypes.clear();
           relative_infectivity_each_pp.clear();
-          get_genotypes_profile_from_person(second_sampling[temp_if], sampling_genotypes, relative_infectivity_each_pp);
+          get_genotypes_profile_from_person(second_sampling[if_index], sampling_genotypes, relative_infectivity_each_pp);
 
           if (sampling_genotypes.size() > 0) {
             second_genotype = random->roulette_sampling_tuple<Genotype>(1, relative_infectivity_each_pp,
