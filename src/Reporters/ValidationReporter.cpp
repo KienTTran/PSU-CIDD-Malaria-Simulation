@@ -47,61 +47,61 @@ void ValidationReporter::monthly_report() {
     ss << Model::TREATMENT_COVERAGE->get_probability_to_be_treated(0, 1) << sep;
     ss << Model::TREATMENT_COVERAGE->get_probability_to_be_treated(0, 10) << sep;
     ss << Model::POPULATION->size() << sep;
-    ss << group_sep;//10
+    ss << group_sep;//10 (col index is 9)
     print_EIR_PfPR_by_location(ss);//12
     ss << group_sep;//16
     for (auto loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
         ss << Model::DATA_COLLECTOR->monthly_number_of_new_infections_by_location()[loc] << sep;
+        ss << group_sep;//18
     }
-    ss << group_sep;//18
     for (auto loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
         ss << Model::DATA_COLLECTOR->monthly_number_of_treatment_by_location()[loc] << sep; //Incidence
+        ss << group_sep;//20
     }
-    ss << group_sep;//20
     for (auto loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
         ss << Model::DATA_COLLECTOR->monthly_number_of_clinical_episode_by_location()[loc] << sep;
+        ss << group_sep;///22
     }
-    ss << group_sep;///22
     for (auto loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
         for(auto moi : Model::DATA_COLLECTOR->multiple_of_infection_by_location()[loc]){
             ss << moi << sep;
         }
+        ss << group_sep;///33
     }
-    ss << group_sep;///33
     for (auto loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
         for (auto ac = 0ul; ac < Model::CONFIG->number_of_age_classes(); ac++){
             ss << Model::DATA_COLLECTOR->blood_slide_prevalence_by_location_age_group()[loc][ac] << sep;
         }
+        ss << group_sep;//49
     }
-    ss << group_sep;//49
     for (auto loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
         for (int age = 0; age < 80; age++){
             ss << Model::DATA_COLLECTOR->blood_slide_prevalence_by_location_age()[loc][age] << sep;
         }
+        ss << group_sep;///130
     }
-    ss << group_sep;///130
     for (auto loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
         ss << Model::DATA_COLLECTOR->current_TF_by_location()[loc] << sep;
     }
     ss << group_sep;//132
     for (auto loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
         ss << Model::DATA_COLLECTOR->monthly_number_of_mutation_events_by_location()[loc] << sep;
+        ss << group_sep;//134
     }
-    ss << group_sep;//134
     for (auto loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
         for (auto ac = 0ul; ac < Model::CONFIG->number_of_age_classes(); ac++){
             ss << Model::DATA_COLLECTOR->number_of_treatments_by_location_age_year()[loc][ac] << sep;
         }
+        ss << group_sep;//150
     }
-    ss << group_sep;//150
     for (auto loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
         ss << Model::DATA_COLLECTOR->total_number_of_bites_by_location()[loc] << sep;
     }
     ss << group_sep;//152
     for (auto loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
         ss << Model::DATA_COLLECTOR->total_number_of_bites_by_location_year()[loc] << sep;
+        ss << group_sep;//154
     }
-    ss << group_sep;//154
     for (auto loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
         ss << Model::DATA_COLLECTOR->today_number_of_treatments_by_location()[loc] << sep;
         ss << group_sep;//156
@@ -116,20 +116,20 @@ void ValidationReporter::monthly_report() {
             ss << Model::DATA_COLLECTOR->popsize_by_location_hoststate()[loc][Person::ASYMPTOMATIC] /
                   (Model::DATA_COLLECTOR->popsize_by_location_hoststate()[loc][Person::ASYMPTOMATIC] + Model::DATA_COLLECTOR->popsize_by_location_hoststate()[loc][Person::CLINICAL])  << sep;
         }
+        ss << group_sep;//160
     }
-    ss << group_sep;//160
     for (auto loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
         for (auto age = 0; age < 80; age++){
             ss << Model::DATA_COLLECTOR->popsize_by_location_age()[loc][age] << sep;
         }
+        ss << group_sep;//241
     }
-    ss << group_sep;//241
     for (auto loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
         for (auto age = 0; age < 80; age++){
             ss << Model::DATA_COLLECTOR->monthly_number_of_clinical_episode_by_location_age()[loc][age] << sep;
         }
+        ss << group_sep;//322
     }
-    ss << group_sep;//322
     for (auto loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
         for (auto ac = 0; ac < Model::CONFIG->number_of_age_classes(); ac++){
             int all_infected_pop = Model::DATA_COLLECTOR->popsize_by_location_hoststate_age_class()[loc][Person::ASYMPTOMATIC][ac]
@@ -141,12 +141,12 @@ void ValidationReporter::monthly_report() {
                 ss << std::setprecision(6) << Model::DATA_COLLECTOR->number_of_clinical_by_location_age_group()[loc][ac] / (double) all_infected_pop<< sep;
             }
         }
+        ss << group_sep;//338
     }
-    ss << group_sep;//338
     for (auto loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
         ss << Model::DATA_COLLECTOR->total_immune_by_location()[loc] / Model::POPULATION->size(loc) << sep;
+        ss << group_sep;//340
     }
-    ss << group_sep;//340
     for (auto loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
         int all_infected_pop = Model::DATA_COLLECTOR->popsize_by_location_hoststate()[loc][Person::ASYMPTOMATIC]
                                + Model::DATA_COLLECTOR->popsize_by_location_hoststate()[loc][Person::CLINICAL];
@@ -156,33 +156,32 @@ void ValidationReporter::monthly_report() {
         else{
             ss << std::setprecision(6) << Model::DATA_COLLECTOR->monthly_number_of_clinical_episode_by_location()[loc] / (double) all_infected_pop<< sep;
         }
+        ss << group_sep;//342
     }
-    ss << group_sep;//342
     for (auto loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
         ss << Model::DATA_COLLECTOR->cumulative_NTF_by_location()[loc] << sep;
+        ss << group_sep;//344 (col 343 in 0 index)
     }
-    ss << group_sep;
-
     for (auto tf_by_therapy : Model::DATA_COLLECTOR->current_tf_by_therapy()) {
         ss << tf_by_therapy << sep;
     }
-    ss << group_sep;
-    for (auto location = 0; location < Model::CONFIG->number_of_locations(); location++) {
-        for(int res_id = 0; res_id < Model::DATA_COLLECTOR->clonal_resistant_genotype_count()[location].size(); res_id++){
-            ss << Model::DATA_COLLECTOR->clonal_resistant_genotype_count()[location][res_id] << sep;
+    ss << group_sep;//359
+    for (auto loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
+        for(int res_id = 0; res_id < Model::DATA_COLLECTOR->clonal_resistant_genotype_count()[loc].size(); res_id++){
+            ss << Model::DATA_COLLECTOR->clonal_resistant_genotype_count()[loc][res_id] << sep;
         }
-        ss << group_sep;//112
-    }
-    for (auto location = 0; location < Model::CONFIG->number_of_locations(); location++) {
+        ss << group_sep;
+    }//365
+    for (auto loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
         for(int res_id = 0; res_id < 7; res_id++){
-            ss << Model::DATA_COLLECTOR->mosquito_recombined_resistant_genotype_count()[location][res_id] << sep;
+            ss << Model::DATA_COLLECTOR->mosquito_recombined_resistant_genotype_count()[loc][res_id] << sep;
         }
         ss << group_sep;
-    }
-    for (auto location = 0; location < Model::CONFIG->number_of_locations(); location++) {
-        ss << Model::DATA_COLLECTOR->monthly_number_of_TF_by_location()[location] << sep;
+    }//373
+    for (auto loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
+        ss << Model::DATA_COLLECTOR->monthly_number_of_TF_by_location()[loc] << sep;
         ss << group_sep;
-    }
+    }//375
     for (int t_id = 0; t_id < Model::CONFIG->therapy_db().size(); t_id++) {
         int nTreaments = Model::DATA_COLLECTOR->number_of_treatments_with_therapy_ID()[t_id];
         int nSuccess = Model::DATA_COLLECTOR->number_of_treatments_success_with_therapy_ID()[t_id];
@@ -190,13 +189,30 @@ void ValidationReporter::monthly_report() {
         double pSuccess = (nTreaments == 0) ? 0 : nSuccess * 100.0 / nTreaments;
         ss << nTreaments << sep << nSuccess << sep << nFail << sep << pSuccess << sep;
     }
-    ss << group_sep;
+    ss << group_sep;//432
+    for (auto loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
+        ss << Model::DATA_COLLECTOR->cumulative_number_treatments_by_location()[loc] << sep;
+        ss << group_sep;//434
+    }
+    for (auto loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
+        ss << Model::DATA_COLLECTOR->cumulative_TF_by_location()[loc] << sep;
+        ss << group_sep;//436
+    }
+    for (auto loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
+        ss << Model::DATA_COLLECTOR->cumulative_clinical_episodes_by_location()[loc] << sep;
+        ss << group_sep;//438
+    }
+    for (auto loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
+        for (int age = 0; age < 80; age++){
+            ss << Model::DATA_COLLECTOR->number_of_untreated_cases_by_location_age_year()[loc][age] << sep;
+        }
+        ss << group_sep;///518
+    }
     monthly_data_file << ss.str() << std::endl;
 
     std::stringstream gene_freq_ss;
 //    ReporterUtils::output_genotype_frequency3(gene_freq_ss, Model::CONFIG->genotype_db.size(),
 //                                              Model::POPULATION->get_person_index<PersonIndexByLocationStateAgeClass>());
-
     std::stringstream prmc_freq_ss;
     ReporterUtils::output_genotype_frequency4(gene_freq_ss, prmc_freq_ss, Model::CONFIG->genotype_db.size(),
                                               Model::POPULATION->get_person_index<PersonIndexByLocationStateAgeClass>());
@@ -240,56 +256,67 @@ void ValidationReporter::after_run() {
                                      / static_cast<double>(Constants::DAYS_IN_YEAR());
     auto sum_ntf = 0.0;
     ul pop_size = 0;
-    for (auto location = 0; location < Model::CONFIG->number_of_locations(); location++) {
-        sum_ntf += Model::DATA_COLLECTOR->cumulative_NTF_by_location()[location];
-        pop_size += Model::DATA_COLLECTOR->popsize_by_location()[location];
+    for (auto loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
+        sum_ntf += Model::DATA_COLLECTOR->cumulative_NTF_by_location()[loc];
+        pop_size += Model::DATA_COLLECTOR->popsize_by_location()[loc];
     }
     ss << (sum_ntf * 100 / pop_size) / total_time_in_years << sep;
     ss << group_sep;//13
-    for (int location = 0; location < Model::CONFIG->number_of_locations(); location++) {
-        ss << Model::DATA_COLLECTOR->cumulative_clinical_episodes_by_location()[location] << sep;
-//        std::cout << Model::DATA_COLLECTOR->cumulative_clinical_episodes_by_location()[location] << "\t";
+    for (int loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
+        ss << Model::DATA_COLLECTOR->cumulative_clinical_episodes_by_location()[loc] << sep;
+//        std::cout << Model::DATA_COLLECTOR->cumulative_clinical_episodes_by_location()[loc] << "\t";
     }
     ss << group_sep;//15
-    for (int location = 0; location < Model::CONFIG->number_of_locations(); location++) {
-        ss << Model::DATA_COLLECTOR->percentage_bites_on_top_20_by_location()[location] * 100 << "%"  << sep;
-//        std::cout << Model::DATA_COLLECTOR->percentage_bites_on_top_20_by_location()[location] * 100 << "%" << "\t";
+    for (int loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
+        ss << Model::DATA_COLLECTOR->percentage_bites_on_top_20_by_location()[loc] * 100 << "%"  << sep;
+//        std::cout << Model::DATA_COLLECTOR->percentage_bites_on_top_20_by_location()[loc] * 100 << "%" << "\t";
     }
     ss << group_sep;//17
-    for (int location = 0; location < Model::CONFIG->number_of_locations(); location++) {
-        double location_NTF = Model::DATA_COLLECTOR->cumulative_NTF_by_location()[location] * 100 /
-                              (double) Model::DATA_COLLECTOR->popsize_by_location()[location];
+    for (int loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
+        double location_NTF = Model::DATA_COLLECTOR->cumulative_NTF_by_location()[loc] * 100 /
+                              (double) Model::DATA_COLLECTOR->popsize_by_location()[loc];
         location_NTF /= total_time_in_years;
         ss << location_NTF << sep;
 //        std::cout << location_NTF << "\t";
     }
     ss << group_sep;//19
-    for (auto location = 0; location < Model::CONFIG->number_of_locations(); location++)
+    for (auto loc = 0; loc < Model::CONFIG->number_of_locations(); loc++)
     {
         for (auto age = 0; age < 80; age++){
-            ss << Model::DATA_COLLECTOR->cumulative_clinical_episodes_by_location_age()[location][age]/total_time_in_years/Model::DATA_COLLECTOR->popsize_by_location_age()[location][age] << sep;
+            ss << Model::DATA_COLLECTOR->cumulative_clinical_episodes_by_location_age()[loc][age]/total_time_in_years/Model::DATA_COLLECTOR->popsize_by_location_age()[loc][age] << sep;
         }
     }
     ss << group_sep;//100
-    for (auto location = 0; location < Model::CONFIG->number_of_locations(); location++) {
-        for(int res_id = 0; res_id < Model::DATA_COLLECTOR->clonal_resistant_genotype_count()[location].size(); res_id++){
-            ss << Model::DATA_COLLECTOR->clonal_resistant_genotype_count()[location][res_id] << sep;
+    for (auto loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
+        for(int res_id = 0; res_id < Model::DATA_COLLECTOR->clonal_resistant_genotype_count()[loc].size(); res_id++){
+            ss << Model::DATA_COLLECTOR->clonal_resistant_genotype_count()[loc][res_id] << sep;
         }
         ss << group_sep;//106
     }
-    for (auto location = 0; location < Model::CONFIG->number_of_locations(); location++) {
-        for(int res_id = 0; res_id < Model::DATA_COLLECTOR->mosquito_recombined_resistant_genotype_count()[location].size(); res_id++){
-            ss << Model::DATA_COLLECTOR->mosquito_recombined_resistant_genotype_count()[location][res_id] << sep;
+    for (auto loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
+        for(int res_id = 0; res_id < Model::DATA_COLLECTOR->mosquito_recombined_resistant_genotype_count()[loc].size(); res_id++){
+            ss << Model::DATA_COLLECTOR->mosquito_recombined_resistant_genotype_count()[loc][res_id] << sep;
         }
         ss << group_sep;//113
     }
-    for (auto location = 0; location < Model::CONFIG->number_of_locations(); location++) {
-        for(int res_id = 0; res_id < Model::DATA_COLLECTOR->mosquito_inflict_resistant_genotype_count()[location].size(); res_id++){
-            ss << Model::DATA_COLLECTOR->mosquito_inflict_resistant_genotype_count()[location][res_id] << sep;
+    for (auto loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
+        for(int res_id = 0; res_id < Model::DATA_COLLECTOR->mosquito_inflict_resistant_genotype_count()[loc].size(); res_id++){
+            ss << Model::DATA_COLLECTOR->mosquito_inflict_resistant_genotype_count()[loc][res_id] << sep;
         }
         ss << group_sep;//118
     }
-
+    for (auto loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
+        ss << Model::DATA_COLLECTOR->cumulative_number_treatments_by_location()[loc] << sep;
+        ss << group_sep;//120
+    }
+    for (auto loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
+        ss << Model::DATA_COLLECTOR->cumulative_TF_by_location()[loc] << sep;
+        ss << group_sep;//122
+    }
+    for (auto loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
+        ss << Model::DATA_COLLECTOR->cumulative_clinical_episodes_by_location()[loc] << sep;
+        ss << group_sep;//124
+    }
     summary_data_file << ss.str() << std::endl;
 
     for (auto [g_id, genotype] : Model::CONFIG->genotype_db) {
