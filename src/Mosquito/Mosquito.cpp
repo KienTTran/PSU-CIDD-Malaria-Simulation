@@ -49,11 +49,10 @@ void Mosquito::infect_new_cohort_in_PRMC(Config *config, Random *random, Populat
       }
       return;
     }
-    // multinomial sampling of people based on their relative infectivity (summing across all clones inside that person)
-    auto first_sampling = random->roulette_sampling<Person>(config->mosquito_config().prmc_size,
-                                                            population->individual_foi_by_location[loc],
-                                                            population->all_alive_persons_by_location[loc], false,
-                                                            population->current_force_of_infection_by_location[loc]);
+    // multinomial sampling based on relative infectivity
+    auto first_sampling = random->roulette_sampling<Person>(
+        config->mosquito_config().prmc_size, population->individual_foi_by_location[loc],
+        population->all_alive_persons_by_location[loc], false, population->current_force_of_infection_by_location[loc]);
 
     std::vector<unsigned int> interrupted_feeding_indices = build_interrupted_feeding_indices(
         random, config->mosquito_config().interrupted_feeding_rate[loc], config->mosquito_config().prmc_size);
@@ -65,79 +64,73 @@ void Mosquito::infect_new_cohort_in_PRMC(Config *config, Random *random, Populat
 
     // recombination
     // *p1 , *p2, bool is_interrupted  ===> *genotype
-    std::vector<Genotype *> sampled_genotypes;
+    std::vector<Genotype *> sampling_genotypes;
     std::vector<double> relative_infectivity_each_pp;
 
-    for (int if_index = 0; if_index < interrupted_feeding_indices.size(); if_index++) {
+    for (int if_index = 0; if_index < interrupted_feeding_indices.size(); ++if_index) {
       // clear() is used to avoid memory reallocation
-      sampled_genotypes.clear();
+      sampling_genotypes.clear();
       relative_infectivity_each_pp.clear();
 
       if (config->within_host_induced_free_recombination()) {
         // get all infectious parasites from first person
-        get_genotypes_profile_from_person(first_sampling[if_index], sampled_genotypes, relative_infectivity_each_pp);
+        get_genotypes_profile_from_person(first_sampling[if_index], sampling_genotypes, relative_infectivity_each_pp);
 
-        if (sampled_genotypes.empty()) {
+        if (sampling_genotypes.empty()) {
           LOG(FATAL) << "first person has no infectious parasites, log10_total_infectious_denstiy = "
                      << first_sampling[if_index]->all_clonal_parasite_populations()->log10_total_infectious_denstiy;
         }
 
         if (interrupted_feeding_indices[if_index]) {
-          // if second person is the same as first person, re-select second person until it is different from first.
-          // this is to avoid recombination between the same person because in this case the interrupted feeding is true,
-          // this is worst case scenario
           auto temp_if = if_index;
           while (second_sampling[temp_if] == first_sampling[if_index]) {
             temp_if = random->random_uniform(second_sampling.size());
           }
           // interrupted feeding occurs
-          get_genotypes_profile_from_person(second_sampling[temp_if], sampled_genotypes, relative_infectivity_each_pp);
+          get_genotypes_profile_from_person(second_sampling[temp_if], sampling_genotypes, relative_infectivity_each_pp);
         }
 
-        if (sampled_genotypes.empty()) {
+        if (sampling_genotypes.empty()) {
           LOG(FATAL) << "sampling_genotypes should not be empty";
         }
       } else {
-        sampled_genotypes.clear();
+        sampling_genotypes.clear();
         relative_infectivity_each_pp.clear();
-        get_genotypes_profile_from_person(first_sampling[if_index], sampled_genotypes, relative_infectivity_each_pp);
+        get_genotypes_profile_from_person(first_sampling[if_index], sampling_genotypes, relative_infectivity_each_pp);
         // get exactly 1 infectious parasite from first person
         auto first_genotype =
-            random->roulette_sampling_tuple<Genotype>(1, relative_infectivity_each_pp, sampled_genotypes, false)[0];
+            random->roulette_sampling_tuple<Genotype>(1, relative_infectivity_each_pp, sampling_genotypes, false)[0];
 
         std::tuple<Genotype *, double> second_genotype = std::make_tuple(nullptr, 0.0);
 
         if (interrupted_feeding_indices[if_index]) {
-          // if second person is the same as first person, re-select second person until it is different from first.
-          // this is to avoid recombination between the same person because in this case the interrupted feeding is true,
-          // this is worst case scenario
           auto temp_if = if_index;
           while (second_sampling[temp_if] == first_sampling[if_index]) {
             temp_if = random->random_uniform(second_sampling.size());
           }
-          sampled_genotypes.clear();
+          sampling_genotypes.clear();
           relative_infectivity_each_pp.clear();
-          get_genotypes_profile_from_person(second_sampling[temp_if], sampled_genotypes, relative_infectivity_each_pp);
+          get_genotypes_profile_from_person(second_sampling[temp_if], sampling_genotypes, relative_infectivity_each_pp);
 
-          if (sampled_genotypes.size() > 0) {
+          if (sampling_genotypes.size() > 0) {
             second_genotype = random->roulette_sampling_tuple<Genotype>(1, relative_infectivity_each_pp,
-                                                                        sampled_genotypes, false)[0];
+                                                                        sampling_genotypes, false)[0];
           }
         }
 
-        sampled_genotypes.clear();
+        sampling_genotypes.clear();
         relative_infectivity_each_pp.clear();
-        sampled_genotypes.push_back(std::get<0>(first_genotype));
+        sampling_genotypes.push_back(std::get<0>(first_genotype));
         relative_infectivity_each_pp.push_back(std::get<1>(first_genotype));
 
         if (std::get<0>(second_genotype) != nullptr) {
-          sampled_genotypes.push_back(std::get<0>(second_genotype));
+          sampling_genotypes.push_back(std::get<0>(second_genotype));
           relative_infectivity_each_pp.push_back(std::get<1>(second_genotype));
         }
       }
 
       auto parent_genotypes =
-          random->roulette_sampling<Genotype>(2, relative_infectivity_each_pp, sampled_genotypes, false);
+          random->roulette_sampling<Genotype>(2, relative_infectivity_each_pp, sampling_genotypes, false);
 
       Genotype *sampled_genotype =
           (parent_genotypes[0]->aa_sequence == parent_genotypes[1]->aa_sequence)
@@ -169,7 +162,6 @@ int Mosquito::random_genotype(int location, int tracking_index) {
 void Mosquito::get_genotypes_profile_from_person(Person *person, std::vector<Genotype *> &sampling_genotypes,
                                                  std::vector<double> &relative_infectivity_each_pp) {
   for (auto *pp : *person->all_clonal_parasite_populations()->parasites()) {
-    //Select parasites based on gametocyte density
     auto clonal_foi = pp->gametocyte_level() * Person::relative_infectivity(pp->last_update_log10_parasite_density());
     if (clonal_foi > 0) {
       relative_infectivity_each_pp.push_back(clonal_foi);

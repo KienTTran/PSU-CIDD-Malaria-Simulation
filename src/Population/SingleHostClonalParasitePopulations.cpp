@@ -147,22 +147,21 @@ void SingleHostClonalParasitePopulations::update_by_drugs(DrugsInBlood* drugs_in
       Genotype* candidate_genotype = new_genotype->perform_mutation_by_drug(Model::CONFIG, Model::RANDOM, drug->drug_type(),
                                                                             Model::CONFIG->mutation_probability_by_locus());
 
-        if (candidate_genotype->get_EC50_power_n(drug->drug_type())
-            > new_genotype->get_EC50_power_n(drug->drug_type())) {
-          // higher EC50^n means lower efficacy then allow mutation occur
-          new_genotype = candidate_genotype;
-        }
-        if (new_genotype != blood_parasite->genotype()) {
-          // mutation occurs
-          Model::DATA_COLLECTOR->record_1_mutation(person_->location(), blood_parasite->genotype(), new_genotype);
-          //          LOG(TRACE) << Model::SCHEDULER->current_time() << "\t" << blood_parasite->genotype()->genotype_id
-          //          << "\t"
-          //                     << new_genotype->genotype_id << "\t"
-          //                     << blood_parasite->genotype()->get_EC50_power_n(drug->drug_type()) << "\t"
-          //                     << new_genotype->get_EC50_power_n(drug->drug_type());
-          blood_parasite->set_genotype(new_genotype);
-        }
-
+      if (candidate_genotype->get_EC50_power_n(drug->drug_type())
+          > new_genotype->get_EC50_power_n(drug->drug_type())) {
+        // higher EC50^n means lower efficacy then allow mutation occur
+        new_genotype = candidate_genotype;
+      }
+      if (new_genotype != blood_parasite->genotype()) {
+        // mutation occurs
+        Model::DATA_COLLECTOR->record_1_mutation(person_->location(), blood_parasite->genotype(), new_genotype);
+        //          LOG(TRACE) << Model::SCHEDULER->current_time() << "\t" << blood_parasite->genotype()->genotype_id
+        //          << "\t"
+        //                     << new_genotype->genotype_id << "\t"
+        //                     << blood_parasite->genotype()->get_EC50_power_n(drug->drug_type()) << "\t"
+        //                     << new_genotype->get_EC50_power_n(drug->drug_type());
+        blood_parasite->set_genotype(new_genotype);
+      }
 
       const auto p_temp = drug->get_parasite_killing_rate(blood_parasite->genotype()->genotype_id);
       percent_parasite_remove = percent_parasite_remove + p_temp - percent_parasite_remove * p_temp;
