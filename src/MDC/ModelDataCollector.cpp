@@ -224,9 +224,12 @@ void ModelDataCollector::initialize() {
         IntVector(80, 0));
     number_of_treatments_by_location_age_year_ = IntVector2(Model::CONFIG->number_of_locations(), IntVector(80, 0));
     number_of_deaths_by_location_age_year_ = IntVector2(Model::CONFIG->number_of_locations(), IntVector(80, 0));
-    number_of_malaria_deaths_by_location_age_year_ = IntVector2(
+    number_of_malaria_deaths_treated_by_location_age_year_ = IntVector2(
         Model::CONFIG->number_of_locations(),
         IntVector(80, 0));
+    number_of_malaria_deaths_non_treated_by_location_age_year_ = IntVector2(
+            Model::CONFIG->number_of_locations(),
+            IntVector(80, 0));
 
     popsize_by_location_age_ = IntVector2(Model::CONFIG->number_of_locations(), IntVector(80, 0));
 
@@ -501,7 +504,8 @@ void ModelDataCollector::perform_yearly_update() {
         number_of_untreated_cases_by_location_age_year_[loc][age] = 0;
         number_of_treatments_by_location_age_year_[loc][age] = 0;
         number_of_deaths_by_location_age_year_[loc][age] = 0;
-        number_of_malaria_deaths_by_location_age_year_[loc][age] = 0;
+        number_of_malaria_deaths_treated_by_location_age_year_[loc][age] = 0;
+        number_of_malaria_deaths_non_treated_by_location_age_year_[loc][age] = 0;
 
       }
     }
@@ -585,12 +589,18 @@ void ModelDataCollector::record_1_death(
   }
 }
 
-void ModelDataCollector::record_1_malaria_death(const int& location, const int& age) {
+void ModelDataCollector::record_1_malaria_death(const int& location, const int& age, bool treated) {
   if (Model::SCHEDULER->current_time() >= Model::CONFIG->start_collect_data_day()) {
     if (age < 79) {
-      number_of_malaria_deaths_by_location_age_year_[location][age] += 1;
+      if(treated)
+        number_of_malaria_deaths_treated_by_location_age_year_[location][age] += 1;
+      else
+        number_of_malaria_deaths_non_treated_by_location_age_year_[location][age] += 1;
     } else {
-      number_of_malaria_deaths_by_location_age_year_[location][79] += 1;
+      if(treated)
+        number_of_malaria_deaths_treated_by_location_age_year_[location][79] += 1;
+      else
+        number_of_malaria_deaths_non_treated_by_location_age_year_[location][79] += 1;
     }
   }
 }
