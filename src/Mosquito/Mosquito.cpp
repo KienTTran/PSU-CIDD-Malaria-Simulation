@@ -101,7 +101,7 @@ void Mosquito::infect_new_cohort_in_PRMC(Config *config, Random *random, Populat
           }
           // interrupted feeding occurs
           get_genotypes_profile_from_person(second_sampling[temp_if], sampled_genotypes, relative_infectivity_each_pp);
-          Model::DATA_COLLECTOR->mosquito_recombined_resistant_genotype_count()[loc][res_23_list.size()]++;
+          Model::DATA_COLLECTOR->mosquito_recombined_resistant_genotype_count()[loc][double_resistant_list.size()]++;
         }
 
         if (sampled_genotypes.empty()) {
@@ -133,7 +133,7 @@ void Mosquito::infect_new_cohort_in_PRMC(Config *config, Random *random, Populat
             second_genotype = random->roulette_sampling_tuple<Genotype>(1, relative_infectivity_each_pp,
                                                                         sampled_genotypes, false)[0];
           }
-          Model::DATA_COLLECTOR->mosquito_recombined_resistant_genotype_count()[loc][res_23_list.size()]++;
+          Model::DATA_COLLECTOR->mosquito_recombined_resistant_genotype_count()[loc][double_resistant_list.size()]++;
         }
 
         sampled_genotypes.clear();
@@ -157,6 +157,7 @@ void Mosquito::infect_new_cohort_in_PRMC(Config *config, Random *random, Populat
       genotypes_table[tracking_index][loc][if_index] = sampled_genotype;
 
       //Count DHA-PPQ, ASAQ and AL only
+      //Count if male genotype resists to one drug and female genotype resists to another drug only, right now work on double resistant only
       for (int therapy_id = 6; therapy_id <= 8; therapy_id++) {
           auto *sc_therapy = dynamic_cast<SCTherapy *>(Model::CONFIG->therapy_db()[therapy_id]);
           if ((((parent_genotypes[0]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[0])) == drug_id_min_ec50[sc_therapy->drug_ids[0]])
@@ -167,14 +168,14 @@ void Mosquito::infect_new_cohort_in_PRMC(Config *config, Random *random, Populat
                    && (parent_genotypes[1]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1])) != drug_id_min_ec50[sc_therapy->drug_ids[1]])
                    && (parent_genotypes[0]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[0])) != drug_id_min_ec50[sc_therapy->drug_ids[0]])
                    && (parent_genotypes[0]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1])) == drug_id_min_ec50[sc_therapy->drug_ids[1]])))) {
-              for(int res_id = 0; res_id < res_23_list.size(); res_id++){
-                  if(get_resistant_strength_23(sampled_genotype,res_23_list[res_id])){
+              for(int res_id = 0; res_id < double_resistant_list.size(); res_id++){
+                  if(genotype_resistant_to(sampled_genotype,double_resistant_list[res_id],therapy_id)){
                       Model::DATA_COLLECTOR->mosquito_recombined_resistant_genotype_count()[loc][res_id]++;
                   }
               }
           }
       }
-      Model::DATA_COLLECTOR->mosquito_recombined_resistant_genotype_count()[loc][res_23_list.size()+1]++;
+      Model::DATA_COLLECTOR->mosquito_recombined_resistant_genotype_count()[loc][double_resistant_list.size()+1]++;
     }
   }
 }
@@ -193,13 +194,6 @@ std::vector<unsigned int> Mosquito::build_interrupted_feeding_indices(Random *ra
 
 int Mosquito::random_genotype(int location, int tracking_index) {
     auto genotype_index = Model::RANDOM->random_uniform_int(0, Model::CONFIG->mosquito_config().prmc_size);
-
-    for(int res_id = 0; res_id < res_23_list.size(); res_id++){
-        if(get_resistant_strength_23(genotypes_table[tracking_index][location][genotype_index],res_23_list[res_id])){
-            Model::DATA_COLLECTOR->mosquito_inflict_resistant_genotype_count()[location][res_id]++;
-        }
-    }
-
     return genotypes_table[tracking_index][location][genotype_index]->genotype_id;
 }
 
@@ -225,143 +219,24 @@ std::vector<std::string> Mosquito::split_string(std::string str, char delimiter)
   return internal;
 }
 
-bool Mosquito::string_contain(std::string str, std::string pattern) {
-  if (str.find(pattern) != std::string::npos) {
-    return true;
-  }
-  return false;
-}
-
-std::string Mosquito::get_resistant_strength_1(Genotype *genotype, std::string therapy) {
+bool Mosquito::genotype_resistant_to(Genotype *genotype, std::string resistance, int therapy_id) {
   std::string aa_seq = genotype->get_aa_sequence();
   std::vector<std::string> pattern_chromosome = split_string(aa_seq, '|');
   std::vector<std::string> chromosome_allele;
-  int drug_num = 0;
-  int allele_num = 0;
-//  printf("Therapy: %s\n",therapy.c_str());
-//  for(int i = 0; i < pattern_chromosome.size(); i++){
-//    printf("%s|",pattern_chromosome[i].c_str());
-//  }
-//  printf("\n");
-  for (int i = 0; i < pattern_chromosome.size(); i++) {
-    std::string chromosome = "";
-    for (int j = 0; j < pattern_chromosome[i].size(); j++) {
-      chromosome += "0";
-    }
-    chromosome_allele.push_back(chromosome);
-  }
-  if (string_contain(split_string(therapy, '-')[0], "A")) //ART
-  {
-    if (pattern_chromosome[12].substr(10, 1) == "Y") {
-      chromosome_allele[12].replace(10, 1, "1");
-      drug_num += 1;
-      allele_num += 1;
-    }
-  }
-  if (string_contain(split_string(therapy, '-')[1], "L")) //LUM
-  {
-    if (pattern_chromosome[4].substr(0, 2) != "YY") {
-      drug_num += 1;
-    } else if (pattern_chromosome[6].substr(0, 1) != "T") {
-      drug_num += 1;
-    } else {
-      drug_num = drug_num;
-    }
-    if (pattern_chromosome[6][0] == 'K' || pattern_chromosome[4][0] == 'N' || pattern_chromosome[4][1] == 'F' ||
-        pattern_chromosome[4][2] == '2') {
-      drug_num += 1;
-    }
-    if (drug_num > 0) {
-      if (pattern_chromosome[6].substr(0, 1) == "K") { // K76T
-        chromosome_allele[6].replace(0, 1, "1");
-        allele_num += 1;
-      }
-      if (pattern_chromosome[4].substr(0, 1) == "N") {  // N86Y
-        chromosome_allele[4].replace(0, 1, "1");
-        allele_num += 1;
-      }
-      if (pattern_chromosome[4].substr(1, 1) == "F") {  // Y184F
-        chromosome_allele[4].replace(1, 1, "1");
-        allele_num += 1;
-      }
-    }
-  }
-  if (string_contain(split_string(therapy, '-')[1], "AQ")) //AQ
-  {
-    if (pattern_chromosome[6][0] == 'T' || pattern_chromosome[4][0] == 'Y' || pattern_chromosome[4][1] == 'Y') {
-      drug_num += 1;
-    }
-    if (drug_num > 0) {
-      if (pattern_chromosome[6].substr(0, 1) == "T") { // K76T
-        chromosome_allele[6].replace(0, 1, "1");
-        allele_num += 1;
-      }
-      if (pattern_chromosome[4].substr(0, 1) == "Y") {  // N86Y
-        chromosome_allele[4].replace(0, 1, "1");
-        allele_num += 1;
-      }
-      if (pattern_chromosome[4].substr(1, 1) == "Y") {  // Y184F
-        chromosome_allele[4].replace(1, 1, "1");
-        allele_num += 1;
-      }
-    }
-  }
-  if (string_contain(split_string(therapy, '-')[1], "PPQ")) //PPQ
-  {
-    if (pattern_chromosome[13].substr(0, 1) == "2") {
-      chromosome_allele[13].replace(0, 1, "1");
-      drug_num += 1;
-      allele_num += 1;
-    }
-  }
-  std::string pattern = std::to_string(drug_num) + "-" + std::to_string(allele_num);
-//  printf("aa_seq: %s, pattern: %s, chromosome_allele:\n",aa_seq.c_str(),pattern.c_str());
-//  for(int i = 0; i < pattern_chromosome.size(); i++){
-//    printf("%s|",chromosome_allele[i].c_str());
-//  }
-  return pattern;
-}
-
-bool Mosquito::get_resistant_strength_23(Genotype *genotype, std::string resistance) {
-  std::string aa_seq = genotype->get_aa_sequence();
-  std::vector<std::string> pattern_chromosome = split_string(aa_seq, '|');
-  std::vector<std::string> chromosome_allele;
-  if (resistance == "AL:2") {
-    if (pattern_chromosome[12].substr(10, 1) == "Y" && pattern_chromosome[6].substr(0, 1) == "K" \
+  if (resistance == "AL:2" && therapy_id == 6) {
+    return (pattern_chromosome[12].substr(10, 1) == "Y" && pattern_chromosome[6].substr(0, 1) == "K" \
          && pattern_chromosome[4].substr(0, 1) == "N" && pattern_chromosome[4].substr(1, 1) == "F" \
-         && pattern_chromosome[13].substr(0, 1) == "1") {
-      return true;
-    }
+         && pattern_chromosome[13].substr(0, 1) == "1");
   }
 
-  if (resistance == "ASAQ:2") {
-    if (pattern_chromosome[12].substr(10, 1) == "Y" && pattern_chromosome[6].substr(0, 1) == "T" \
+  if (resistance == "ASAQ:2" && therapy_id == 7) {
+    return (pattern_chromosome[12].substr(10, 1) == "Y" && pattern_chromosome[6].substr(0, 1) == "T" \
          && pattern_chromosome[4].substr(0, 1) == "Y" && pattern_chromosome[4].substr(1, 1) == "Y" \
-         && pattern_chromosome[13].substr(0, 1) == "1") {
-      return true;
-    }
+         && pattern_chromosome[13].substr(0, 1) == "1");
   }
 
-  if (resistance == "DHA-PPQ:2") {
-    if (pattern_chromosome[12].substr(10, 1) == "Y" && pattern_chromosome[13].substr(0, 1) == "2") {
-      return true;
-    }
-  }
-
-  if (resistance == "DHA-PPQ-LUM:3") {
-    if (pattern_chromosome[12].substr(10, 1) == "Y" && pattern_chromosome[6].substr(0, 1) == "K" \
-         && pattern_chromosome[4].substr(0, 1) == "N" && pattern_chromosome[4].substr(1, 1) == "F" \
-         && pattern_chromosome[13].substr(0, 1) == "2") {
-      return true;
-    }
-  }
-
-  if (resistance == "DHA-PPQ-AQ:3") {
-    if (pattern_chromosome[12].substr(10, 1) == "Y" && pattern_chromosome[6].substr(0, 1) == "T" \
-         && pattern_chromosome[4].substr(0, 1) == "Y" && pattern_chromosome[4].substr(1, 1) == "Y" \
-         && pattern_chromosome[13].substr(0, 1) == "2") {
-      return true;
-    }
+  if (resistance == "DHA-PPQ:2" && therapy_id == 8) {
+    return (pattern_chromosome[12].substr(10, 1) == "Y" && pattern_chromosome[13].substr(0, 1) == "2");
   }
   return false;
 }
