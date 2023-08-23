@@ -278,7 +278,7 @@ bool Mosquito::genotype_resistant_to(Genotype *genotype, std::string resistance,
   //DHA-PPQ:2-2
   if (resistance == "DHA-PPQ:2-2" && therapy_id == 8) {
     bool result = (pattern_chromosome[12].substr(10, 1) == "Y" && pattern_chromosome[13].substr(0, 1) == "2");//580Y-2
-    VLOG(1) << fmt::format("{} {} Genotype: {} therapy: {} {}\n",resistance,Model::SCHEDULER->current_time(),aa_seq.c_str(),therapy_id,result);
+    if(result) VLOG(1) << fmt::format("{} {} Genotype: {} therapy: {} {}\n",resistance,Model::SCHEDULER->current_time(),aa_seq.c_str(),therapy_id,result);
     return result;
   }
   //ASAQ:2-2
@@ -296,7 +296,7 @@ bool Mosquito::genotype_resistant_to(Genotype *genotype, std::string resistance,
         res_points++;
     }
     bool result = (res_points == 2 && mut_points == 2);
-    VLOG(1) << fmt::format("{} {} Genotype: {} therapy: {} {}\n",resistance,Model::SCHEDULER->current_time(),aa_seq.c_str(),therapy_id,result);
+    if(result) VLOG(1) << fmt::format("{} {} Genotype: {} therapy: {} {}\n",resistance,Model::SCHEDULER->current_time(),aa_seq.c_str(),therapy_id,result);
     return result;
   }
   //ASAQ:2-3
@@ -316,7 +316,7 @@ bool Mosquito::genotype_resistant_to(Genotype *genotype, std::string resistance,
       res_points++;
     }
     bool result = (res_points == 2 && mut_points == 3);
-    VLOG(1) << fmt::format("{} {} Genotype: {} therapy: {} {}\n",resistance,Model::SCHEDULER->current_time(),aa_seq.c_str(),therapy_id,result);
+    if(result) VLOG(1) << fmt::format("{} {} Genotype: {} therapy: {} {}\n",resistance,Model::SCHEDULER->current_time(),aa_seq.c_str(),therapy_id,result);
     return result;
   }
   //ASAQ:2-4
@@ -334,7 +334,7 @@ bool Mosquito::genotype_resistant_to(Genotype *genotype, std::string resistance,
       res_points++;
     }
     bool result = (res_points == 2 && mut_points == 4);
-    VLOG(1) << fmt::format("{} {} Genotype: {} therapy: {} {}\n",resistance,Model::SCHEDULER->current_time(),aa_seq.c_str(),therapy_id,result);
+    if(result) VLOG(1) << fmt::format("{} {} Genotype: {} therapy: {} {}\n",resistance,Model::SCHEDULER->current_time(),aa_seq.c_str(),therapy_id,result);
     return result;
   }
   //AL:2-2
@@ -352,7 +352,7 @@ bool Mosquito::genotype_resistant_to(Genotype *genotype, std::string resistance,
       res_points++;
     }
     bool result = (res_points == 2 && mut_points == 2);
-    VLOG(1) << fmt::format("{} {} Genotype: {} therapy: {} {}\n",resistance,Model::SCHEDULER->current_time(),aa_seq.c_str(),therapy_id,result);
+    if(result) VLOG(1) << fmt::format("{} {} Genotype: {} therapy: {} {}\n",resistance,Model::SCHEDULER->current_time(),aa_seq.c_str(),therapy_id,result);
     return result;
   }
   //AL:2-3
@@ -372,7 +372,7 @@ bool Mosquito::genotype_resistant_to(Genotype *genotype, std::string resistance,
       res_points++;
     }
     bool result = (res_points == 2 && mut_points == 3);
-    VLOG(1) << fmt::format("{} {} Genotype: {} therapy: {} {}\n",resistance,Model::SCHEDULER->current_time(),aa_seq.c_str(),therapy_id,result);
+    if(result) VLOG(1) << fmt::format("{} {} Genotype: {} therapy: {} {}\n",resistance,Model::SCHEDULER->current_time(),aa_seq.c_str(),therapy_id,result);
     return result;
   }
   //AL:2-4
@@ -390,7 +390,7 @@ bool Mosquito::genotype_resistant_to(Genotype *genotype, std::string resistance,
       res_points++;
     }
     bool result = (res_points == 2 && mut_points == 4);
-    VLOG(1) << fmt::format("{} {} Genotype: {} therapy: {} {}\n",resistance,Model::SCHEDULER->current_time(),aa_seq.c_str(),therapy_id,result);
+    if(result) VLOG(1) << fmt::format("{} {} Genotype: {} therapy: {} {}\n",resistance,Model::SCHEDULER->current_time(),aa_seq.c_str(),therapy_id,result);
     return result;
   }
   return false;
