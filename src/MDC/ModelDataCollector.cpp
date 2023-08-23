@@ -12,6 +12,7 @@
 #include "Model.h"
 #include "Core/Config/Config.h"
 #include "Population/Person.h"
+#include "Mosquito/Mosquito.h"
 #include "Population/Properties/PersonIndexByLocationStateAgeClass.h"
 #include "Population/Population.h"
 #include "Population/ImmuneSystem.h"
@@ -153,15 +154,15 @@ void ModelDataCollector::initialize() {
 
     mosquito_recombined_resistant_genotype_count_ = IntVector2(
         Model::CONFIG->number_of_locations(),
-        IntVector(7, 0));
+        IntVector(Model::MOSQUITO->double_resistant_list.size()+2, 0));
 
     mosquito_inflict_resistant_genotype_count_ = IntVector2(
               Model::CONFIG->number_of_locations(),
-              IntVector(5, 0));
+              IntVector(Model::MOSQUITO->double_resistant_list.size(), 0));
 
     clonal_resistant_genotype_count_ = IntVector2(
             Model::CONFIG->number_of_locations(),
-            IntVector(5, 0));
+            IntVector(Model::MOSQUITO->double_resistant_list.size(), 0));
 
     AMU_per_parasite_pop_ = 0;
     AMU_per_person_ = 0;
