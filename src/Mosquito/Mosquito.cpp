@@ -283,47 +283,113 @@ bool Mosquito::genotype_resistant_to(Genotype *genotype, std::string resistance,
   }
   //ASAQ:2-2
   if (resistance == "ASAQ:2-2" && therapy_id == 7) {
-    bool result = (pattern_chromosome[12].substr(10, 1) == "Y" && pattern_chromosome[6].substr(0, 1) == "T") //76T-580Y
-                ||(pattern_chromosome[12].substr(10, 1) == "Y" && pattern_chromosome[4].substr(0, 1) == "Y") //86Y-580Y
-                ||(pattern_chromosome[12].substr(10, 1) == "Y" && pattern_chromosome[4].substr(1, 1) == "Y");//Y184-580Y
+    int res_points = 0;
+    int mut_points = 0;
+    if(pattern_chromosome[12].substr(10, 1) == "Y"){
+        res_points++;
+        mut_points++;
+    }
+    if(pattern_chromosome[6].substr(0, 1) == "T" || pattern_chromosome[4].substr(0, 1) == "Y" || pattern_chromosome[4].substr(1, 1) == "Y"){
+        mut_points++;
+    }
+    if(mut_points > 0){
+        res_points++;
+    }
+    bool result = (res_points == 2 && mut_points == 2);
     VLOG(1) << fmt::format("{} {} Genotype: {} therapy: {} {}\n",resistance,Model::SCHEDULER->current_time(),aa_seq.c_str(),therapy_id,result);
     return result;
   }
   //ASAQ:2-3
   if (resistance == "ASAQ:2-3" && therapy_id == 7) {
-    bool result = (pattern_chromosome[12].substr(10, 1) == "Y" && pattern_chromosome[6].substr(0, 1) == "T" && pattern_chromosome[4].substr(0, 1) == "Y") //76T-86Y-580Y
-                  ||(pattern_chromosome[12].substr(10, 1) == "Y" && pattern_chromosome[6].substr(0, 1) == "T" && pattern_chromosome[4].substr(1, 1) == "Y") //76T-Y184-580Y
-                  ||(pattern_chromosome[12].substr(10, 1) == "Y" && pattern_chromosome[4].substr(0, 1) == "Y" && pattern_chromosome[4].substr(1, 1) == "Y");//86Y-Y184-580Y
+    int res_points = 0;
+    int mut_points = 0;
+    if(pattern_chromosome[12].substr(10, 1) == "Y"){
+      res_points++;
+      mut_points++;
+    }
+    if((pattern_chromosome[6].substr(0, 1) == "T" && pattern_chromosome[4].substr(0, 1) == "Y")
+    || (pattern_chromosome[6].substr(0, 1) == "T" && pattern_chromosome[4].substr(1, 1) == "Y")
+    || (pattern_chromosome[4].substr(0, 1) == "Y" && pattern_chromosome[4].substr(1, 1) == "Y")){
+      mut_points+=2;
+    }
+    if(mut_points > 0){
+      res_points++;
+    }
+    bool result = (res_points == 2 && mut_points == 3);
     VLOG(1) << fmt::format("{} {} Genotype: {} therapy: {} {}\n",resistance,Model::SCHEDULER->current_time(),aa_seq.c_str(),therapy_id,result);
     return result;
   }
   //ASAQ:2-4
   if (resistance == "ASAQ:2-4" && therapy_id == 7) {
-    bool result = (pattern_chromosome[12].substr(10, 1) == "Y"
-                  && pattern_chromosome[6].substr(0, 1) == "T" && pattern_chromosome[4].substr(0, 1) == "Y" && pattern_chromosome[4].substr(1, 1) == "Y"); //76T-86Y-Y184-580Y
+    int res_points = 0;
+    int mut_points = 0;
+    if(pattern_chromosome[12].substr(10, 1) == "Y"){
+      res_points++;
+      mut_points++;
+    }
+    if((pattern_chromosome[6].substr(0, 1) == "T" && pattern_chromosome[4].substr(0, 1) == "Y" && pattern_chromosome[4].substr(1, 1) == "Y")){
+      mut_points+=3;
+    }
+    if(mut_points > 0){
+      res_points++;
+    }
+    bool result = (res_points == 2 && mut_points == 4);
     VLOG(1) << fmt::format("{} {} Genotype: {} therapy: {} {}\n",resistance,Model::SCHEDULER->current_time(),aa_seq.c_str(),therapy_id,result);
     return result;
   }
   //AL:2-2
   if (resistance == "AL:2-2" && therapy_id == 6) {
-    bool result = (pattern_chromosome[12].substr(10, 1) == "Y" && pattern_chromosome[6].substr(0, 1) == "K") //K76-580Y
-                  ||(pattern_chromosome[12].substr(10, 1) == "Y" && pattern_chromosome[4].substr(0, 1) == "N") //N86-580Y
-                  ||(pattern_chromosome[12].substr(10, 1) == "Y" && pattern_chromosome[4].substr(1, 1) == "F");//184F-580Y
+    int res_points = 0;
+    int mut_points = 0;
+    if(pattern_chromosome[12].substr(10, 1) == "Y"){
+      res_points++;
+      mut_points++;
+    }
+    if(pattern_chromosome[6].substr(0, 1) == "K" || pattern_chromosome[4].substr(0, 1) == "N" || pattern_chromosome[4].substr(1, 1) == "F"){
+      mut_points++;
+    }
+    if(mut_points > 0){
+      res_points++;
+    }
+    bool result = (res_points == 2 && mut_points == 2);
     VLOG(1) << fmt::format("{} {} Genotype: {} therapy: {} {}\n",resistance,Model::SCHEDULER->current_time(),aa_seq.c_str(),therapy_id,result);
     return result;
   }
   //AL:2-3
   if (resistance == "AL:2-3" && therapy_id == 6) {
-    bool result = (pattern_chromosome[12].substr(10, 1) == "Y" && pattern_chromosome[6].substr(0, 1) == "K" && pattern_chromosome[4].substr(0, 1) == "N") //K76-N86-580Y
-                  ||(pattern_chromosome[12].substr(10, 1) == "Y" && pattern_chromosome[6].substr(0, 1) == "K" && pattern_chromosome[4].substr(1, 1) == "F") //K76-184F-580Y
-                  ||(pattern_chromosome[12].substr(10, 1) == "Y" && pattern_chromosome[4].substr(0, 1) == "N" && pattern_chromosome[4].substr(1, 1) == "F");//N86-184F-580Y
+    int res_points = 0;
+    int mut_points = 0;
+    if(pattern_chromosome[12].substr(10, 1) == "Y"){
+      res_points++;
+      mut_points++;
+    }
+    if((pattern_chromosome[6].substr(0, 1) == "K" && pattern_chromosome[4].substr(0, 1) == "N")
+       || (pattern_chromosome[6].substr(0, 1) == "K" && pattern_chromosome[4].substr(1, 1) == "F")
+       || (pattern_chromosome[4].substr(0, 1) == "N" && pattern_chromosome[4].substr(1, 1) == "F")){
+      mut_points+=2;
+    }
+    if(mut_points > 0){
+      res_points++;
+    }
+    bool result = (res_points == 2 && mut_points == 3);
     VLOG(1) << fmt::format("{} {} Genotype: {} therapy: {} {}\n",resistance,Model::SCHEDULER->current_time(),aa_seq.c_str(),therapy_id,result);
     return result;
   }
   //AL:2-4
   if (resistance == "AL:2-4" && therapy_id == 6) {
-    bool result = (pattern_chromosome[12].substr(10, 1) == "Y"
-                   && pattern_chromosome[6].substr(0, 1) == "K" && pattern_chromosome[4].substr(0, 1) == "N" && pattern_chromosome[4].substr(1, 1) == "F"); //K76-N86-184F-580Y
+    int res_points = 0;
+    int mut_points = 0;
+    if(pattern_chromosome[12].substr(10, 1) == "Y"){
+      res_points++;
+      mut_points++;
+    }
+    if((pattern_chromosome[6].substr(0, 1) == "K" && pattern_chromosome[4].substr(0, 1) == "N" && pattern_chromosome[4].substr(1, 1) == "F")){
+      mut_points+=3;
+    }
+    if(mut_points > 0){
+      res_points++;
+    }
+    bool result = (res_points == 2 && mut_points == 4);
     VLOG(1) << fmt::format("{} {} Genotype: {} therapy: {} {}\n",resistance,Model::SCHEDULER->current_time(),aa_seq.c_str(),therapy_id,result);
     return result;
   }
