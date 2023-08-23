@@ -156,7 +156,7 @@ void Mosquito::infect_new_cohort_in_PRMC(Config *config, Random *random, Populat
 
       genotypes_table[tracking_index][loc][if_index] = sampled_genotype;
 
-      //Count DHA-PPQ, ASAQ and AL only
+      //Count DHA-PPQ(8), ASAQ(7) and AL(6) only
       //Count if male genotype resists to one drug and female genotype resists to another drug only, right now work on double resistant only
       for (int therapy_id = 6; therapy_id <= 8; therapy_id++) {
           auto *sc_therapy = dynamic_cast<SCTherapy *>(Model::CONFIG->therapy_db()[therapy_id]);
@@ -168,6 +168,7 @@ void Mosquito::infect_new_cohort_in_PRMC(Config *config, Random *random, Populat
                    && (parent_genotypes[1]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1])) != drug_id_min_ec50[sc_therapy->drug_ids[1]])
                    && (parent_genotypes[0]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[0])) != drug_id_min_ec50[sc_therapy->drug_ids[0]])
                    && (parent_genotypes[0]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1])) == drug_id_min_ec50[sc_therapy->drug_ids[1]])))) {
+              printf("therapy_id: %d genotype0 : %s genotype1: %s\n",therapy_id, parent_genotypes[0]->get_aa_sequence().c_str(), parent_genotypes[1]->get_aa_sequence().c_str());
               for(int res_id = 0; res_id < double_resistant_list.size(); res_id++){
                   if(genotype_resistant_to(sampled_genotype,double_resistant_list[res_id],therapy_id)){
                       Model::DATA_COLLECTOR->mosquito_recombined_resistant_genotype_count()[loc][res_id]++;
@@ -224,18 +225,25 @@ bool Mosquito::genotype_resistant_to(Genotype *genotype, std::string resistance,
   std::vector<std::string> pattern_chromosome = split_string(aa_seq, '|');
   std::vector<std::string> chromosome_allele;
   if (resistance == "AL:2" && therapy_id == 6) {
+    printf("AL:2 Genotype: %s therapy: %d %d\n", aa_seq.c_str(),therapy_id,(pattern_chromosome[12].substr(10, 1) == "Y" && pattern_chromosome[6].substr(0, 1) == "K" \
+         && pattern_chromosome[4].substr(0, 1) == "N" && pattern_chromosome[4].substr(1, 1) == "F" \
+         && pattern_chromosome[13].substr(0, 1) == "1"));
     return (pattern_chromosome[12].substr(10, 1) == "Y" && pattern_chromosome[6].substr(0, 1) == "K" \
          && pattern_chromosome[4].substr(0, 1) == "N" && pattern_chromosome[4].substr(1, 1) == "F" \
          && pattern_chromosome[13].substr(0, 1) == "1");
   }
 
   if (resistance == "ASAQ:2" && therapy_id == 7) {
+    printf("ASAQ:2 Genotype: %s therapy: %d %d\n", aa_seq.c_str(),therapy_id,(pattern_chromosome[12].substr(10, 1) == "Y" && pattern_chromosome[6].substr(0, 1) == "T" \
+         && pattern_chromosome[4].substr(0, 1) == "Y" && pattern_chromosome[4].substr(1, 1) == "Y" \
+         && pattern_chromosome[13].substr(0, 1) == "1"));
     return (pattern_chromosome[12].substr(10, 1) == "Y" && pattern_chromosome[6].substr(0, 1) == "T" \
          && pattern_chromosome[4].substr(0, 1) == "Y" && pattern_chromosome[4].substr(1, 1) == "Y" \
          && pattern_chromosome[13].substr(0, 1) == "1");
   }
 
   if (resistance == "DHA-PPQ:2" && therapy_id == 8) {
+    printf("DHA-PPQ:2 Genotype: %s therapy: %d %d\n", aa_seq.c_str(),therapy_id,(pattern_chromosome[12].substr(10, 1) == "Y" && pattern_chromosome[13].substr(0, 1) == "2"));
     return (pattern_chromosome[12].substr(10, 1) == "Y" && pattern_chromosome[13].substr(0, 1) == "2");
   }
   return false;
