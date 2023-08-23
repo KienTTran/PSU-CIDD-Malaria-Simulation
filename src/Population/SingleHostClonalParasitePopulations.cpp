@@ -157,6 +157,44 @@ void SingleHostClonalParasitePopulations::update_by_drugs(DrugsInBlood* drugs_in
           // mutation occurs
           Model::DATA_COLLECTOR->record_1_mutation(person_->location(), blood_parasite->genotype(), new_genotype);
           Model::DATA_COLLECTOR->record_1_mutation_by_drug(person_->location(), blood_parasite->genotype(), new_genotype, drug_id);
+
+          //Count DHA-PPQ(8) ASAQ(7) AL(6)
+          //Count if male genotype resists to one drug and female genotype resists to another drug only, right now work on double resistant only
+          //when genotype ec50_power_n == min_ec50, it is sensitive to that drug
+          //DHA-PPQ:2-2
+          int therapy_id = 8;
+          if(Model::MOSQUITO->genotype_resistant_to(new_genotype,Model::MOSQUITO->double_resistant_list[0],therapy_id)){
+            Model::DATA_COLLECTOR->clonal_resistant_genotype_count()[0][0]++;
+          }
+          //ASAQ
+          therapy_id = 7;
+          //ASAQ:2-2, 580Y and any of 76T, 86Y or Y184
+          if(Model::MOSQUITO->genotype_resistant_to(new_genotype,Model::MOSQUITO->double_resistant_list[1],therapy_id)){
+            Model::DATA_COLLECTOR->clonal_resistant_genotype_count()[0][1]++;
+          }
+          //ASAQ:2-3, 580Y and any 2 of 76T, 86Y or Y184
+          if(Model::MOSQUITO->genotype_resistant_to(new_genotype,Model::MOSQUITO->double_resistant_list[2],therapy_id)){
+            Model::DATA_COLLECTOR->clonal_resistant_genotype_count()[0][2]++;
+          }
+          //ASAQ:2-4, 580Y and 3 of 76T, 86Y or Y184
+          if(Model::MOSQUITO->genotype_resistant_to(new_genotype,Model::MOSQUITO->double_resistant_list[3],therapy_id)){
+            Model::DATA_COLLECTOR->clonal_resistant_genotype_count()[0][3]++;
+          }
+          //AL
+          therapy_id = 6;
+          //AL:2-2, 580Y and any of K76, N86Y or 184F
+          if(Model::MOSQUITO->genotype_resistant_to(new_genotype,Model::MOSQUITO->double_resistant_list[4],therapy_id)){
+            Model::DATA_COLLECTOR->clonal_resistant_genotype_count()[0][4]++;
+          }
+          //AL:2-3, 580Y and any 2 of K76, N86Y or 184F
+          if(Model::MOSQUITO->genotype_resistant_to(new_genotype,Model::MOSQUITO->double_resistant_list[5],therapy_id)){
+            Model::DATA_COLLECTOR->clonal_resistant_genotype_count()[0][5]++;
+          }
+          //AL:2-4, 580Y and 3 of K76, N86Y or 184F
+          if(Model::MOSQUITO->genotype_resistant_to(new_genotype,Model::MOSQUITO->double_resistant_list[6],therapy_id)){
+            Model::DATA_COLLECTOR->clonal_resistant_genotype_count()[0][6]++;
+          }
+
           //          LOG(TRACE) << Model::SCHEDULER->current_time() << "\t" << blood_parasite->genotype()->genotype_id
           //          << "\t"
           //                     << new_genotype->genotype_id << "\t"
