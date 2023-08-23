@@ -225,7 +225,7 @@ bool Mosquito::genotype_resistant_to(Genotype *genotype, std::string resistance,
   std::vector<std::string> pattern_chromosome = split_string(aa_seq, '|');
   std::vector<std::string> chromosome_allele;
   if (resistance == "AL:2" && therapy_id == 6) {
-    printf("AL:2 Genotype: %s therapy: %d %d\n", aa_seq.c_str(),therapy_id,(pattern_chromosome[12].substr(10, 1) == "Y" && pattern_chromosome[6].substr(0, 1) == "K" \
+    VLOG(1) << fmt::format("AL:2 Genotype: {} therapy: {} {}\n", aa_seq.c_str(),therapy_id,(pattern_chromosome[12].substr(10, 1) == "Y" && pattern_chromosome[6].substr(0, 1) == "K" \
          && pattern_chromosome[4].substr(0, 1) == "N" && pattern_chromosome[4].substr(1, 1) == "F" \
          && pattern_chromosome[13].substr(0, 1) == "1"));
     return (pattern_chromosome[12].substr(10, 1) == "Y" && pattern_chromosome[6].substr(0, 1) == "K" \
@@ -234,7 +234,7 @@ bool Mosquito::genotype_resistant_to(Genotype *genotype, std::string resistance,
   }
 
   if (resistance == "ASAQ:2" && therapy_id == 7) {
-    printf("ASAQ:2 Genotype: %s therapy: %d %d\n", aa_seq.c_str(),therapy_id,(pattern_chromosome[12].substr(10, 1) == "Y" && pattern_chromosome[6].substr(0, 1) == "T" \
+    VLOG(1) << fmt::format("ASAQ:2 Genotype: {} therapy: {} {}\n", aa_seq.c_str(),therapy_id,(pattern_chromosome[12].substr(10, 1) == "Y" && pattern_chromosome[6].substr(0, 1) == "T" \
          && pattern_chromosome[4].substr(0, 1) == "Y" && pattern_chromosome[4].substr(1, 1) == "Y" \
          && pattern_chromosome[13].substr(0, 1) == "1"));
     return (pattern_chromosome[12].substr(10, 1) == "Y" && pattern_chromosome[6].substr(0, 1) == "T" \
@@ -243,7 +243,7 @@ bool Mosquito::genotype_resistant_to(Genotype *genotype, std::string resistance,
   }
 
   if (resistance == "DHA-PPQ:2" && therapy_id == 8) {
-    printf("DHA-PPQ:2 Genotype: %s therapy: %d %d\n", aa_seq.c_str(),therapy_id,(pattern_chromosome[12].substr(10, 1) == "Y" && pattern_chromosome[13].substr(0, 1) == "2"));
+    VLOG(1) << fmt::format("DHA-PPQ:2 Genotype: {} therapy: {} {}\n", aa_seq.c_str(),therapy_id,(pattern_chromosome[12].substr(10, 1) == "Y" && pattern_chromosome[13].substr(0, 1) == "2"));
     return (pattern_chromosome[12].substr(10, 1) == "Y" && pattern_chromosome[13].substr(0, 1) == "2");
   }
   return false;
