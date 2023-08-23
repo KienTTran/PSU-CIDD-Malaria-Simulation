@@ -101,6 +101,7 @@ void Mosquito::infect_new_cohort_in_PRMC(Config *config, Random *random, Populat
           }
           // interrupted feeding occurs
           get_genotypes_profile_from_person(second_sampling[temp_if], sampled_genotypes, relative_infectivity_each_pp);
+          //Count interrupted feeding events with within host induced recombination on
           Model::DATA_COLLECTOR->mosquito_recombined_resistant_genotype_count()[loc][double_resistant_list.size()]++;
         }
 
@@ -133,6 +134,7 @@ void Mosquito::infect_new_cohort_in_PRMC(Config *config, Random *random, Populat
             second_genotype = random->roulette_sampling_tuple<Genotype>(1, relative_infectivity_each_pp,
                                                                         sampled_genotypes, false)[0];
           }
+          //Count interrupted feeding events with within host induced recombination off
           Model::DATA_COLLECTOR->mosquito_recombined_resistant_genotype_count()[loc][double_resistant_list.size()]++;
         }
 
@@ -156,24 +158,75 @@ void Mosquito::infect_new_cohort_in_PRMC(Config *config, Random *random, Populat
 
       genotypes_table[tracking_index][loc][if_index] = sampled_genotype;
 
-      //Count DHA-PPQ(8) only
+      //Count DHA-PPQ(8) ASAQ(7) AL(6)
       //Count if male genotype resists to one drug and female genotype resists to another drug only, right now work on double resistant only
-        auto *sc_therapy = dynamic_cast<SCTherapy *>(Model::CONFIG->therapy_db()[8]);
-        if ((((parent_genotypes[0]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[0])) == drug_id_min_ec50[sc_therapy->drug_ids[0]])
-              && (parent_genotypes[0]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1])) != drug_id_min_ec50[sc_therapy->drug_ids[1]])
-              && (parent_genotypes[1]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[0])) != drug_id_min_ec50[sc_therapy->drug_ids[0]])
-              && (parent_genotypes[1]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1])) == drug_id_min_ec50[sc_therapy->drug_ids[1]]))
-             || ((parent_genotypes[1]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[0])) == drug_id_min_ec50[sc_therapy->drug_ids[0]])
-                 && (parent_genotypes[1]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1])) != drug_id_min_ec50[sc_therapy->drug_ids[1]])
-                 && (parent_genotypes[0]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[0])) != drug_id_min_ec50[sc_therapy->drug_ids[0]])
-                 && (parent_genotypes[0]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1])) == drug_id_min_ec50[sc_therapy->drug_ids[1]])))) {
-            printf("therapy_id: %d genotype0 : %s genotype1: %s\n",8, parent_genotypes[0]->get_aa_sequence().c_str(), parent_genotypes[1]->get_aa_sequence().c_str());
-            for(int res_id = 0; res_id < double_resistant_list.size(); res_id++){
-                if(genotype_resistant_to_dha_ppq(sampled_genotype,double_resistant_list[res_id],8)){
-                    Model::DATA_COLLECTOR->mosquito_recombined_resistant_genotype_count()[loc][res_id]++;
-                }
-            }
+      //DHA-PPQ:2-2
+      int therapy_id = 8;
+      auto *sc_therapy = dynamic_cast<SCTherapy *>(Model::CONFIG->therapy_db()[therapy_id]);
+      if ((((parent_genotypes[0]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[0])) == drug_id_min_ec50[sc_therapy->drug_ids[0]])
+            && (parent_genotypes[0]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1])) != drug_id_min_ec50[sc_therapy->drug_ids[1]])
+            && (parent_genotypes[1]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[0])) != drug_id_min_ec50[sc_therapy->drug_ids[0]])
+            && (parent_genotypes[1]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1])) == drug_id_min_ec50[sc_therapy->drug_ids[1]]))
+           || ((parent_genotypes[1]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[0])) == drug_id_min_ec50[sc_therapy->drug_ids[0]])
+               && (parent_genotypes[1]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1])) != drug_id_min_ec50[sc_therapy->drug_ids[1]])
+               && (parent_genotypes[0]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[0])) != drug_id_min_ec50[sc_therapy->drug_ids[0]])
+               && (parent_genotypes[0]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1])) == drug_id_min_ec50[sc_therapy->drug_ids[1]])))) {
+        printf("therapy_id: %d genotype0 : %s genotype1: %s\n",therapy_id, parent_genotypes[0]->get_aa_sequence().c_str(), parent_genotypes[1]->get_aa_sequence().c_str());
+        if(genotype_resistant_to(sampled_genotype,double_resistant_list[0],therapy_id)){
+          Model::DATA_COLLECTOR->mosquito_recombined_resistant_genotype_count()[loc][0]++;
         }
+      }
+      //ASAQ
+      therapy_id = 7;
+      sc_therapy = dynamic_cast<SCTherapy *>(Model::CONFIG->therapy_db()[therapy_id]);
+      if ((((parent_genotypes[0]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[0])) == drug_id_min_ec50[sc_therapy->drug_ids[0]])
+            && (parent_genotypes[0]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1])) != drug_id_min_ec50[sc_therapy->drug_ids[1]])
+            && (parent_genotypes[1]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[0])) != drug_id_min_ec50[sc_therapy->drug_ids[0]])
+            && (parent_genotypes[1]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1])) == drug_id_min_ec50[sc_therapy->drug_ids[1]]))
+           || ((parent_genotypes[1]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[0])) == drug_id_min_ec50[sc_therapy->drug_ids[0]])
+               && (parent_genotypes[1]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1])) != drug_id_min_ec50[sc_therapy->drug_ids[1]])
+               && (parent_genotypes[0]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[0])) != drug_id_min_ec50[sc_therapy->drug_ids[0]])
+               && (parent_genotypes[0]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1])) == drug_id_min_ec50[sc_therapy->drug_ids[1]])))) {
+        printf("therapy_id: %d genotype0 : %s genotype1: %s\n",therapy_id, parent_genotypes[0]->get_aa_sequence().c_str(), parent_genotypes[1]->get_aa_sequence().c_str());
+        //ASAQ:2-2, 580Y and any of 76T, 86Y or Y184
+        if(genotype_resistant_to(sampled_genotype,double_resistant_list[1],therapy_id)){
+          Model::DATA_COLLECTOR->mosquito_recombined_resistant_genotype_count()[loc][1]++;
+        }
+        //ASAQ:2-3, 580Y and any 2 of 76T, 86Y or Y184
+        if(genotype_resistant_to(sampled_genotype,double_resistant_list[2],therapy_id)){
+          Model::DATA_COLLECTOR->mosquito_recombined_resistant_genotype_count()[loc][2]++;
+        }
+        //ASAQ:2-4, 580Y and 3 of 76T, 86Y or Y184
+        if(genotype_resistant_to(sampled_genotype,double_resistant_list[3],therapy_id)){
+          Model::DATA_COLLECTOR->mosquito_recombined_resistant_genotype_count()[loc][3]++;
+        }
+      }
+      //AL
+      therapy_id = 6;
+      sc_therapy = dynamic_cast<SCTherapy *>(Model::CONFIG->therapy_db()[therapy_id]);
+      if ((((parent_genotypes[0]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[0])) == drug_id_min_ec50[sc_therapy->drug_ids[0]])
+            && (parent_genotypes[0]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1])) != drug_id_min_ec50[sc_therapy->drug_ids[1]])
+            && (parent_genotypes[1]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[0])) != drug_id_min_ec50[sc_therapy->drug_ids[0]])
+            && (parent_genotypes[1]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1])) == drug_id_min_ec50[sc_therapy->drug_ids[1]]))
+           || ((parent_genotypes[1]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[0])) == drug_id_min_ec50[sc_therapy->drug_ids[0]])
+               && (parent_genotypes[1]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1])) != drug_id_min_ec50[sc_therapy->drug_ids[1]])
+               && (parent_genotypes[0]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[0])) != drug_id_min_ec50[sc_therapy->drug_ids[0]])
+               && (parent_genotypes[0]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1])) == drug_id_min_ec50[sc_therapy->drug_ids[1]])))) {
+        printf("therapy_id: %d genotype0 : %s genotype1: %s\n",therapy_id, parent_genotypes[0]->get_aa_sequence().c_str(), parent_genotypes[1]->get_aa_sequence().c_str());
+        //AL:2-2, 580Y and any of K76, N86Y or 184F
+        if(genotype_resistant_to(sampled_genotype,double_resistant_list[4],therapy_id)){
+          Model::DATA_COLLECTOR->mosquito_recombined_resistant_genotype_count()[loc][4]++;
+        }
+        //AL:2-3, 580Y and any 2 of K76, N86Y or 184F
+        if(genotype_resistant_to(sampled_genotype,double_resistant_list[5],therapy_id)){
+          Model::DATA_COLLECTOR->mosquito_recombined_resistant_genotype_count()[loc][5]++;
+        }
+        //AL:2-4, 580Y and 3 of K76, N86Y or 184F
+        if(genotype_resistant_to(sampled_genotype,double_resistant_list[6],therapy_id)){
+          Model::DATA_COLLECTOR->mosquito_recombined_resistant_genotype_count()[loc][6]++;
+        }
+      }
+      //Count number of bites
       Model::DATA_COLLECTOR->mosquito_recombined_resistant_genotype_count()[loc][double_resistant_list.size()+1]++;
     }
   }
@@ -218,13 +271,61 @@ std::vector<std::string> Mosquito::split_string(std::string str, char delimiter)
   return internal;
 }
 
-bool Mosquito::genotype_resistant_to_dha_ppq(Genotype *genotype, std::string resistance, int therapy_id) {
+bool Mosquito::genotype_resistant_to(Genotype *genotype, std::string resistance, int therapy_id) {
   std::string aa_seq = genotype->get_aa_sequence();
   std::vector<std::string> pattern_chromosome = split_string(aa_seq, '|');
   std::vector<std::string> chromosome_allele;
-  if (resistance == "DHA-PPQ:2" && therapy_id == 8) {
-    VLOG(1) << fmt::format("{} DHA-PPQ:2 Genotype: {} therapy: {} {}\n", Model::SCHEDULER->current_time(),aa_seq.c_str(),therapy_id,(pattern_chromosome[12].substr(10, 1) == "Y" && pattern_chromosome[13].substr(0, 1) == "2"));
-    return (pattern_chromosome[12].substr(10, 1) == "Y" && pattern_chromosome[13].substr(0, 1) == "2");
+  //DHA-PPQ:2-2
+  if (resistance == "DHA-PPQ:2-2" && therapy_id == 8) {
+    bool result = (pattern_chromosome[12].substr(10, 1) == "Y" && pattern_chromosome[13].substr(0, 1) == "2");//580Y-2
+    VLOG(1) << fmt::format("{} {} Genotype: {} therapy: {} {}\n",resistance,Model::SCHEDULER->current_time(),aa_seq.c_str(),therapy_id,result);
+    return result;
+  }
+  //ASAQ:2-2
+  if (resistance == "ASAQ:2-2" && therapy_id == 7) {
+    bool result = (pattern_chromosome[12].substr(10, 1) == "Y" && pattern_chromosome[6].substr(0, 1) == "T") //76T-580Y
+                ||(pattern_chromosome[12].substr(10, 1) == "Y" && pattern_chromosome[4].substr(0, 1) == "Y") //86Y-580Y
+                ||(pattern_chromosome[12].substr(10, 1) == "Y" && pattern_chromosome[4].substr(1, 1) == "Y");//Y184-580Y
+    VLOG(1) << fmt::format("{} {} Genotype: {} therapy: {} {}\n",resistance,Model::SCHEDULER->current_time(),aa_seq.c_str(),therapy_id,result);
+    return result;
+  }
+  //ASAQ:2-3
+  if (resistance == "ASAQ:2-3" && therapy_id == 7) {
+    bool result = (pattern_chromosome[12].substr(10, 1) == "Y" && pattern_chromosome[6].substr(0, 1) == "T" && pattern_chromosome[4].substr(0, 1) == "Y") //76T-86Y-580Y
+                  ||(pattern_chromosome[12].substr(10, 1) == "Y" && pattern_chromosome[6].substr(0, 1) == "T" && pattern_chromosome[4].substr(1, 1) == "Y") //76T-Y184-580Y
+                  ||(pattern_chromosome[12].substr(10, 1) == "Y" && pattern_chromosome[4].substr(0, 1) == "Y" && pattern_chromosome[4].substr(1, 1) == "Y");//86Y-Y184-580Y
+    VLOG(1) << fmt::format("{} {} Genotype: {} therapy: {} {}\n",resistance,Model::SCHEDULER->current_time(),aa_seq.c_str(),therapy_id,result);
+    return result;
+  }
+  //ASAQ:2-4
+  if (resistance == "ASAQ:2-4" && therapy_id == 7) {
+    bool result = (pattern_chromosome[12].substr(10, 1) == "Y"
+                  && pattern_chromosome[6].substr(0, 1) == "T" && pattern_chromosome[4].substr(0, 1) == "Y" && pattern_chromosome[4].substr(1, 1) == "Y"); //76T-86Y-Y184-580Y
+    VLOG(1) << fmt::format("{} {} Genotype: {} therapy: {} {}\n",resistance,Model::SCHEDULER->current_time(),aa_seq.c_str(),therapy_id,result);
+    return result;
+  }
+  //AL:2-2
+  if (resistance == "AL:2-2" && therapy_id == 6) {
+    bool result = (pattern_chromosome[12].substr(10, 1) == "Y" && pattern_chromosome[6].substr(0, 1) == "K") //K76-580Y
+                  ||(pattern_chromosome[12].substr(10, 1) == "Y" && pattern_chromosome[4].substr(0, 1) == "N") //N86-580Y
+                  ||(pattern_chromosome[12].substr(10, 1) == "Y" && pattern_chromosome[4].substr(1, 1) == "F");//184F-580Y
+    VLOG(1) << fmt::format("{} {} Genotype: {} therapy: {} {}\n",resistance,Model::SCHEDULER->current_time(),aa_seq.c_str(),therapy_id,result);
+    return result;
+  }
+  //AL:2-3
+  if (resistance == "AL:2-3" && therapy_id == 6) {
+    bool result = (pattern_chromosome[12].substr(10, 1) == "Y" && pattern_chromosome[6].substr(0, 1) == "K" && pattern_chromosome[4].substr(0, 1) == "N") //K76-N86-580Y
+                  ||(pattern_chromosome[12].substr(10, 1) == "Y" && pattern_chromosome[6].substr(0, 1) == "K" && pattern_chromosome[4].substr(1, 1) == "F") //K76-184F-580Y
+                  ||(pattern_chromosome[12].substr(10, 1) == "Y" && pattern_chromosome[4].substr(0, 1) == "N" && pattern_chromosome[4].substr(1, 1) == "F");//N86-184F-580Y
+    VLOG(1) << fmt::format("{} {} Genotype: {} therapy: {} {}\n",resistance,Model::SCHEDULER->current_time(),aa_seq.c_str(),therapy_id,result);
+    return result;
+  }
+  //AL:2-4
+  if (resistance == "AL:2-4" && therapy_id == 6) {
+    bool result = (pattern_chromosome[12].substr(10, 1) == "Y"
+                   && pattern_chromosome[6].substr(0, 1) == "K" && pattern_chromosome[4].substr(0, 1) == "N" && pattern_chromosome[4].substr(1, 1) == "F"); //K76-N86-184F-580Y
+    VLOG(1) << fmt::format("{} {} Genotype: {} therapy: {} {}\n",resistance,Model::SCHEDULER->current_time(),aa_seq.c_str(),therapy_id,result);
+    return result;
   }
   return false;
 }
