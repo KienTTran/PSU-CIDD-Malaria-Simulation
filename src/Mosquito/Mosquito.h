@@ -24,7 +24,7 @@ public:
 
 public:
     std::map<int,double> drug_id_min_ec50;
-    std::vector<std::string> double_resistant_list = {"AL:2", "ASAQ:2", "DHA-PPQ:2"};
+    std::vector<std::string> double_resistant_list = {"DHA-PPQ:2"};
 
 public:
   explicit Mosquito(Model *model = nullptr);
@@ -46,7 +46,7 @@ public:
   void get_genotypes_profile_from_person(Person *person, std::vector<Genotype *> &sampling_genotypes,
                                          std::vector<double> &relative_infectivity_each_pp);
 
-  bool genotype_resistant_to(Genotype *genotype, std::string resistance, int therapy_id);
+  bool genotype_resistant_to_dha_ppq(Genotype *genotype, std::string resistance, int therapy_id);
 
   std::vector<std::string> split_string(std::string str, char delimiter);
 };
