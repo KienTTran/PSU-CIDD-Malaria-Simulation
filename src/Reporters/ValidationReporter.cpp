@@ -345,6 +345,22 @@ void ValidationReporter::after_run() {
     for (auto [g_id, genotype] : Model::CONFIG->genotype_db) {
         LOG(INFO) << genotype->aa_sequence << ": " << genotype->daily_fitness_multiple_infection;
     }
+    for(int therapy_id = 6; therapy_id < 9; therapy_id++){
+        auto sc_therapy = dynamic_cast<SCTherapy *>(Model::CONFIG->therapy_db()[therapy_id]);
+        for (auto [g_id, genotype] : Model::CONFIG->genotype_db) {
+            VLOG(1) << fmt::format("Therapy: {} {}\tR-0: {}\tR-1: {}\tEC50-0: {}\tEC50-1: {}\tminEC50-0: {}\tminEC50-1: {}",
+                                   therapy_id,
+                                   genotype->aa_sequence,
+                                   genotype->resist_to(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[0])),
+                                   genotype->resist_to(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1])),
+                                   genotype->EC50_power_n[sc_therapy->drug_ids[0]],
+                                   genotype->EC50_power_n[sc_therapy->drug_ids[1]],
+                                   pow(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[0])->base_EC50, Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[0])->n()),
+                                   pow(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1])->base_EC50, Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1])->n())
+                                   );
+        }
+        VLOG(1) << "###############";
+    }
 
     gene_db_file.close();
     gene_freq_file.close();

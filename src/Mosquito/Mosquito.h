@@ -8,6 +8,7 @@
 
 #include "Core/Config/Config.h"
 #include "Core/PropertyMacro.h"
+#include "Therapies/SCTherapy.h"
 
 class Genotype;
 class Model;
@@ -47,6 +48,8 @@ public:
                                          std::vector<double> &relative_infectivity_each_pp);
 
   bool genotype_resistant_to(Genotype *genotype, std::string resistance, int therapy_id, bool verbose = false);
+
+  bool genotype_resistant_to(Config* config, std::vector<Genotype*> parent_genotypes, SCTherapy * sc_therapy, Genotype *genotype, std::string resistance, int therapy_id, bool verbose = false);
 
   std::vector<std::string> split_string(std::string str, char delimiter);
 };
