@@ -36,6 +36,7 @@ public:
   std::string aa_sequence;
   double daily_fitness_multiple_infection { 1 };
   std::vector<double> EC50_power_n {};
+  bool recombined_from_single_resistant_genotypes;
 
 public:
   explicit Genotype(const std::string& aa_sequence);

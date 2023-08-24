@@ -25,7 +25,9 @@ public:
 
 public:
     std::map<int,double> drug_id_min_ec50;
-    std::vector<std::string> double_resistant_list = {"DHA-PPQ:2-2","ASAQ:2-2","ASAQ:2-3","ASAQ:2-4","AL:2-2","AL:2-3","AL:2-4"};
+    std::vector<std::vector<std::string>> double_resistant_list = {{"AL:2-2", "AL:2-3", "AL:2-4"},
+                                                                   {"ASAQ:2-2", "ASAQ:2-3", "ASAQ:2-4"},
+                                                                   {"DHA-PPQ:2-2"}};
 
 public:
   explicit Mosquito(Model *model = nullptr);

@@ -30,6 +30,7 @@ Genotype::Genotype(const std::string &in_aa_sequence) : aa_sequence { in_aa_sequ
     }
     ii++;
   }
+  recombined_from_single_resistant_genotypes = false;
 }
 
 Genotype::~Genotype() = default;

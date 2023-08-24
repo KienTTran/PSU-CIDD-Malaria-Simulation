@@ -75,6 +75,7 @@ Genotype *GenotypeDatabase::get_genotype(const std::string &aa_sequence, Config 
 
     aa_sequence_id_map[aa_sequence] = new_genotype;
     add(new_genotype);
+    new_genotype->recombined_from_single_resistant_genotypes = false;
 
     auto_id++;
     return new_genotype;
