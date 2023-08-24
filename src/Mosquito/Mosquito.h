@@ -47,7 +47,7 @@ public:
   void get_genotypes_profile_from_person(Person *person, std::vector<Genotype *> &sampling_genotypes,
                                          std::vector<double> &relative_infectivity_each_pp);
 
-  bool genotype_resistant_to(Genotype *genotype, std::string resistance, int therapy_id, bool verbose = false);
+  bool genotype_resistant_to(Genotype *genotype, std::string resistance, int therapy_id);
 
   bool genotype_resistant_to(Config* config, std::vector<Genotype*> parent_genotypes, SCTherapy * sc_therapy, Genotype *genotype, std::string resistance, int therapy_id, bool verbose = false);
 

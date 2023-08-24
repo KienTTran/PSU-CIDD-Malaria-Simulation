@@ -377,4 +377,5 @@ TEST_F(MosquitoTest, CountResistantGenotypes) {
     EXPECT_EQ(m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "AL:2-2", therapy_id, true),false);
     EXPECT_EQ(m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "AL:2-3", therapy_id, true),false);
     EXPECT_EQ(m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "AL:2-4", therapy_id, true),false);
+
 }
