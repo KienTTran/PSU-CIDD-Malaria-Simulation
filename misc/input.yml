@@ -347,6 +347,8 @@ pf_genotype_info:
         cnv_multiplicative_effect_on_EC50:
           - drug_id: 3
             factors: [ 1, 2.4137931 ]
+          - drug_id: 8
+            factors: [ 1, 2.4137931 ]
         aa_positions: [ ]
 
 override_ec50_patterns:

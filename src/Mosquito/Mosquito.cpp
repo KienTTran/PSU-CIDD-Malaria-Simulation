@@ -165,14 +165,11 @@ void Mosquito::infect_new_cohort_in_PRMC(Config *config, Random *random, Populat
       int therapy_id = 8;
       auto *sc_therapy = dynamic_cast<SCTherapy *>(Model::CONFIG->therapy_db()[therapy_id]);
       sc_therapy = dynamic_cast<SCTherapy *>(Model::CONFIG->therapy_db()[therapy_id]);
-      if ((((parent_genotypes[0]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[0])) == drug_id_min_ec50[sc_therapy->drug_ids[0]])
-            && (parent_genotypes[0]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1])) != drug_id_min_ec50[sc_therapy->drug_ids[1]])
-            && (parent_genotypes[1]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[0])) != drug_id_min_ec50[sc_therapy->drug_ids[0]])
-            && (parent_genotypes[1]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1])) == drug_id_min_ec50[sc_therapy->drug_ids[1]]))
-           || ((parent_genotypes[1]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[0])) == drug_id_min_ec50[sc_therapy->drug_ids[0]])
-               && (parent_genotypes[1]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1])) != drug_id_min_ec50[sc_therapy->drug_ids[1]])
-               && (parent_genotypes[0]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[0])) != drug_id_min_ec50[sc_therapy->drug_ids[0]])
-               && (parent_genotypes[0]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1])) == drug_id_min_ec50[sc_therapy->drug_ids[1]])))) {
+        if((parent_genotypes[0]->resist_to(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[0])) && !parent_genotypes[0]->resist_to(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1]))
+        && parent_genotypes[1]->resist_to(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1])) && !parent_genotypes[1]->resist_to(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[0])))
+        ||(parent_genotypes[0]->resist_to(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1])) && !parent_genotypes[0]->resist_to(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[0]))
+           && parent_genotypes[1]->resist_to(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[0])) && !parent_genotypes[1]->resist_to(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1]))))
+      {
         if(genotype_resistant_to(sampled_genotype,double_resistant_list[0],therapy_id,true)){
           Model::DATA_COLLECTOR->mosquito_recombined_resistant_genotype_count()[loc][0]++;
           VLOG(1) << fmt::format("selected therapy_id: {} genotype0: {} ec50-0: {:.6f} ec50-1: {:.6f} genotype1: {} ec50-0: {:.6f} ec50-1: {:.6f} min_ec50-0: {:.6f} min_ec50-1: {:.6f}",therapy_id,
@@ -190,14 +187,11 @@ void Mosquito::infect_new_cohort_in_PRMC(Config *config, Random *random, Populat
       //ASAQ
       therapy_id = 7;
       sc_therapy = dynamic_cast<SCTherapy *>(Model::CONFIG->therapy_db()[therapy_id]);
-      if ((((parent_genotypes[0]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[0])) == drug_id_min_ec50[sc_therapy->drug_ids[0]])
-            && (parent_genotypes[0]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1])) != drug_id_min_ec50[sc_therapy->drug_ids[1]])
-            && (parent_genotypes[1]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[0])) != drug_id_min_ec50[sc_therapy->drug_ids[0]])
-            && (parent_genotypes[1]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1])) == drug_id_min_ec50[sc_therapy->drug_ids[1]]))
-           || ((parent_genotypes[1]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[0])) == drug_id_min_ec50[sc_therapy->drug_ids[0]])
-               && (parent_genotypes[1]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1])) != drug_id_min_ec50[sc_therapy->drug_ids[1]])
-               && (parent_genotypes[0]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[0])) != drug_id_min_ec50[sc_therapy->drug_ids[0]])
-               && (parent_genotypes[0]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1])) == drug_id_min_ec50[sc_therapy->drug_ids[1]])))) {
+        if((parent_genotypes[0]->resist_to(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[0])) && !parent_genotypes[0]->resist_to(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1]))
+            && parent_genotypes[1]->resist_to(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1])) && !parent_genotypes[1]->resist_to(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[0])))
+           ||(parent_genotypes[0]->resist_to(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1])) && !parent_genotypes[0]->resist_to(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[0]))
+              && parent_genotypes[1]->resist_to(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[0])) && !parent_genotypes[1]->resist_to(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1]))))
+      {
         //ASAQ:2-2, 580Y and any of 76T, 86Y or Y184
         if(genotype_resistant_to(sampled_genotype,double_resistant_list[1],therapy_id,true)){
           Model::DATA_COLLECTOR->mosquito_recombined_resistant_genotype_count()[loc][1]++;
@@ -244,14 +238,11 @@ void Mosquito::infect_new_cohort_in_PRMC(Config *config, Random *random, Populat
       //AL
       therapy_id = 6;
       sc_therapy = dynamic_cast<SCTherapy *>(Model::CONFIG->therapy_db()[therapy_id]);
-      if ((((parent_genotypes[0]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[0])) == drug_id_min_ec50[sc_therapy->drug_ids[0]])
-            && (parent_genotypes[0]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1])) != drug_id_min_ec50[sc_therapy->drug_ids[1]])
-            && (parent_genotypes[1]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[0])) != drug_id_min_ec50[sc_therapy->drug_ids[0]])
-            && (parent_genotypes[1]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1])) == drug_id_min_ec50[sc_therapy->drug_ids[1]]))
-           || ((parent_genotypes[1]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[0])) == drug_id_min_ec50[sc_therapy->drug_ids[0]])
-               && (parent_genotypes[1]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1])) != drug_id_min_ec50[sc_therapy->drug_ids[1]])
-               && (parent_genotypes[0]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[0])) != drug_id_min_ec50[sc_therapy->drug_ids[0]])
-               && (parent_genotypes[0]->get_EC50_power_n(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1])) == drug_id_min_ec50[sc_therapy->drug_ids[1]])))) {
+        if((parent_genotypes[0]->resist_to(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[0])) && !parent_genotypes[0]->resist_to(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1]))
+            && parent_genotypes[1]->resist_to(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1])) && !parent_genotypes[1]->resist_to(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[0])))
+           ||(parent_genotypes[0]->resist_to(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1])) && !parent_genotypes[0]->resist_to(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[0]))
+              && parent_genotypes[1]->resist_to(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[0])) && !parent_genotypes[1]->resist_to(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1]))))
+      {
         //AL:2-2, 580Y and any of K76, N86Y or 184F
         if(genotype_resistant_to(sampled_genotype,double_resistant_list[4],therapy_id,true)){
           Model::DATA_COLLECTOR->mosquito_recombined_resistant_genotype_count()[loc][4]++;
