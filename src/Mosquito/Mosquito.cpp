@@ -412,23 +412,27 @@ bool Mosquito::genotype_resistant_to(Config* config, std::vector<Genotype*> pare
   && parent_genotypes[1]->resist_to(config->drug_db()->at(sc_therapy->drug_ids[1])) && !parent_genotypes[1]->resist_to(config->drug_db()->at(sc_therapy->drug_ids[0])))
   ||(parent_genotypes[0]->resist_to(config->drug_db()->at(sc_therapy->drug_ids[1])) && !parent_genotypes[0]->resist_to(config->drug_db()->at(sc_therapy->drug_ids[0]))
   && parent_genotypes[1]->resist_to(config->drug_db()->at(sc_therapy->drug_ids[0])) && !parent_genotypes[1]->resist_to(config->drug_db()->at(sc_therapy->drug_ids[1])))){
-//    VLOG(1) << fmt::format("therapy_id: {} \ngenotype0: {} ec50-0: {:.6f} ec50-1: {:.6f} \ngenotype1: {} ec50-0: {:.6f} ec50-1: {:.6f} min_ec50-0: {:.6f} min_ec50-1: {:.6f}",therapy_id,
-//                           parent_genotypes[0]->get_aa_sequence().c_str(),
-//                           parent_genotypes[0]->get_EC50_power_n(config->drug_db()->at(sc_therapy->drug_ids[0])),
-//                           parent_genotypes[0]->get_EC50_power_n(config->drug_db()->at(sc_therapy->drug_ids[1])),
-//                           parent_genotypes[1]->get_aa_sequence().c_str(),
-//                           parent_genotypes[1]->get_EC50_power_n(config->drug_db()->at(sc_therapy->drug_ids[0])),
-//                           parent_genotypes[1]->get_EC50_power_n(config->drug_db()->at(sc_therapy->drug_ids[1])),
-//                           drug_id_min_ec50[sc_therapy->drug_ids[0]],
-//                           drug_id_min_ec50[sc_therapy->drug_ids[1]]
-//      );
     std::string aa_seq = genotype->get_aa_sequence();
     std::vector<std::string> pattern_chromosome = split_string(aa_seq, '|');
     std::vector<std::string> chromosome_allele;
     //DHA-PPQ:2-2
     if (resistance == "DHA-PPQ:2-2" && therapy_id == 8) {
       bool result = (pattern_chromosome[12].substr(10, 1) == "Y" && pattern_chromosome[13].substr(0, 1) == "2");//580Y-2
-      if(verbose && result) VLOG(1) << fmt::format("{} {} Genotype: {} therapy: {} {} {}",resistance,Model::SCHEDULER->current_time(),aa_seq.c_str(),therapy_id,resistance,result);
+      if(verbose && result) VLOG(1) << fmt::format("{} therapy_id: {} \ngenotype0: {} ec50-0: {:.6f} ec50-1: {:.6f} \ngenotype1: {} ec50-0: {:.6f} ec50-1: {:.6f} min_ec50-0: {:.6f} min_ec50-1: {:.6f}\n"
+                                                   "Genotype: {} {} {}",
+                                                   Model::SCHEDULER->current_time(),
+                                                   therapy_id,
+                                                   parent_genotypes[0]->get_aa_sequence().c_str(),
+                                                   parent_genotypes[0]->get_EC50_power_n(config->drug_db()->at(sc_therapy->drug_ids[0])),
+                                                   parent_genotypes[0]->get_EC50_power_n(config->drug_db()->at(sc_therapy->drug_ids[1])),
+                                                   parent_genotypes[1]->get_aa_sequence().c_str(),
+                                                   parent_genotypes[1]->get_EC50_power_n(config->drug_db()->at(sc_therapy->drug_ids[0])),
+                                                   parent_genotypes[1]->get_EC50_power_n(config->drug_db()->at(sc_therapy->drug_ids[1])),
+                                                   drug_id_min_ec50[sc_therapy->drug_ids[0]],
+                                                   drug_id_min_ec50[sc_therapy->drug_ids[1]],
+                                                   aa_seq.c_str(),
+                                                   resistance,
+                                                   result);
       return result;
     }
     //ASAQ:2-2
@@ -447,8 +451,24 @@ bool Mosquito::genotype_resistant_to(Config* config, std::vector<Genotype*> pare
       }
 //      VLOG(1) << fmt::format("{} {} Genotype: {} therapy: {} {} {}",resistance,Model::SCHEDULER->current_time(),aa_seq.c_str(),therapy_id,res_points,mut_points);
       bool result = (res_points == 2 && mut_points == 2);
-      if(verbose && result) VLOG(1) << fmt::format("{} {} Genotype: {} therapy: {} {} {}",resistance,Model::SCHEDULER->current_time(),aa_seq.c_str(),therapy_id,resistance,result);
-      return result;
+        if(verbose && result) VLOG(1) << fmt::format("{} therapy_id: {} \ngenotype0: {} ec50-0: {:.6f} ec50-1: {:.6f} \ngenotype1: {} ec50-0: {:.6f} ec50-1: {:.6f} min_ec50-0: {:.6f} min_ec50-1: {:.6f}\n"
+                                                     "Genotype: {} {} {} {} {}",
+                                                     Model::SCHEDULER->current_time(),
+                                                     therapy_id,
+                                                     parent_genotypes[0]->get_aa_sequence().c_str(),
+                                                     parent_genotypes[0]->get_EC50_power_n(config->drug_db()->at(sc_therapy->drug_ids[0])),
+                                                     parent_genotypes[0]->get_EC50_power_n(config->drug_db()->at(sc_therapy->drug_ids[1])),
+                                                     parent_genotypes[1]->get_aa_sequence().c_str(),
+                                                     parent_genotypes[1]->get_EC50_power_n(config->drug_db()->at(sc_therapy->drug_ids[0])),
+                                                     parent_genotypes[1]->get_EC50_power_n(config->drug_db()->at(sc_therapy->drug_ids[1])),
+                                                     drug_id_min_ec50[sc_therapy->drug_ids[0]],
+                                                     drug_id_min_ec50[sc_therapy->drug_ids[1]],
+                                                     aa_seq.c_str(),
+                                                     resistance,
+                                                     res_points,
+                                                     mut_points,
+                                                     result);
+        return result;
     }
     //ASAQ:2-3
     if (resistance == "ASAQ:2-3" && therapy_id == 7) {
@@ -468,8 +488,24 @@ bool Mosquito::genotype_resistant_to(Config* config, std::vector<Genotype*> pare
       }
 //      VLOG(1) << fmt::format("{} {} Genotype: {} therapy: {} {} {}",resistance,Model::SCHEDULER->current_time(),aa_seq.c_str(),therapy_id,res_points,mut_points);
       bool result = (res_points == 2 && mut_points == 3);
-      if(verbose && result) VLOG(1) << fmt::format("{} {} Genotype: {} therapy: {} {} {}",resistance,Model::SCHEDULER->current_time(),aa_seq.c_str(),therapy_id,resistance,result);
-      return result;
+        if(verbose && result) VLOG(1) << fmt::format("{} therapy_id: {} \ngenotype0: {} ec50-0: {:.6f} ec50-1: {:.6f} \ngenotype1: {} ec50-0: {:.6f} ec50-1: {:.6f} min_ec50-0: {:.6f} min_ec50-1: {:.6f}\n"
+                                                     "Genotype: {} {} {} {} {}",
+                                                     Model::SCHEDULER->current_time(),
+                                                     therapy_id,
+                                                     parent_genotypes[0]->get_aa_sequence().c_str(),
+                                                     parent_genotypes[0]->get_EC50_power_n(config->drug_db()->at(sc_therapy->drug_ids[0])),
+                                                     parent_genotypes[0]->get_EC50_power_n(config->drug_db()->at(sc_therapy->drug_ids[1])),
+                                                     parent_genotypes[1]->get_aa_sequence().c_str(),
+                                                     parent_genotypes[1]->get_EC50_power_n(config->drug_db()->at(sc_therapy->drug_ids[0])),
+                                                     parent_genotypes[1]->get_EC50_power_n(config->drug_db()->at(sc_therapy->drug_ids[1])),
+                                                     drug_id_min_ec50[sc_therapy->drug_ids[0]],
+                                                     drug_id_min_ec50[sc_therapy->drug_ids[1]],
+                                                     aa_seq.c_str(),
+                                                     resistance,
+                                                     res_points,
+                                                     mut_points,
+                                                     result);
+        return result;
     }
     //ASAQ:2-4
     if (resistance == "ASAQ:2-4" && therapy_id == 7) {
@@ -487,8 +523,24 @@ bool Mosquito::genotype_resistant_to(Config* config, std::vector<Genotype*> pare
       }
 //      VLOG(1) << fmt::format("{} {} Genotype: {} therapy: {} {} {}",resistance,Model::SCHEDULER->current_time(),aa_seq.c_str(),therapy_id,res_points,mut_points);
       bool result = (res_points == 2 && mut_points == 4);
-      if(verbose && result) VLOG(1) << fmt::format("{} {} Genotype: {} therapy: {} {} {}",resistance,Model::SCHEDULER->current_time(),aa_seq.c_str(),therapy_id,resistance,result);
-      return result;
+        if(verbose && result) VLOG(1) << fmt::format("{} therapy_id: {} \ngenotype0: {} ec50-0: {:.6f} ec50-1: {:.6f} \ngenotype1: {} ec50-0: {:.6f} ec50-1: {:.6f} min_ec50-0: {:.6f} min_ec50-1: {:.6f}\n"
+                                                     "Genotype: {} {} {} {} {}",
+                                                     Model::SCHEDULER->current_time(),
+                                                     therapy_id,
+                                                     parent_genotypes[0]->get_aa_sequence().c_str(),
+                                                     parent_genotypes[0]->get_EC50_power_n(config->drug_db()->at(sc_therapy->drug_ids[0])),
+                                                     parent_genotypes[0]->get_EC50_power_n(config->drug_db()->at(sc_therapy->drug_ids[1])),
+                                                     parent_genotypes[1]->get_aa_sequence().c_str(),
+                                                     parent_genotypes[1]->get_EC50_power_n(config->drug_db()->at(sc_therapy->drug_ids[0])),
+                                                     parent_genotypes[1]->get_EC50_power_n(config->drug_db()->at(sc_therapy->drug_ids[1])),
+                                                     drug_id_min_ec50[sc_therapy->drug_ids[0]],
+                                                     drug_id_min_ec50[sc_therapy->drug_ids[1]],
+                                                     aa_seq.c_str(),
+                                                     resistance,
+                                                     res_points,
+                                                     mut_points,
+                                                     result);
+        return result;
     }
     //AL:2-2
     if (resistance == "AL:2-2" && therapy_id == 6) {
@@ -506,8 +558,24 @@ bool Mosquito::genotype_resistant_to(Config* config, std::vector<Genotype*> pare
       }
 //      VLOG(1) << fmt::format("{} {} Genotype: {} therapy: {} {} {}",resistance,Model::SCHEDULER->current_time(),aa_seq.c_str(),therapy_id,res_points,mut_points);
       bool result = (res_points == 2 && mut_points == 2);
-      if(verbose && result) VLOG(1) << fmt::format("{} {} Genotype: {} therapy: {} {} {}",resistance,Model::SCHEDULER->current_time(),aa_seq.c_str(),therapy_id,resistance,result);
-      return result;
+        if(verbose && result) VLOG(1) << fmt::format("{} therapy_id: {} \ngenotype0: {} ec50-0: {:.6f} ec50-1: {:.6f} \ngenotype1: {} ec50-0: {:.6f} ec50-1: {:.6f} min_ec50-0: {:.6f} min_ec50-1: {:.6f}\n"
+                                                     "Genotype: {} {} {} {} {}",
+                                                     Model::SCHEDULER->current_time(),
+                                                     therapy_id,
+                                                     parent_genotypes[0]->get_aa_sequence().c_str(),
+                                                     parent_genotypes[0]->get_EC50_power_n(config->drug_db()->at(sc_therapy->drug_ids[0])),
+                                                     parent_genotypes[0]->get_EC50_power_n(config->drug_db()->at(sc_therapy->drug_ids[1])),
+                                                     parent_genotypes[1]->get_aa_sequence().c_str(),
+                                                     parent_genotypes[1]->get_EC50_power_n(config->drug_db()->at(sc_therapy->drug_ids[0])),
+                                                     parent_genotypes[1]->get_EC50_power_n(config->drug_db()->at(sc_therapy->drug_ids[1])),
+                                                     drug_id_min_ec50[sc_therapy->drug_ids[0]],
+                                                     drug_id_min_ec50[sc_therapy->drug_ids[1]],
+                                                     aa_seq.c_str(),
+                                                     resistance,
+                                                     res_points,
+                                                     mut_points,
+                                                     result);
+        return result;
     }
     //AL:2-3
     if (resistance == "AL:2-3" && therapy_id == 6) {
@@ -527,8 +595,24 @@ bool Mosquito::genotype_resistant_to(Config* config, std::vector<Genotype*> pare
       }
 //      VLOG(1) << fmt::format("{} {} Genotype: {} therapy: {} {} {}",resistance,Model::SCHEDULER->current_time(),aa_seq.c_str(),therapy_id,res_points,mut_points);
       bool result = (res_points == 2 && mut_points == 3);
-      if(verbose && result) VLOG(1) << fmt::format("{} {} Genotype: {} therapy: {} {} {}",resistance,Model::SCHEDULER->current_time(),aa_seq.c_str(),therapy_id,resistance,result);
-      return result;
+        if(verbose && result) VLOG(1) << fmt::format("{} therapy_id: {} \ngenotype0: {} ec50-0: {:.6f} ec50-1: {:.6f} \ngenotype1: {} ec50-0: {:.6f} ec50-1: {:.6f} min_ec50-0: {:.6f} min_ec50-1: {:.6f}\n"
+                                                     "Genotype: {} {} {} {} {}",
+                                                     Model::SCHEDULER->current_time(),
+                                                     therapy_id,
+                                                     parent_genotypes[0]->get_aa_sequence().c_str(),
+                                                     parent_genotypes[0]->get_EC50_power_n(config->drug_db()->at(sc_therapy->drug_ids[0])),
+                                                     parent_genotypes[0]->get_EC50_power_n(config->drug_db()->at(sc_therapy->drug_ids[1])),
+                                                     parent_genotypes[1]->get_aa_sequence().c_str(),
+                                                     parent_genotypes[1]->get_EC50_power_n(config->drug_db()->at(sc_therapy->drug_ids[0])),
+                                                     parent_genotypes[1]->get_EC50_power_n(config->drug_db()->at(sc_therapy->drug_ids[1])),
+                                                     drug_id_min_ec50[sc_therapy->drug_ids[0]],
+                                                     drug_id_min_ec50[sc_therapy->drug_ids[1]],
+                                                     aa_seq.c_str(),
+                                                     resistance,
+                                                     res_points,
+                                                     mut_points,
+                                                     result);
+        return result;
     }
     //AL:2-4
     if (resistance == "AL:2-4" && therapy_id == 6) {
@@ -546,8 +630,24 @@ bool Mosquito::genotype_resistant_to(Config* config, std::vector<Genotype*> pare
       }
 //      VLOG(1) << fmt::format("{} {} Genotype: {} therapy: {} {} {}",resistance,Model::SCHEDULER->current_time(),aa_seq.c_str(),therapy_id,res_points,mut_points);
       bool result = (res_points == 2 && mut_points == 4);
-      if(verbose && result) VLOG(1) << fmt::format("{} {} Genotype: {} therapy: {} {} {}",resistance,Model::SCHEDULER->current_time(),aa_seq.c_str(),therapy_id,resistance,result);
-      return result;
+        if(verbose && result) VLOG(1) << fmt::format("{} therapy_id: {} \ngenotype0: {} ec50-0: {:.6f} ec50-1: {:.6f} \ngenotype1: {} ec50-0: {:.6f} ec50-1: {:.6f} min_ec50-0: {:.6f} min_ec50-1: {:.6f}\n"
+                                                     "Genotype: {} {} {} {} {}",
+                                                     Model::SCHEDULER->current_time(),
+                                                     therapy_id,
+                                                     parent_genotypes[0]->get_aa_sequence().c_str(),
+                                                     parent_genotypes[0]->get_EC50_power_n(config->drug_db()->at(sc_therapy->drug_ids[0])),
+                                                     parent_genotypes[0]->get_EC50_power_n(config->drug_db()->at(sc_therapy->drug_ids[1])),
+                                                     parent_genotypes[1]->get_aa_sequence().c_str(),
+                                                     parent_genotypes[1]->get_EC50_power_n(config->drug_db()->at(sc_therapy->drug_ids[0])),
+                                                     parent_genotypes[1]->get_EC50_power_n(config->drug_db()->at(sc_therapy->drug_ids[1])),
+                                                     drug_id_min_ec50[sc_therapy->drug_ids[0]],
+                                                     drug_id_min_ec50[sc_therapy->drug_ids[1]],
+                                                     aa_seq.c_str(),
+                                                     resistance,
+                                                     res_points,
+                                                     mut_points,
+                                                     result);
+        return result;
     }
   }
   return false;

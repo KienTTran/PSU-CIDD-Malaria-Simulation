@@ -274,4 +274,107 @@ TEST_F(MosquitoTest, CountResistantGenotypes) {
     EXPECT_EQ(m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "AL:2-2", therapy_id, true),false);
     EXPECT_EQ(m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "AL:2-3", therapy_id, true),false);
     EXPECT_EQ(m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "AL:2-4", therapy_id, true),false);
+
+    //AL
+    therapy_id = 6;
+    sc_therapy = dynamic_cast<SCTherapy *>(c.therapy_db()[therapy_id]);
+
+    //AL:2-2
+    g1_aas = "||||YF1||TTHFI,x||||||FNCMYRIPRPCA|1";
+    g2_aas = "||||YY1||TTHFI,x||||||FNCMYRIPRPYA|1";
+    g3_aas = "||||YF1||TTHFI,x||||||FNCMYRIPRPYA|1";
+
+    parent_genotypes = {genotype_db.get_genotype(g1_aas,&c), genotype_db.get_genotype(g2_aas,&c)};
+    g3 = genotype_db.get_genotype(g3_aas,&c);
+
+    EXPECT_EQ(m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "DHA-PPQ:2-2", therapy_id, true),false);
+    EXPECT_EQ(m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "ASAQ:2-2", therapy_id, true),false);
+    EXPECT_EQ(m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "ASAQ:2-3", therapy_id, true),false);
+    EXPECT_EQ(m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "ASAQ:2-4", therapy_id, true),false);
+    EXPECT_EQ(m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "AL:2-2", therapy_id, true),true);
+    EXPECT_EQ(m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "AL:2-3", therapy_id, true),false);
+    EXPECT_EQ(m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "AL:2-4", therapy_id, true),false);
+
+    //AL:2-3
+    g1_aas = "||||YF1||KTHFI,x||||||FNCMYRIPRPCA|1";
+    g2_aas = "||||YY1||TTHFI,x||||||FNCMYRIPRPYA|1";
+    g3_aas = "||||YF1||KTHFI,x||||||FNCMYRIPRPYA|1";
+
+    parent_genotypes = {genotype_db.get_genotype(g1_aas,&c), genotype_db.get_genotype(g2_aas,&c)};
+    g3 = genotype_db.get_genotype(g3_aas,&c);
+
+    m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "ASAQ:2-2", therapy_id, true);
+    m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "ASAQ:2-3", therapy_id, true);
+
+    EXPECT_EQ(m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "DHA-PPQ:2-2", therapy_id, true),false);
+    EXPECT_EQ(m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "ASAQ:2-2", therapy_id, true),false);
+    EXPECT_EQ(m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "ASAQ:2-3", therapy_id, true),false);
+    EXPECT_EQ(m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "ASAQ:2-4", therapy_id, true),false);
+    EXPECT_EQ(m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "AL:2-2", therapy_id, true),true);
+    EXPECT_EQ(m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "AL:2-3", therapy_id, true),true);
+    EXPECT_EQ(m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "AL:2-4", therapy_id, true),false);
+
+    //AL:2-4
+    g1_aas = "||||NF1||KTHFI,x||||||FNCMYRIPRPCA|1";
+    g2_aas = "||||YY1||TTHFI,x||||||FNCMYRIPRPYA|1";
+    g3_aas = "||||NF1||KTHFI,x||||||FNCMYRIPRPYA|1";
+
+    parent_genotypes = {genotype_db.get_genotype(g1_aas,&c), genotype_db.get_genotype(g2_aas,&c)};
+    g3 = genotype_db.get_genotype(g3_aas,&c);
+
+    EXPECT_EQ(m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "DHA-PPQ:2-2", therapy_id, true),false);
+    EXPECT_EQ(m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "ASAQ:2-2", therapy_id, true),false);
+    EXPECT_EQ(m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "ASAQ:2-3", therapy_id, true),false);
+    EXPECT_EQ(m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "ASAQ:2-4", therapy_id, true),false);
+    EXPECT_EQ(m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "AL:2-2", therapy_id, true),true);
+    EXPECT_EQ(m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "AL:2-3", therapy_id, true),true);
+    EXPECT_EQ(m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "AL:2-4", therapy_id, true),true);
+
+    //AL:2-4, g1 <-> g2
+    g2_aas = "||||NF1||KTHFI,x||||||FNCMYRIPRPCA|1";
+    g1_aas = "||||YY1||TTHFI,x||||||FNCMYRIPRPYA|1";
+    g3_aas = "||||NF1||KTHFI,x||||||FNCMYRIPRPYA|1";
+
+    parent_genotypes = {genotype_db.get_genotype(g1_aas,&c), genotype_db.get_genotype(g2_aas,&c)};
+    g3 = genotype_db.get_genotype(g3_aas,&c);
+
+    EXPECT_EQ(m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "DHA-PPQ:2-2", therapy_id, true),false);
+    EXPECT_EQ(m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "ASAQ:2-2", therapy_id, true),false);
+    EXPECT_EQ(m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "ASAQ:2-3", therapy_id, true),false);
+    EXPECT_EQ(m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "ASAQ:2-4", therapy_id, true),false);
+    EXPECT_EQ(m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "AL:2-2", therapy_id, true),true);
+    EXPECT_EQ(m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "AL:2-3", therapy_id, true),true);
+    EXPECT_EQ(m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "AL:2-4", therapy_id, true),true);
+
+    //AL:2-2, false
+    g2_aas = "||||NY1||TTHFI,x||||||FNCMYRIPRPCA|1";
+    g1_aas = "||||YF1||TTHFI,x||||||FNCMYRIPRPYA|1";
+    g3_aas = "||||NY1||TTHFI,x||||||FNCMYRIPRPYA|1";
+
+    parent_genotypes = {genotype_db.get_genotype(g1_aas,&c), genotype_db.get_genotype(g2_aas,&c)};
+    g3 = genotype_db.get_genotype(g3_aas,&c);
+
+    EXPECT_EQ(m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "DHA-PPQ:2-2", therapy_id, true),false);
+    EXPECT_EQ(m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "ASAQ:2-2", therapy_id, true),false);
+    EXPECT_EQ(m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "ASAQ:2-3", therapy_id, true),false);
+    EXPECT_EQ(m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "ASAQ:2-4", therapy_id, true),false);
+    EXPECT_EQ(m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "AL:2-2", therapy_id, true),false);
+    EXPECT_EQ(m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "AL:2-3", therapy_id, true),false);
+    EXPECT_EQ(m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "AL:2-4", therapy_id, true),false);
+
+    //AL:2-2, false
+    g2_aas = "||||NY1||TTHFI,x||||||FNCMYRIPRPCA|1";
+    g1_aas = "||||YF1||KTHFI,x||||||FNCMYRIPRPYA|1";
+    g3_aas = "||||NY1||KTHFI,x||||||FNCMYRIPRPYA|1";
+
+    parent_genotypes = {genotype_db.get_genotype(g1_aas,&c), genotype_db.get_genotype(g2_aas,&c)};
+    g3 = genotype_db.get_genotype(g3_aas,&c);
+
+    EXPECT_EQ(m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "DHA-PPQ:2-2", therapy_id, true),false);
+    EXPECT_EQ(m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "ASAQ:2-2", therapy_id, true),false);
+    EXPECT_EQ(m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "ASAQ:2-3", therapy_id, true),false);
+    EXPECT_EQ(m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "ASAQ:2-4", therapy_id, true),false);
+    EXPECT_EQ(m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "AL:2-2", therapy_id, true),false);
+    EXPECT_EQ(m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "AL:2-3", therapy_id, true),false);
+    EXPECT_EQ(m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "AL:2-4", therapy_id, true),false);
 }
