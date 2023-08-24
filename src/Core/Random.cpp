@@ -31,7 +31,7 @@ void Random::initialize(const unsigned long &seed) {
   auto now = std::chrono::high_resolution_clock::now();
   auto milliseconds = std::chrono::duration_cast<std::chrono::microseconds>(now.time_since_epoch());
   seed_ = seed == 0 ? static_cast<unsigned long>(milliseconds.count()) : seed;
-  seed_ = 1692844950530564;
+
   LOG(INFO) << fmt::format("Random initializing with seed: {}", seed_);
   gsl_rng_set(G_RNG, seed_);
 }
