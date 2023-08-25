@@ -186,8 +186,8 @@ TEST_F(MosquitoTest, CountResistantGenotypes) {
     c.read_from_file("input.yml");
 
     //DHAPPQ:2-2
-    int therapy_id = 8;
-    auto *sc_therapy = dynamic_cast<SCTherapy *>(c.therapy_db()[therapy_id]);
+    int therapy_id = 0;
+    std::vector<int> sc_therapy = {0,3};
 
     std::string g1_aas = "||||YY1||KTHFI,x||||||FNCMYRIPRPCA|2";
     std::string g2_aas = "||||NY1||TTHFI,x||||||FNCMYRIPRPYA|1";
@@ -205,8 +205,8 @@ TEST_F(MosquitoTest, CountResistantGenotypes) {
     EXPECT_EQ(m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "AL:2-4", therapy_id, true),false);
 
     //ASAQ
-    therapy_id = 7;
-    sc_therapy = dynamic_cast<SCTherapy *>(c.therapy_db()[therapy_id]);
+    therapy_id = 1;
+    sc_therapy = {0,2};
 
     //ASAQ:2-2
     g1_aas = "||||YF1||KTHFI,x||||||FNCMYRIPRPCA|1";
@@ -276,8 +276,8 @@ TEST_F(MosquitoTest, CountResistantGenotypes) {
     EXPECT_EQ(m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "AL:2-4", therapy_id, true),false);
 
     //AL
-    therapy_id = 6;
-    sc_therapy = dynamic_cast<SCTherapy *>(c.therapy_db()[therapy_id]);
+    therapy_id = 2;
+    sc_therapy = {0,1};
 
     //AL:2-2
     g1_aas = "||||YF1||TTHFI,x||||||FNCMYRIPRPCA|1";
