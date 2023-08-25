@@ -31,7 +31,7 @@ public:
                                                                    {"DHA-PPQ-LUM:3-3","DHA-PPQ-LUM:3-4","DHA-PPQ-LUM:3-5","DHA-PPQ-LUM:3"},
                                                                    {"DHA-PPQ-AQ:3-3","DHA-PPQ-AQ:3-4","DHA-PPQ-AQ:3-5","DHA-PPQ-AQ:3"},
                                                                    };//Must match length with the therapy list
-    std::vector<std::vector<int>> therapy_list = {{0,1},{0,2},{0,3},{0,1,3},{0,2,3}};
+    std::vector<std::vector<int>> therapy_list = {{0,3},{0,2},{0,1},{0,1,3},{0,2,3}};
 
 public:
   explicit Mosquito(Model *model = nullptr);
