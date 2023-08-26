@@ -35,7 +35,6 @@ typedef std::vector<double> DoubleVector;
 typedef std::vector<DoubleVector> DoubleVector2;
 typedef std::vector<DoubleVector2> DoubleVector3;
 typedef std::vector<int> IntVector;
-typedef std::vector<int> *IntVectorPtr;
 typedef std::vector<IntVector> IntVector2;
 typedef std::vector<IntVector2> IntVector3;
 typedef std::vector<IntVector *> IntVectorPtrVector;
@@ -44,6 +43,7 @@ typedef std::vector<unsigned int> UIntVector;
 
 typedef std::vector<ul> LongVector;
 typedef std::vector<LongVector> LongVector2;
+typedef std::vector<LongVector2> LongVector3;
 
 typedef std::vector<std::string> StringVector;
 typedef std::vector<StringVector> StringVector2;

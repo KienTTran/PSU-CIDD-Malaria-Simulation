@@ -216,24 +216,24 @@ void ValidationReporter::monthly_report() {
         ss << group_sep;///769
     }
     for (auto loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
-        for(int resistant_list = 0; resistant_list < Model::MOSQUITO->double_resistant_list.size(); resistant_list++){
-            for(int resistant_type = 0; resistant_type < Model::MOSQUITO->double_resistant_list[resistant_list].size(); resistant_type++){
+        for(int resistant_list = 0; resistant_list < Model::MOSQUITO->resistant_drug_list.size(); resistant_list++){
+            for(int resistant_type = 0; resistant_type < Model::MOSQUITO->resistant_drug_list[resistant_list].first.size(); resistant_type++){
                 ss << Model::DATA_COLLECTOR->monthly_clonal_resistant_genotype_count()[loc][resistant_list][resistant_type] << sep;
             }
         }
         ss << group_sep;//371
     }
     for (auto loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
-        for(int resistant_list = 0; resistant_list < Model::MOSQUITO->double_resistant_list.size(); resistant_list++){
-            for(int resistant_type = 0; resistant_type < Model::MOSQUITO->double_resistant_list[resistant_list].size(); resistant_type++){
+        for(int resistant_list = 0; resistant_list < Model::MOSQUITO->resistant_drug_list.size(); resistant_list++){
+            for(int resistant_type = 0; resistant_type < Model::MOSQUITO->resistant_drug_list[resistant_list].first.size(); resistant_type++){
                 ss << Model::DATA_COLLECTOR->monthly_mosquito_recombined_resistant_genotype_count()[loc][resistant_list][resistant_type] << sep;
             }
         }
         ss << group_sep;//378
     }
     for (auto loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
-        for(int resistant_list = 0; resistant_list < Model::MOSQUITO->double_resistant_list.size(); resistant_list++){
-            for(int resistant_type = 0; resistant_type < Model::MOSQUITO->double_resistant_list[resistant_list].size(); resistant_type++){
+        for(int resistant_list = 0; resistant_list < Model::MOSQUITO->resistant_drug_list.size(); resistant_list++){
+            for(int resistant_type = 0; resistant_type < Model::MOSQUITO->resistant_drug_list[resistant_list].first.size(); resistant_type++){
                 ss << Model::DATA_COLLECTOR->monthly_mosquito_inflict_resistant_genotype_count()[loc][resistant_list][resistant_type] << sep;
             }
         }
@@ -331,24 +331,24 @@ void ValidationReporter::after_run() {
         ss << group_sep;//123
     }
     for (auto loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
-        for(int resistant_list = 0; resistant_list < Model::MOSQUITO->double_resistant_list.size(); resistant_list++){
-            for(int resistant_type = 0; resistant_type < Model::MOSQUITO->double_resistant_list[resistant_list].size(); resistant_type++){
+        for(int resistant_list = 0; resistant_list < Model::MOSQUITO->resistant_drug_list.size(); resistant_list++){
+            for(int resistant_type = 0; resistant_type < Model::MOSQUITO->resistant_drug_list[resistant_list].first.size(); resistant_type++){
                 ss << Model::DATA_COLLECTOR->clonal_resistant_genotype_count()[loc][resistant_list][resistant_type] << sep;
             }
         }
         ss << group_sep;//372
     }
     for (auto loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
-        for(int resistant_list = 0; resistant_list < Model::MOSQUITO->double_resistant_list.size(); resistant_list++){
-            for(int resistant_type = 0; resistant_type < Model::MOSQUITO->double_resistant_list[resistant_list].size(); resistant_type++){
+        for(int resistant_list = 0; resistant_list < Model::MOSQUITO->resistant_drug_list.size(); resistant_list++){
+            for(int resistant_type = 0; resistant_type < Model::MOSQUITO->resistant_drug_list[resistant_list].first.size(); resistant_type++){
                 ss << Model::DATA_COLLECTOR->mosquito_recombined_resistant_genotype_count()[loc][resistant_list][resistant_type] << sep;
             }
         }
         ss << group_sep;//372
     }
     for (auto loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
-        for(int resistant_list = 0; resistant_list < Model::MOSQUITO->double_resistant_list.size(); resistant_list++){
-            for(int resistant_type = 0; resistant_type < Model::MOSQUITO->double_resistant_list[resistant_list].size(); resistant_type++){
+        for(int resistant_list = 0; resistant_list < Model::MOSQUITO->resistant_drug_list.size(); resistant_list++){
+            for(int resistant_type = 0; resistant_type < Model::MOSQUITO->resistant_drug_list[resistant_list].first.size(); resistant_type++){
                 ss << Model::DATA_COLLECTOR->mosquito_inflict_resistant_genotype_count()[loc][resistant_list][resistant_type] << sep;
             }
         }
@@ -369,19 +369,34 @@ void ValidationReporter::after_run() {
     for (auto [g_id, genotype] : Model::CONFIG->genotype_db) {
         LOG(INFO) << genotype->aa_sequence << ": " << genotype->daily_fitness_multiple_infection;
     }
-    for(int therapy_id = 6; therapy_id < 9; therapy_id++){
-        auto sc_therapy = dynamic_cast<SCTherapy *>(Model::CONFIG->therapy_db()[therapy_id]);
+    for(int resistant_drug_pair_id = 0; resistant_drug_pair_id < Model::MOSQUITO->resistant_drug_list.size(); resistant_drug_pair_id++){
+        auto drugs = Model::MOSQUITO->resistant_drug_list[resistant_drug_pair_id].second;
         for (auto [g_id, genotype] : Model::CONFIG->genotype_db) {
-            VLOG(1) << fmt::format("Therapy: {} {}\tR-0: {}\tR-1: {}\tEC50-0: {}\tEC50-1: {}\tminEC50-0: {}\tminEC50-1: {}",
-                                   therapy_id,
-                                   genotype->aa_sequence,
-                                   genotype->resist_to(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[0])),
-                                   genotype->resist_to(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1])),
-                                   genotype->EC50_power_n[sc_therapy->drug_ids[0]],
-                                   genotype->EC50_power_n[sc_therapy->drug_ids[1]],
-                                   pow(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[0])->base_EC50, Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[0])->n()),
-                                   pow(Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1])->base_EC50, Model::CONFIG->drug_db()->at(sc_therapy->drug_ids[1])->n())
-                                   );
+            if(resistant_drug_pair_id < 3){
+                VLOG(1) << fmt::format("resistant_drug_pair_id: {} {}\tR-0: {}\tR-1: {}\tEC50-0: {}\tEC50-1: {}\tminEC50-0: {}\tminEC50-1: {}",
+                                       resistant_drug_pair_id,
+                                       genotype->aa_sequence,
+                                       genotype->resist_to(Model::CONFIG->drug_db()->at(drugs[0])),
+                                       genotype->resist_to(Model::CONFIG->drug_db()->at(drugs[1])),
+                                       genotype->EC50_power_n[drugs[0]],
+                                       genotype->EC50_power_n[drugs[1]],
+                                       pow(Model::CONFIG->drug_db()->at(drugs[0])->base_EC50, Model::CONFIG->drug_db()->at(drugs[0])->n()),
+                                       pow(Model::CONFIG->drug_db()->at(drugs[1])->base_EC50, Model::CONFIG->drug_db()->at(drugs[1])->n()));
+            }
+            else{
+                VLOG(1) << fmt::format("resistant_drug_pair_id: {} {}\tR-0: {}\tR-1: {}\tR-2: {}\tEC50-0: {}\tEC50-1: {}\tEC50-2: {}\tminEC50-0: {}\tminEC50-1: {}\tminEC50-2: {}",
+                                       resistant_drug_pair_id,
+                                       genotype->aa_sequence,
+                                       genotype->resist_to(Model::CONFIG->drug_db()->at(drugs[0])),
+                                       genotype->resist_to(Model::CONFIG->drug_db()->at(drugs[1])),
+                                       genotype->resist_to(Model::CONFIG->drug_db()->at(drugs[2])),
+                                       genotype->EC50_power_n[drugs[0]],
+                                       genotype->EC50_power_n[drugs[1]],
+                                       genotype->EC50_power_n[drugs[2]],
+                                       pow(Model::CONFIG->drug_db()->at(drugs[0])->base_EC50, Model::CONFIG->drug_db()->at(drugs[0])->n()),
+                                       pow(Model::CONFIG->drug_db()->at(drugs[1])->base_EC50, Model::CONFIG->drug_db()->at(drugs[1])->n()),
+                                       pow(Model::CONFIG->drug_db()->at(drugs[1])->base_EC50, Model::CONFIG->drug_db()->at(drugs[2])->n()));
+            }
         }
         VLOG(1) << "###############";
     }

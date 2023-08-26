@@ -186,8 +186,9 @@ TEST_F(MosquitoTest, CountResistantGenotypes) {
     c.read_from_file("input.yml");
 
     //DHAPPQ:2-2
-    int therapy_id = 0;
-    std::vector<int> sc_therapy = {0,3};
+    int resistant_drug_pair_id = 0;
+    int resistant_type_id = 0;
+    std::vector drugs = m.resistant_drug_list[resistant_drug_pair_id].second;
 
     std::string g1_aas = "||||YY1||KTHFI,x||||||FNCMYRIPRPCA|2";
     std::string g2_aas = "||||NY1||TTHFI,x||||||FNCMYRIPRPYA|1";
@@ -196,186 +197,103 @@ TEST_F(MosquitoTest, CountResistantGenotypes) {
     std::vector<Genotype*> parent_genotypes = {genotype_db.get_genotype(g1_aas,&c), genotype_db.get_genotype(g2_aas,&c)};
     Genotype* g3 = genotype_db.get_genotype(g3_aas,&c);
 
-    EXPECT_EQ(m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "DHA-PPQ:2-2", therapy_id, true),true);
-    EXPECT_EQ(m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "ASAQ:2-2", therapy_id, true),false);
-    EXPECT_EQ(m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "ASAQ:2-3", therapy_id, true),false);
-    EXPECT_EQ(m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "ASAQ:2-4", therapy_id, true),false);
-    EXPECT_EQ(m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "AL:2-2", therapy_id, true),false);
-    EXPECT_EQ(m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "AL:2-3", therapy_id, true),false);
-    EXPECT_EQ(m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "AL:2-4", therapy_id, true),false);
+    std::tuple<bool,int,int,std::string> result = m.count_resistant_genotypes(&c, 0, parent_genotypes, g3, drugs, resistant_drug_pair_id, 0, true);
+    VLOG(0) << fmt::format("{} {} {} {}",std::get<0>(result),std::get<1>(result),std::get<2>(result),std::get<3>(result));
+    EXPECT_EQ(result,std::make_tuple(true,resistant_drug_pair_id,0,"2-2"));
+    EXPECT_NE(result,std::make_tuple(true,1,0,"2-2"));
+    EXPECT_NE(result,std::make_tuple(true,1,1,"2-3"));
+    EXPECT_NE(result,std::make_tuple(true,1,2,"2-3"));
+    EXPECT_NE(result,std::make_tuple(true,1,3,"0-0"));
+
 
     //ASAQ
-    therapy_id = 1;
-    sc_therapy = {0,2};
+    resistant_drug_pair_id = 1;
+    drugs = m.resistant_drug_list[resistant_drug_pair_id].second;
 
     //ASAQ:2-2
-    g1_aas = "||||YF1||KTHFI,x||||||FNCMYRIPRPCA|1";
+    g1_aas = "||||YY1||KTHFI,x||||||FNCMYRIPRPCA|1";
     g2_aas = "||||NF1||KTHFI,x||||||FNCMYRIPRPYA|1";
-    g3_aas = "||||YF1||KTHFI,x||||||FNCMYRIPRPYA|1";
-
+    g3_aas = "||||NY1||KTHFI,x||||||FNCMYRIPRPYA|1";
     parent_genotypes = {genotype_db.get_genotype(g1_aas,&c), genotype_db.get_genotype(g2_aas,&c)};
     g3 = genotype_db.get_genotype(g3_aas,&c);
-
-    EXPECT_EQ(m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "DHA-PPQ:2-2", therapy_id, true),false);
-    EXPECT_EQ(m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "ASAQ:2-2", therapy_id, true),true);
-    EXPECT_EQ(m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "ASAQ:2-3", therapy_id, true),false);
-    EXPECT_EQ(m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "ASAQ:2-4", therapy_id, true),false);
-    EXPECT_EQ(m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "AL:2-2", therapy_id, true),false);
-    EXPECT_EQ(m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "AL:2-3", therapy_id, true),false);
-    EXPECT_EQ(m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "AL:2-4", therapy_id, true),false);
+    result = m.count_resistant_genotypes(&c, 0, parent_genotypes, g3, drugs, resistant_drug_pair_id, 0, true);
+    VLOG(0) << fmt::format("{} {} {} {}",std::get<0>(result),std::get<1>(result),std::get<2>(result),std::get<3>(result));
+    EXPECT_EQ(result,std::make_tuple(true, resistant_drug_pair_id, 0, "2-2"));
+    result = m.count_resistant_genotypes(&c, 0, parent_genotypes, g3, drugs, resistant_drug_pair_id, 1, true);
+    VLOG(0) << fmt::format("{} {} {} {}",std::get<0>(result),std::get<1>(result),std::get<2>(result),std::get<3>(result));
+    EXPECT_EQ(result,std::make_tuple(false, resistant_drug_pair_id, 1, "2-2"));
+    result = m.count_resistant_genotypes(&c, 0, parent_genotypes, g3, drugs, resistant_drug_pair_id, 2, true);
+    VLOG(0) << fmt::format("{} {} {} {}",std::get<0>(result),std::get<1>(result),std::get<2>(result),std::get<3>(result));
+    EXPECT_EQ(result,std::make_tuple(false, resistant_drug_pair_id, 2, "2-2"));
+    result = m.count_resistant_genotypes(&c, 0, parent_genotypes, g3, drugs, resistant_drug_pair_id, 3, true);
+    VLOG(0) << fmt::format("{} {} {} {}",std::get<0>(result),std::get<1>(result),std::get<2>(result),std::get<3>(result));
+    EXPECT_EQ(result,std::make_tuple(true, resistant_drug_pair_id, 3, "0-0"));
 
     //ASAQ:2-3
     g1_aas = "||||YY1||KTHFI,x||||||FNCMYRIPRPCA|1";
     g2_aas = "||||NF1||KTHFI,x||||||FNCMYRIPRPYA|1";
     g3_aas = "||||YY1||KTHFI,x||||||FNCMYRIPRPYA|1";
-
     parent_genotypes = {genotype_db.get_genotype(g1_aas,&c), genotype_db.get_genotype(g2_aas,&c)};
     g3 = genotype_db.get_genotype(g3_aas,&c);
-
-    m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "ASAQ:2-2", therapy_id, true);
-    m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "ASAQ:2-3", therapy_id, true);
-
-    EXPECT_EQ(m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "DHA-PPQ:2-2", therapy_id, true),false);
-    EXPECT_EQ(m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "ASAQ:2-2", therapy_id, true),true);
-    EXPECT_EQ(m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "ASAQ:2-3", therapy_id, true),true);
-    EXPECT_EQ(m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "ASAQ:2-4", therapy_id, true),false);
-    EXPECT_EQ(m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "AL:2-2", therapy_id, true),false);
-    EXPECT_EQ(m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "AL:2-3", therapy_id, true),false);
-    EXPECT_EQ(m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "AL:2-4", therapy_id, true),false);
+    result = m.count_resistant_genotypes(&c, 0, parent_genotypes, g3, drugs, resistant_drug_pair_id, 0, true);
+    VLOG(0) << fmt::format("{} {} {} {}",std::get<0>(result),std::get<1>(result),std::get<2>(result),std::get<3>(result));
+    EXPECT_EQ(result,std::make_tuple(false,resistant_drug_pair_id, 0,"2-3"));
+    result = m.count_resistant_genotypes(&c, 0, parent_genotypes, g3, drugs, resistant_drug_pair_id, 1, true);
+    VLOG(0) << fmt::format("{} {} {} {}",std::get<0>(result),std::get<1>(result),std::get<2>(result),std::get<3>(result));
+    EXPECT_EQ(result,std::make_tuple(true,resistant_drug_pair_id, 1,"2-3"));
+    result = m.count_resistant_genotypes(&c, 0, parent_genotypes, g3, drugs, resistant_drug_pair_id, 2, true);
+    VLOG(0) << fmt::format("{} {} {} {}",std::get<0>(result),std::get<1>(result),std::get<2>(result),std::get<3>(result));
+    EXPECT_EQ(result,std::make_tuple(false,resistant_drug_pair_id, 2,"2-3"));
+    result = m.count_resistant_genotypes(&c, 0, parent_genotypes, g3, drugs, resistant_drug_pair_id, 3, true);
+    VLOG(0) << fmt::format("{} {} {} {}",std::get<0>(result),std::get<1>(result),std::get<2>(result),std::get<3>(result));
+    EXPECT_EQ(result,std::make_tuple(true,resistant_drug_pair_id, 3,"0-0"));
 
     //ASAQ:2-4
     g1_aas = "||||YY1||TTHFI,x||||||FNCMYRIPRPCA|1";
     g2_aas = "||||NF1||KTHFI,x||||||FNCMYRIPRPYA|1";
     g3_aas = "||||YY1||TTHFI,x||||||FNCMYRIPRPYA|1";
-
     parent_genotypes = {genotype_db.get_genotype(g1_aas,&c), genotype_db.get_genotype(g2_aas,&c)};
     g3 = genotype_db.get_genotype(g3_aas,&c);
+    result = m.count_resistant_genotypes(&c, 0, parent_genotypes, g3, drugs, resistant_drug_pair_id, 0, true);
+    VLOG(0) << fmt::format("{} {} {} {}",std::get<0>(result),std::get<1>(result),std::get<2>(result),std::get<3>(result));
+    EXPECT_EQ(result,std::make_tuple(false,resistant_drug_pair_id, 0,"2-4"));
+    result = m.count_resistant_genotypes(&c, 0, parent_genotypes, g3, drugs, resistant_drug_pair_id, 1, true);
+    VLOG(0) << fmt::format("{} {} {} {}",std::get<0>(result),std::get<1>(result),std::get<2>(result),std::get<3>(result));
+    EXPECT_EQ(result,std::make_tuple(false,resistant_drug_pair_id, 1,"2-4"));
+    result = m.count_resistant_genotypes(&c, 0, parent_genotypes, g3, drugs, resistant_drug_pair_id, 2, true);
+    VLOG(0) << fmt::format("{} {} {} {}",std::get<0>(result),std::get<1>(result),std::get<2>(result),std::get<3>(result));
+    EXPECT_EQ(result,std::make_tuple(true,resistant_drug_pair_id, 2,"2-4"));
+    result = m.count_resistant_genotypes(&c, 0, parent_genotypes, g3, drugs, resistant_drug_pair_id, 3, true);
+    VLOG(0) << fmt::format("{} {} {} {}",std::get<0>(result),std::get<1>(result),std::get<2>(result),std::get<3>(result));
+    EXPECT_EQ(result,std::make_tuple(true,resistant_drug_pair_id, 3,"0-0"));
 
-    EXPECT_EQ(m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "DHA-PPQ:2-2", therapy_id, true),false);
-    EXPECT_EQ(m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "ASAQ:2-2", therapy_id, true),true);
-    EXPECT_EQ(m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "ASAQ:2-3", therapy_id, true),true);
-    EXPECT_EQ(m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "ASAQ:2-4", therapy_id, true),true);
-    EXPECT_EQ(m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "AL:2-2", therapy_id, true),false);
-    EXPECT_EQ(m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "AL:2-3", therapy_id, true),false);
-    EXPECT_EQ(m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "AL:2-4", therapy_id, true),false);
-
-    //ASAQ:2-4, g1 <-> g2
-    g2_aas = "||||YY1||TTHFI,x||||||FNCMYRIPRPCA|1";
-    g1_aas = "||||NF1||KTHFI,x||||||FNCMYRIPRPYA|1";
-    g3_aas = "||||YY1||TTHFI,x||||||FNCMYRIPRPYA|1";
-
+    //Test
+    VLOG(0) << "Test mos";
+    g1_aas = "||||NY1||TTHFI,x||||||FNCMYRIPRPCA|2";
+    g2_aas = "||||NF1||KTHFI,x||||||FNCMYRIPRPYA|2";
+    g3_aas = "||||NY1||TTHFI,x||||||FNCMYRIPRPYA|2";
+    VLOG(0) << g1_aas;
+    VLOG(0) << g2_aas;
+    VLOG(0) << g3_aas;
     parent_genotypes = {genotype_db.get_genotype(g1_aas,&c), genotype_db.get_genotype(g2_aas,&c)};
     g3 = genotype_db.get_genotype(g3_aas,&c);
+    for (int resistant_drug_pair_id = 0; resistant_drug_pair_id < m.resistant_drug_list.size(); resistant_drug_pair_id++) {
+        auto drugs = m.resistant_drug_list[resistant_drug_pair_id].second;
+        auto resistant_types = m.resistant_drug_list[resistant_drug_pair_id].first.size();
+        for (int resistant_type_id = 0; resistant_type_id < resistant_types; resistant_type_id++) {
+            result = m.count_resistant_genotypes(&c, 0, parent_genotypes, g3, drugs, resistant_drug_pair_id, resistant_type_id, true);
+            VLOG(0) << fmt::format("{}: {} {} {} {}",m.resistant_drug_list[resistant_drug_pair_id].first[resistant_type_id],
+                                   std::get<0>(result),std::get<1>(result),std::get<2>(result),std::get<3>(result));
+        }
+    }
 
-    EXPECT_EQ(m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "DHA-PPQ:2-2", therapy_id, true),false);
-    EXPECT_EQ(m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "ASAQ:2-2", therapy_id, true),true);
-    EXPECT_EQ(m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "ASAQ:2-3", therapy_id, true),true);
-    EXPECT_EQ(m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "ASAQ:2-4", therapy_id, true),true);
-    EXPECT_EQ(m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "AL:2-2", therapy_id, true),false);
-    EXPECT_EQ(m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "AL:2-3", therapy_id, true),false);
-    EXPECT_EQ(m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "AL:2-4", therapy_id, true),false);
-
-    //AL
-    therapy_id = 2;
-    sc_therapy = {0,1};
-
-    //AL:2-2
-    g1_aas = "||||YF1||TTHFI,x||||||FNCMYRIPRPCA|1";
-    g2_aas = "||||YY1||TTHFI,x||||||FNCMYRIPRPYA|1";
-    g3_aas = "||||YF1||TTHFI,x||||||FNCMYRIPRPYA|1";
-
-    parent_genotypes = {genotype_db.get_genotype(g1_aas,&c), genotype_db.get_genotype(g2_aas,&c)};
-    g3 = genotype_db.get_genotype(g3_aas,&c);
-
-    EXPECT_EQ(m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "DHA-PPQ:2-2", therapy_id, true),false);
-    EXPECT_EQ(m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "ASAQ:2-2", therapy_id, true),false);
-    EXPECT_EQ(m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "ASAQ:2-3", therapy_id, true),false);
-    EXPECT_EQ(m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "ASAQ:2-4", therapy_id, true),false);
-    EXPECT_EQ(m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "AL:2-2", therapy_id, true),true);
-    EXPECT_EQ(m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "AL:2-3", therapy_id, true),false);
-    EXPECT_EQ(m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "AL:2-4", therapy_id, true),false);
-
-    //AL:2-3
-    g1_aas = "||||YF1||KTHFI,x||||||FNCMYRIPRPCA|1";
-    g2_aas = "||||YY1||TTHFI,x||||||FNCMYRIPRPYA|1";
-    g3_aas = "||||YF1||KTHFI,x||||||FNCMYRIPRPYA|1";
-
-    parent_genotypes = {genotype_db.get_genotype(g1_aas,&c), genotype_db.get_genotype(g2_aas,&c)};
-    g3 = genotype_db.get_genotype(g3_aas,&c);
-
-    m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "ASAQ:2-2", therapy_id, true);
-    m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "ASAQ:2-3", therapy_id, true);
-
-    EXPECT_EQ(m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "DHA-PPQ:2-2", therapy_id, true),false);
-    EXPECT_EQ(m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "ASAQ:2-2", therapy_id, true),false);
-    EXPECT_EQ(m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "ASAQ:2-3", therapy_id, true),false);
-    EXPECT_EQ(m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "ASAQ:2-4", therapy_id, true),false);
-    EXPECT_EQ(m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "AL:2-2", therapy_id, true),true);
-    EXPECT_EQ(m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "AL:2-3", therapy_id, true),true);
-    EXPECT_EQ(m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "AL:2-4", therapy_id, true),false);
-
-    //AL:2-4
-    g1_aas = "||||NF1||KTHFI,x||||||FNCMYRIPRPCA|1";
-    g2_aas = "||||YY1||TTHFI,x||||||FNCMYRIPRPYA|1";
-    g3_aas = "||||NF1||KTHFI,x||||||FNCMYRIPRPYA|1";
-
-    parent_genotypes = {genotype_db.get_genotype(g1_aas,&c), genotype_db.get_genotype(g2_aas,&c)};
-    g3 = genotype_db.get_genotype(g3_aas,&c);
-
-    EXPECT_EQ(m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "DHA-PPQ:2-2", therapy_id, true),false);
-    EXPECT_EQ(m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "ASAQ:2-2", therapy_id, true),false);
-    EXPECT_EQ(m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "ASAQ:2-3", therapy_id, true),false);
-    EXPECT_EQ(m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "ASAQ:2-4", therapy_id, true),false);
-    EXPECT_EQ(m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "AL:2-2", therapy_id, true),true);
-    EXPECT_EQ(m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "AL:2-3", therapy_id, true),true);
-    EXPECT_EQ(m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "AL:2-4", therapy_id, true),true);
-
-    //AL:2-4, g1 <-> g2
-    g2_aas = "||||NF1||KTHFI,x||||||FNCMYRIPRPCA|1";
-    g1_aas = "||||YY1||TTHFI,x||||||FNCMYRIPRPYA|1";
-    g3_aas = "||||NF1||KTHFI,x||||||FNCMYRIPRPYA|1";
-
-    parent_genotypes = {genotype_db.get_genotype(g1_aas,&c), genotype_db.get_genotype(g2_aas,&c)};
-    g3 = genotype_db.get_genotype(g3_aas,&c);
-
-    EXPECT_EQ(m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "DHA-PPQ:2-2", therapy_id, true),false);
-    EXPECT_EQ(m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "ASAQ:2-2", therapy_id, true),false);
-    EXPECT_EQ(m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "ASAQ:2-3", therapy_id, true),false);
-    EXPECT_EQ(m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "ASAQ:2-4", therapy_id, true),false);
-    EXPECT_EQ(m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "AL:2-2", therapy_id, true),true);
-    EXPECT_EQ(m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "AL:2-3", therapy_id, true),true);
-    EXPECT_EQ(m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "AL:2-4", therapy_id, true),true);
-
-    //AL:2-2, false
-    g2_aas = "||||NY1||TTHFI,x||||||FNCMYRIPRPCA|1";
-    g1_aas = "||||YF1||TTHFI,x||||||FNCMYRIPRPYA|1";
-    g3_aas = "||||NY1||TTHFI,x||||||FNCMYRIPRPYA|1";
-
-    parent_genotypes = {genotype_db.get_genotype(g1_aas,&c), genotype_db.get_genotype(g2_aas,&c)};
-    g3 = genotype_db.get_genotype(g3_aas,&c);
-
-    EXPECT_EQ(m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "DHA-PPQ:2-2", therapy_id, true),false);
-    EXPECT_EQ(m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "ASAQ:2-2", therapy_id, true),false);
-    EXPECT_EQ(m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "ASAQ:2-3", therapy_id, true),false);
-    EXPECT_EQ(m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "ASAQ:2-4", therapy_id, true),false);
-    EXPECT_EQ(m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "AL:2-2", therapy_id, true),false);
-    EXPECT_EQ(m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "AL:2-3", therapy_id, true),false);
-    EXPECT_EQ(m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "AL:2-4", therapy_id, true),false);
-
-    //AL:2-2, false
-    g2_aas = "||||NY1||TTHFI,x||||||FNCMYRIPRPCA|1";
-    g1_aas = "||||YF1||KTHFI,x||||||FNCMYRIPRPYA|1";
-    g3_aas = "||||NY1||KTHFI,x||||||FNCMYRIPRPYA|1";
-
-    parent_genotypes = {genotype_db.get_genotype(g1_aas,&c), genotype_db.get_genotype(g2_aas,&c)};
-    g3 = genotype_db.get_genotype(g3_aas,&c);
-
-    EXPECT_EQ(m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "DHA-PPQ:2-2", therapy_id, true),false);
-    EXPECT_EQ(m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "ASAQ:2-2", therapy_id, true),false);
-    EXPECT_EQ(m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "ASAQ:2-3", therapy_id, true),false);
-    EXPECT_EQ(m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "ASAQ:2-4", therapy_id, true),false);
-    EXPECT_EQ(m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "AL:2-2", therapy_id, true),false);
-    EXPECT_EQ(m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "AL:2-3", therapy_id, true),false);
-    EXPECT_EQ(m.genotype_resistant_to(&c,parent_genotypes, sc_therapy, g3, "AL:2-4", therapy_id, true),false);
-
+    VLOG(0) << "Test clonal";
+    for (int resistant_drug_pair_id = 0; resistant_drug_pair_id < m.resistant_drug_list.size(); resistant_drug_pair_id++) {
+        auto resistant_types = m.resistant_drug_list[resistant_drug_pair_id].first.size();
+        for (int resistant_type_id = 0; resistant_type_id < resistant_types; resistant_type_id++) {
+            result = m.count_resistant_genotypes(g3, resistant_drug_pair_id, resistant_type_id);
+            VLOG(0) << fmt::format("{}: {} {} {} {}",m.resistant_drug_list[resistant_drug_pair_id].first[resistant_type_id],
+                                   std::get<0>(result),std::get<1>(result),std::get<2>(result),std::get<3>(result));
+        }
+    }
 }

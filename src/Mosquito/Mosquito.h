@@ -25,13 +25,13 @@ public:
 
 public:
     std::map<int,double> drug_id_min_ec50;
-    std::vector<std::vector<std::string>> double_resistant_list = {{"DHA-PPQ:2-2"},
-                                                                   {"ASAQ:2-2","ASAQ:2-3","ASAQ:2-4","ASAQ:2"},
-                                                                   {"AL:2-2","AL:2-3","AL:2-4","AL:2"},
-                                                                   {"DHA-PPQ-LUM:3-3","DHA-PPQ-LUM:3-4","DHA-PPQ-LUM:3-5","DHA-PPQ-LUM:3"},
-                                                                   {"DHA-PPQ-AQ:3-3","DHA-PPQ-AQ:3-4","DHA-PPQ-AQ:3-5","DHA-PPQ-AQ:3"},
-                                                                   };//Must match length with the therapy list
-    std::vector<std::vector<int>> therapy_list = {{0,3},{0,2},{0,1},{0,1,3},{0,2,3}};
+    typedef std::pair<std::vector<std::string>,std::vector<int>> resistant_drug_info;
+    std::vector<resistant_drug_info> resistant_drug_list = {resistant_drug_info{{"DHA-PPQ:2-2"},{0,3}},
+                                                            resistant_drug_info{{"ASAQ:2-2","ASAQ:2-3","ASAQ:2-4","ASAQ:2"},{0,2}},
+                                                            resistant_drug_info{{"AL:2-2","AL:2-3","AL:2-4","AL:2"},{0,1}},
+                                                            resistant_drug_info{{"DHA-PPQ-AQ:3-3","DHA-PPQ-AQ:3-4","DHA-PPQ-AQ:3-5","DHA-PPQ-AQ:3"},{0,3,2}},
+                                                            resistant_drug_info{{"DHA-PPQ-LUM:3-3","DHA-PPQ-LUM:3-4","DHA-PPQ-LUM:3-5","DHA-PPQ-LUM:3"},{0,3,1}},
+                                                            };
 
 public:
   explicit Mosquito(Model *model = nullptr);
@@ -53,10 +53,10 @@ public:
   void get_genotypes_profile_from_person(Person *person, std::vector<Genotype *> &sampling_genotypes,
                                          std::vector<double> &relative_infectivity_each_pp);
 
-  bool genotype_resistant_to(Genotype *genotype, std::string resistance, int therapy_id);
-
-  bool genotype_resistant_to(Config* config, std::vector<Genotype*> parent_genotypes, std::vector<int> sc_therapy,
-                             Genotype *genotype, std::string resistance, int therapy_id, int resistant_type = -1, bool verbose = false);
+  typedef std::tuple<bool,int,int,std::string> resistant_result_info;
+  resistant_result_info count_resistant_genotypes(Genotype *genotype, int resistant_drug_pair_id,int resistant_type_id);
+  resistant_result_info count_resistant_genotypes(Config* config, int loc, std::vector<Genotype*> parent_genotypes, Genotype *genotype,
+                                              std::vector<int> drugs, int resistant_drug_pair_id, int resistant_type_id = -1, bool verbose = false);
 
   std::vector<std::string> split_string(std::string str, char delimiter);
 };
