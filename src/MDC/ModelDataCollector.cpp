@@ -160,22 +160,31 @@ void ModelDataCollector::initialize() {
       }
     }
 
-    mosquito_recombined_resistant_genotype_count_ = IntVector3(
+    mosquito_recombined_resistant_genotype_condition_count_ = IntVector3(
             Model::CONFIG->number_of_locations(),IntVector2(Model::MOSQUITO->resistant_drug_list.size()));
     for(int loc = 0; loc < Model::CONFIG->number_of_locations(); loc++){
         for(int resistant_list = 0; resistant_list < Model::MOSQUITO->resistant_drug_list.size(); resistant_list++){
-        mosquito_recombined_resistant_genotype_count_[loc][resistant_list] = IntVector(Model::MOSQUITO->resistant_drug_list[resistant_list].first.size(), 0);
+            mosquito_recombined_resistant_genotype_condition_count_[loc][resistant_list] = IntVector(Model::MOSQUITO->resistant_drug_list[resistant_list].first.size(), 0);
       }
     }
 
-      mosquito_inflict_resistant_genotype_count_ = LongVector3(
-              Model::CONFIG->number_of_locations(),LongVector2(Model::MOSQUITO->resistant_drug_list.size()));
-      for(int loc = 0; loc < Model::CONFIG->number_of_locations(); loc++){
-          mosquito_inflict_resistant_genotype_count_[loc] = LongVector2(Model::MOSQUITO->resistant_drug_list.size());
-          for(int resistant_list = 0; resistant_list < Model::MOSQUITO->resistant_drug_list.size(); resistant_list++){
-              mosquito_inflict_resistant_genotype_count_[loc][resistant_list] = LongVector(Model::MOSQUITO->resistant_drug_list[resistant_list].first.size(), 0);
-          }
+    mosquito_inflict_resistant_genotype_count_ = LongVector3(
+          Model::CONFIG->number_of_locations(),LongVector2(Model::MOSQUITO->resistant_drug_list.size()));
+    for(int loc = 0; loc < Model::CONFIG->number_of_locations(); loc++){
+      mosquito_inflict_resistant_genotype_count_[loc] = LongVector2(Model::MOSQUITO->resistant_drug_list.size());
+      for(int resistant_list = 0; resistant_list < Model::MOSQUITO->resistant_drug_list.size(); resistant_list++){
+          mosquito_inflict_resistant_genotype_count_[loc][resistant_list] = LongVector(Model::MOSQUITO->resistant_drug_list[resistant_list].first.size(), 0);
       }
+    }
+
+
+    mosquito_recombined_resistant_genotype_count_ = IntVector3(
+          Model::CONFIG->number_of_locations(),IntVector2(Model::MOSQUITO->resistant_drug_list.size()));
+    for(int loc = 0; loc < Model::CONFIG->number_of_locations(); loc++){
+      for(int resistant_list = 0; resistant_list < Model::MOSQUITO->resistant_drug_list.size(); resistant_list++){
+          mosquito_recombined_resistant_genotype_count_[loc][resistant_list] = IntVector(Model::MOSQUITO->resistant_drug_list[resistant_list].first.size(), 0);
+      }
+    }
 
     monthly_clonal_resistant_genotype_count_ = IntVector3(
             Model::CONFIG->number_of_locations(),IntVector2(Model::MOSQUITO->resistant_drug_list.size()));
@@ -185,23 +194,30 @@ void ModelDataCollector::initialize() {
       }
     }
 
-    monthly_mosquito_recombined_resistant_genotype_count_ = IntVector3(
-            Model::CONFIG->number_of_locations(),IntVector2(Model::MOSQUITO->resistant_drug_list.size()));
+    monthly_mosquito_recombined_resistant_genotype_condition_count_ = IntVector3(
+          Model::CONFIG->number_of_locations(),IntVector2(Model::MOSQUITO->resistant_drug_list.size()));
     for(int loc = 0; loc < Model::CONFIG->number_of_locations(); loc++){
-        for(int resistant_list = 0; resistant_list < Model::MOSQUITO->resistant_drug_list.size(); resistant_list++){
-        monthly_mosquito_recombined_resistant_genotype_count_[loc][resistant_list] = IntVector(Model::MOSQUITO->resistant_drug_list[resistant_list].first.size(), 0);
+      for(int resistant_list = 0; resistant_list < Model::MOSQUITO->resistant_drug_list.size(); resistant_list++){
+          monthly_mosquito_recombined_resistant_genotype_condition_count_[loc][resistant_list] = IntVector(Model::MOSQUITO->resistant_drug_list[resistant_list].first.size(), 0);
       }
     }
 
-
-      monthly_mosquito_inflict_resistant_genotype_count_ = LongVector3(
-              Model::CONFIG->number_of_locations(),LongVector2(Model::MOSQUITO->resistant_drug_list.size()));
-      for(int loc = 0; loc < Model::CONFIG->number_of_locations(); loc++){
-          monthly_mosquito_inflict_resistant_genotype_count_[loc] = LongVector2(Model::MOSQUITO->resistant_drug_list.size());
-          for(int resistant_list = 0; resistant_list < Model::MOSQUITO->resistant_drug_list.size(); resistant_list++){
-              monthly_mosquito_inflict_resistant_genotype_count_[loc][resistant_list] = LongVector(Model::MOSQUITO->resistant_drug_list[resistant_list].first.size(), 0);
-          }
+    monthly_mosquito_inflict_resistant_genotype_count_ = LongVector3(
+          Model::CONFIG->number_of_locations(),LongVector2(Model::MOSQUITO->resistant_drug_list.size()));
+    for(int loc = 0; loc < Model::CONFIG->number_of_locations(); loc++){
+      monthly_mosquito_inflict_resistant_genotype_count_[loc] = LongVector2(Model::MOSQUITO->resistant_drug_list.size());
+      for(int resistant_list = 0; resistant_list < Model::MOSQUITO->resistant_drug_list.size(); resistant_list++){
+          monthly_mosquito_inflict_resistant_genotype_count_[loc][resistant_list] = LongVector(Model::MOSQUITO->resistant_drug_list[resistant_list].first.size(), 0);
       }
+    }
+
+    monthly_mosquito_recombined_resistant_genotype_count_ = IntVector3(
+          Model::CONFIG->number_of_locations(),IntVector2(Model::MOSQUITO->resistant_drug_list.size()));
+    for(int loc = 0; loc < Model::CONFIG->number_of_locations(); loc++){
+      for(int resistant_list = 0; resistant_list < Model::MOSQUITO->resistant_drug_list.size(); resistant_list++){
+          monthly_mosquito_recombined_resistant_genotype_count_[loc][resistant_list] = IntVector(Model::MOSQUITO->resistant_drug_list[resistant_list].first.size(), 0);
+      }
+    }
 
     mosquito_recombination_events_count_ = IntVector2(
         Model::CONFIG->number_of_locations(),
@@ -999,6 +1015,15 @@ void ModelDataCollector::monthly_update() {
           monthly_mosquito_inflict_resistant_genotype_count_[loc] = LongVector2(Model::MOSQUITO->resistant_drug_list.size());
           for(int resistant_list = 0; resistant_list < Model::MOSQUITO->resistant_drug_list.size(); resistant_list++){
               monthly_mosquito_inflict_resistant_genotype_count_[loc][resistant_list] = LongVector(Model::MOSQUITO->resistant_drug_list[resistant_list].first.size(), 0);
+          }
+      }
+
+      monthly_mosquito_recombined_resistant_genotype_condition_count_ = IntVector3(
+              Model::CONFIG->number_of_locations(),IntVector2(Model::MOSQUITO->resistant_drug_list.size()));
+      for(int loc = 0; loc < Model::CONFIG->number_of_locations(); loc++){
+          monthly_mosquito_recombined_resistant_genotype_condition_count_[loc] = IntVector2(Model::MOSQUITO->resistant_drug_list.size());
+          for(int resistant_list = 0; resistant_list < Model::MOSQUITO->resistant_drug_list.size(); resistant_list++){
+              monthly_mosquito_recombined_resistant_genotype_condition_count_[loc][resistant_list] = IntVector(Model::MOSQUITO->resistant_drug_list[resistant_list].first.size(), 0);
           }
       }
   }

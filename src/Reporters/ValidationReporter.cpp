@@ -169,7 +169,7 @@ void ValidationReporter::monthly_report() {
     ss << group_sep;//358
     for (auto loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
         ss << Model::DATA_COLLECTOR->monthly_number_of_TF_by_location()[loc] << sep;
-        ss << group_sep;//387
+        ss << group_sep;//360
     }
     for (int t_id = 0; t_id < Model::CONFIG->therapy_db().size(); t_id++) {
         int nTreaments = Model::DATA_COLLECTOR->number_of_treatments_with_therapy_ID()[t_id];
@@ -178,42 +178,42 @@ void ValidationReporter::monthly_report() {
         double pSuccess = (nTreaments == 0) ? 0 : nSuccess * 100.0 / nTreaments;
         ss << nTreaments << sep << nSuccess << sep << nFail << sep << pSuccess << sep;
     }
-    ss << group_sep;//444
+    ss << group_sep;//417
     for (auto loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
         ss << Model::DATA_COLLECTOR->cumulative_number_treatments_by_location()[loc] << sep;
-        ss << group_sep;//445
+        ss << group_sep;//419
     }
     for (auto loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
         ss << Model::DATA_COLLECTOR->cumulative_TF_by_location()[loc] << sep;
-        ss << group_sep;//447
+        ss << group_sep;//421
     }
     for (auto loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
         ss << Model::DATA_COLLECTOR->cumulative_clinical_episodes_by_location()[loc] << sep;
-        ss << group_sep;//449
+        ss << group_sep;//423
     }
     for (auto loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
         for (int age = 0; age < 80; age++){
             ss << Model::DATA_COLLECTOR->number_of_untreated_cases_by_location_age_year()[loc][age] << sep;
         }
-        ss << group_sep;///529
+        ss << group_sep;///504
     }
     for (auto loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
         for (int age = 0; age < 80; age++){
             ss << Model::DATA_COLLECTOR->number_of_deaths_by_location_age_year()[loc][age] << sep;
         }
-        ss << group_sep;///609
+        ss << group_sep;///585
     }
     for (auto loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
         for (int age = 0; age < 80; age++){
             ss << Model::DATA_COLLECTOR->number_of_malaria_deaths_treated_by_location_age_year()[loc][age] << sep;
         }
-        ss << group_sep;///689
+        ss << group_sep;///666
     }
     for (auto loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
         for (int age = 0; age < 80; age++){
             ss << Model::DATA_COLLECTOR->number_of_malaria_deaths_non_treated_by_location_age_year()[loc][age] << sep;
         }
-        ss << group_sep;///769
+        ss << group_sep;///747
     }
     for (auto loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
         for(int resistant_list = 0; resistant_list < Model::MOSQUITO->resistant_drug_list.size(); resistant_list++){
@@ -221,7 +221,15 @@ void ValidationReporter::monthly_report() {
                 ss << Model::DATA_COLLECTOR->monthly_clonal_resistant_genotype_count()[loc][resistant_list][resistant_type] << sep;
             }
         }
-        ss << group_sep;//371
+        ss << group_sep;//765
+    }
+    for (auto loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
+        for(int resistant_list = 0; resistant_list < Model::MOSQUITO->resistant_drug_list.size(); resistant_list++){
+            for(int resistant_type = 0; resistant_type < Model::MOSQUITO->resistant_drug_list[resistant_list].first.size(); resistant_type++){
+                ss << Model::DATA_COLLECTOR->monthly_mosquito_recombined_resistant_genotype_condition_count()[loc][resistant_list][resistant_type] << sep;
+            }
+        }
+        ss << group_sep;//783
     }
     for (auto loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
         for(int resistant_list = 0; resistant_list < Model::MOSQUITO->resistant_drug_list.size(); resistant_list++){
@@ -229,7 +237,7 @@ void ValidationReporter::monthly_report() {
                 ss << Model::DATA_COLLECTOR->monthly_mosquito_recombined_resistant_genotype_count()[loc][resistant_list][resistant_type] << sep;
             }
         }
-        ss << group_sep;//378
+        ss << group_sep;//801
     }
     for (auto loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
         for(int resistant_list = 0; resistant_list < Model::MOSQUITO->resistant_drug_list.size(); resistant_list++){
@@ -237,7 +245,7 @@ void ValidationReporter::monthly_report() {
                 ss << Model::DATA_COLLECTOR->monthly_mosquito_inflict_resistant_genotype_count()[loc][resistant_list][resistant_type] << sep;
             }
         }
-        ss << group_sep;//385
+        ss << group_sep;//819
     }
     monthly_data_file << ss.str() << std::endl;
 
@@ -320,15 +328,15 @@ void ValidationReporter::after_run() {
     }
     for (auto loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
         ss << Model::DATA_COLLECTOR->cumulative_number_treatments_by_location()[loc] << sep;
-        ss << group_sep;//119
+        ss << group_sep;//101
     }
     for (auto loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
         ss << Model::DATA_COLLECTOR->cumulative_TF_by_location()[loc] << sep;
-        ss << group_sep;//121
+        ss << group_sep;//103
     }
     for (auto loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
         ss << Model::DATA_COLLECTOR->cumulative_clinical_episodes_by_location()[loc] << sep;
-        ss << group_sep;//123
+        ss << group_sep;//105
     }
     for (auto loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
         for(int resistant_list = 0; resistant_list < Model::MOSQUITO->resistant_drug_list.size(); resistant_list++){
@@ -336,7 +344,15 @@ void ValidationReporter::after_run() {
                 ss << Model::DATA_COLLECTOR->clonal_resistant_genotype_count()[loc][resistant_list][resistant_type] << sep;
             }
         }
-        ss << group_sep;//372
+        ss << group_sep;//123
+    }
+    for (auto loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
+        for(int resistant_list = 0; resistant_list < Model::MOSQUITO->resistant_drug_list.size(); resistant_list++){
+            for(int resistant_type = 0; resistant_type < Model::MOSQUITO->resistant_drug_list[resistant_list].first.size(); resistant_type++){
+                ss << Model::DATA_COLLECTOR->mosquito_recombined_resistant_genotype_condition_count()[loc][resistant_list][resistant_type] << sep;
+            }
+        }
+        ss << group_sep;//141
     }
     for (auto loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
         for(int resistant_list = 0; resistant_list < Model::MOSQUITO->resistant_drug_list.size(); resistant_list++){
@@ -344,7 +360,7 @@ void ValidationReporter::after_run() {
                 ss << Model::DATA_COLLECTOR->mosquito_recombined_resistant_genotype_count()[loc][resistant_list][resistant_type] << sep;
             }
         }
-        ss << group_sep;//372
+        ss << group_sep;//159
     }
     for (auto loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
         for(int resistant_list = 0; resistant_list < Model::MOSQUITO->resistant_drug_list.size(); resistant_list++){
@@ -352,12 +368,12 @@ void ValidationReporter::after_run() {
                 ss << Model::DATA_COLLECTOR->mosquito_inflict_resistant_genotype_count()[loc][resistant_list][resistant_type] << sep;
             }
         }
-        ss << group_sep;//372
+        ss << group_sep;//177
     }
     for (auto loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
         ss << Model::DATA_COLLECTOR->mosquito_recombination_events_count()[loc][0] << sep;
         ss << Model::DATA_COLLECTOR->mosquito_recombination_events_count()[loc][1] << sep;
-        ss << group_sep;//372
+        ss << group_sep;//162
     }
     summary_data_file << ss.str() << std::endl;
 

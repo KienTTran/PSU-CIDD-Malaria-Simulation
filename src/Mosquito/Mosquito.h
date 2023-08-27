@@ -56,7 +56,7 @@ public:
   typedef std::tuple<bool,int,int,std::string> resistant_result_info;
   resistant_result_info count_resistant_genotypes(Genotype *genotype, int resistant_drug_pair_id,int resistant_type_id);
   resistant_result_info count_resistant_genotypes(Config* config, int loc, std::vector<Genotype*> parent_genotypes, Genotype *genotype,
-                                              std::vector<int> drugs, int resistant_drug_pair_id, int resistant_type_id = -1, bool verbose = false);
+                                                  std::vector<int> drugs, int resistant_drug_pair_id, int resistant_type_id = -1, bool verbose = false);
 
   std::vector<std::string> split_string(std::string str, char delimiter);
 };
