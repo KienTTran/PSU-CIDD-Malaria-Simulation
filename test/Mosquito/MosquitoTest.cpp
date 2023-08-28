@@ -200,7 +200,7 @@ TEST_F(MosquitoTest, CountResistantGenotypes) {
     std::vector<Genotype*> parent_genotypes = {genotype_db.get_genotype(genotype_m,&c), genotype_db.get_genotype(genotype_f,&c)};
     Genotype* recombined_genotype = genotype_db.get_genotype(genotype_c,&c);
 
-    std::tuple<bool,int,int,std::string> result = m.count_resistant_genotypes(&c, 0, parent_genotypes, recombined_genotype, drugs, resistant_drug_pair_id, 0, true);
+    std::tuple<bool,int,int,std::string> result = m.two_condition_count_resistant_genotypes(&c, 0, parent_genotypes, recombined_genotype, drugs, resistant_drug_pair_id, 0, true);
     VLOG(0) << fmt::format("{} {} {} {}",std::get<0>(result),std::get<1>(result),std::get<2>(result),std::get<3>(result));
     EXPECT_EQ(result,std::make_tuple(true,resistant_drug_pair_id,0,"2-2"));
     EXPECT_NE(result,std::make_tuple(true,1,0,"2-2"));
@@ -221,16 +221,16 @@ TEST_F(MosquitoTest, CountResistantGenotypes) {
     VLOG(0) << genotype_c;
     parent_genotypes = {genotype_db.get_genotype(genotype_m,&c), genotype_db.get_genotype(genotype_f,&c)};
     recombined_genotype = genotype_db.get_genotype(genotype_c,&c);
-    result = m.count_resistant_genotypes(&c, 0, parent_genotypes, recombined_genotype, drugs, resistant_drug_pair_id, 0, true);
+    result = m.two_condition_count_resistant_genotypes(&c, 0, parent_genotypes, recombined_genotype, drugs, resistant_drug_pair_id, 0, true);
     VLOG(0) << fmt::format("{} {} {} {}",std::get<0>(result),std::get<1>(result),std::get<2>(result),std::get<3>(result));
     EXPECT_EQ(result,std::make_tuple(true, resistant_drug_pair_id, 0, "2-2"));
-    result = m.count_resistant_genotypes(&c, 0, parent_genotypes, recombined_genotype, drugs, resistant_drug_pair_id, 1, true);
+    result = m.two_condition_count_resistant_genotypes(&c, 0, parent_genotypes, recombined_genotype, drugs, resistant_drug_pair_id, 1, true);
     VLOG(0) << fmt::format("{} {} {} {}",std::get<0>(result),std::get<1>(result),std::get<2>(result),std::get<3>(result));
     EXPECT_EQ(result,std::make_tuple(false, resistant_drug_pair_id, 1, "2-2"));
-    result = m.count_resistant_genotypes(&c, 0, parent_genotypes, recombined_genotype, drugs, resistant_drug_pair_id, 2, true);
+    result = m.two_condition_count_resistant_genotypes(&c, 0, parent_genotypes, recombined_genotype, drugs, resistant_drug_pair_id, 2, true);
     VLOG(0) << fmt::format("{} {} {} {}",std::get<0>(result),std::get<1>(result),std::get<2>(result),std::get<3>(result));
     EXPECT_EQ(result,std::make_tuple(false, resistant_drug_pair_id, 2, "2-2"));
-    result = m.count_resistant_genotypes(&c, 0, parent_genotypes, recombined_genotype, drugs, resistant_drug_pair_id, 3, true);
+    result = m.two_condition_count_resistant_genotypes(&c, 0, parent_genotypes, recombined_genotype, drugs, resistant_drug_pair_id, 3, true);
     VLOG(0) << fmt::format("{} {} {} {}",std::get<0>(result),std::get<1>(result),std::get<2>(result),std::get<3>(result));
     EXPECT_EQ(result,std::make_tuple(true, resistant_drug_pair_id, 3, ""));
 
@@ -243,16 +243,16 @@ TEST_F(MosquitoTest, CountResistantGenotypes) {
     VLOG(0) << genotype_c;
     parent_genotypes = {genotype_db.get_genotype(genotype_m,&c), genotype_db.get_genotype(genotype_f,&c)};
     recombined_genotype = genotype_db.get_genotype(genotype_c,&c);
-    result = m.count_resistant_genotypes(&c, 0, parent_genotypes, recombined_genotype, drugs, resistant_drug_pair_id, 0, true);
+    result = m.two_condition_count_resistant_genotypes(&c, 0, parent_genotypes, recombined_genotype, drugs, resistant_drug_pair_id, 0, true);
     VLOG(0) << fmt::format("{} {} {} {}",std::get<0>(result),std::get<1>(result),std::get<2>(result),std::get<3>(result));
     EXPECT_EQ(result,std::make_tuple(false,resistant_drug_pair_id, 0,"2-3"));
-    result = m.count_resistant_genotypes(&c, 0, parent_genotypes, recombined_genotype, drugs, resistant_drug_pair_id, 1, true);
+    result = m.two_condition_count_resistant_genotypes(&c, 0, parent_genotypes, recombined_genotype, drugs, resistant_drug_pair_id, 1, true);
     VLOG(0) << fmt::format("{} {} {} {}",std::get<0>(result),std::get<1>(result),std::get<2>(result),std::get<3>(result));
     EXPECT_EQ(result,std::make_tuple(true,resistant_drug_pair_id, 1,"2-3"));
-    result = m.count_resistant_genotypes(&c, 0, parent_genotypes, recombined_genotype, drugs, resistant_drug_pair_id, 2, true);
+    result = m.two_condition_count_resistant_genotypes(&c, 0, parent_genotypes, recombined_genotype, drugs, resistant_drug_pair_id, 2, true);
     VLOG(0) << fmt::format("{} {} {} {}",std::get<0>(result),std::get<1>(result),std::get<2>(result),std::get<3>(result));
     EXPECT_EQ(result,std::make_tuple(false,resistant_drug_pair_id, 2,"2-3"));
-    result = m.count_resistant_genotypes(&c, 0, parent_genotypes, recombined_genotype, drugs, resistant_drug_pair_id, 3, true);
+    result = m.two_condition_count_resistant_genotypes(&c, 0, parent_genotypes, recombined_genotype, drugs, resistant_drug_pair_id, 3, true);
     VLOG(0) << fmt::format("{} {} {} {}",std::get<0>(result),std::get<1>(result),std::get<2>(result),std::get<3>(result));
     EXPECT_EQ(result,std::make_tuple(true,resistant_drug_pair_id, 3,""));
 
@@ -265,16 +265,16 @@ TEST_F(MosquitoTest, CountResistantGenotypes) {
     VLOG(0) << genotype_c;
     parent_genotypes = {genotype_db.get_genotype(genotype_m,&c), genotype_db.get_genotype(genotype_f,&c)};
     recombined_genotype = genotype_db.get_genotype(genotype_c,&c);
-    result = m.count_resistant_genotypes(&c, 0, parent_genotypes, recombined_genotype, drugs, resistant_drug_pair_id, 0, true);
+    result = m.two_condition_count_resistant_genotypes(&c, 0, parent_genotypes, recombined_genotype, drugs, resistant_drug_pair_id, 0, true);
     VLOG(0) << fmt::format("{} {} {} {}",std::get<0>(result),std::get<1>(result),std::get<2>(result),std::get<3>(result));
     EXPECT_EQ(result,std::make_tuple(false,resistant_drug_pair_id, 0,"2-4"));
-    result = m.count_resistant_genotypes(&c, 0, parent_genotypes, recombined_genotype, drugs, resistant_drug_pair_id, 1, true);
+    result = m.two_condition_count_resistant_genotypes(&c, 0, parent_genotypes, recombined_genotype, drugs, resistant_drug_pair_id, 1, true);
     VLOG(0) << fmt::format("{} {} {} {}",std::get<0>(result),std::get<1>(result),std::get<2>(result),std::get<3>(result));
     EXPECT_EQ(result,std::make_tuple(false,resistant_drug_pair_id, 1,"2-4"));
-    result = m.count_resistant_genotypes(&c, 0, parent_genotypes, recombined_genotype, drugs, resistant_drug_pair_id, 2, true);
+    result = m.two_condition_count_resistant_genotypes(&c, 0, parent_genotypes, recombined_genotype, drugs, resistant_drug_pair_id, 2, true);
     VLOG(0) << fmt::format("{} {} {} {}",std::get<0>(result),std::get<1>(result),std::get<2>(result),std::get<3>(result));
     EXPECT_EQ(result,std::make_tuple(true,resistant_drug_pair_id, 2,"2-4"));
-    result = m.count_resistant_genotypes(&c, 0, parent_genotypes, recombined_genotype, drugs, resistant_drug_pair_id, 3, true);
+    result = m.two_condition_count_resistant_genotypes(&c, 0, parent_genotypes, recombined_genotype, drugs, resistant_drug_pair_id, 3, true);
     VLOG(0) << fmt::format("{} {} {} {}",std::get<0>(result),std::get<1>(result),std::get<2>(result),std::get<3>(result));
     EXPECT_EQ(result,std::make_tuple(true,resistant_drug_pair_id, 3,""));
 
@@ -292,7 +292,7 @@ TEST_F(MosquitoTest, CountResistantGenotypes) {
     resistant_drug_pair_id = 0;
     resistant_type_id = 0;
     drugs = m.resistant_drug_list[resistant_drug_pair_id].second;
-    result = m.count_resistant_genotypes(&c, 0, parent_genotypes, recombined_genotype, drugs, resistant_drug_pair_id, resistant_type_id, true);
+    result = m.two_condition_count_resistant_genotypes(&c, 0, parent_genotypes, recombined_genotype, drugs, resistant_drug_pair_id, resistant_type_id, true);
     VLOG(0) << fmt::format("{}: {} {} {} {}",m.resistant_drug_list[resistant_drug_pair_id].first[resistant_type_id],
                            std::get<0>(result),std::get<1>(result),std::get<2>(result),std::get<3>(result));
     EXPECT_EQ(result,std::make_tuple(true,resistant_drug_pair_id, resistant_type_id,"2-2"));
@@ -304,7 +304,7 @@ TEST_F(MosquitoTest, CountResistantGenotypes) {
     resistant_drug_pair_id = 1;
     resistant_type_id = 0;
     drugs = m.resistant_drug_list[resistant_drug_pair_id].second;
-    result = m.count_resistant_genotypes(&c, 0, parent_genotypes, recombined_genotype, drugs, resistant_drug_pair_id, resistant_type_id, true);
+    result = m.two_condition_count_resistant_genotypes(&c, 0, parent_genotypes, recombined_genotype, drugs, resistant_drug_pair_id, resistant_type_id, true);
     VLOG(0) << fmt::format("{}: {} {} {} {}",m.resistant_drug_list[resistant_drug_pair_id].first[resistant_type_id],
                            std::get<0>(result),std::get<1>(result),std::get<2>(result),std::get<3>(result));
     EXPECT_EQ(result,std::make_tuple(false,resistant_drug_pair_id, resistant_type_id,"0-0"));
@@ -323,7 +323,7 @@ TEST_F(MosquitoTest, CountResistantGenotypes) {
     resistant_drug_pair_id = 0;
     resistant_type_id = 0;
     drugs = m.resistant_drug_list[resistant_drug_pair_id].second;
-    result = m.count_resistant_genotypes(&c, 0, parent_genotypes, recombined_genotype, drugs, resistant_drug_pair_id, resistant_type_id, true);
+    result = m.two_condition_count_resistant_genotypes(&c, 0, parent_genotypes, recombined_genotype, drugs, resistant_drug_pair_id, resistant_type_id, true);
     VLOG(0) << fmt::format("{}: {} {} {} {}",m.resistant_drug_list[resistant_drug_pair_id].first[resistant_type_id],
                            std::get<0>(result),std::get<1>(result),std::get<2>(result),std::get<3>(result));
     EXPECT_EQ(result,std::make_tuple(true,resistant_drug_pair_id, resistant_type_id,"2-2"));
@@ -335,7 +335,7 @@ TEST_F(MosquitoTest, CountResistantGenotypes) {
     resistant_drug_pair_id = 1;
     resistant_type_id = 0;
     drugs = m.resistant_drug_list[resistant_drug_pair_id].second;
-    result = m.count_resistant_genotypes(&c, 0, parent_genotypes, recombined_genotype, drugs, resistant_drug_pair_id, resistant_type_id, true);
+    result = m.two_condition_count_resistant_genotypes(&c, 0, parent_genotypes, recombined_genotype, drugs, resistant_drug_pair_id, resistant_type_id, true);
     VLOG(0) << fmt::format("{}: {} {} {} {}",m.resistant_drug_list[resistant_drug_pair_id].first[resistant_type_id],
                            std::get<0>(result),std::get<1>(result),std::get<2>(result),std::get<3>(result));
     EXPECT_EQ(result,std::make_tuple(true,resistant_drug_pair_id, resistant_type_id,"2-2"));
@@ -355,7 +355,7 @@ TEST_F(MosquitoTest, CountResistantGenotypes) {
         auto drugs = m.resistant_drug_list[resistant_drug_pair_id].second;
         auto resistant_types = m.resistant_drug_list[resistant_drug_pair_id].first.size();
         for (int resistant_type_id = 0; resistant_type_id < resistant_types; resistant_type_id++) {
-            result = m.count_resistant_genotypes(&c, 0, parent_genotypes, recombined_genotype, drugs, resistant_drug_pair_id, resistant_type_id, true);
+            result = m.two_condition_count_resistant_genotypes(&c, 0, parent_genotypes, recombined_genotype, drugs, resistant_drug_pair_id, resistant_type_id, true);
             VLOG(0) << fmt::format("{}: {} {} {} {}",m.resistant_drug_list[resistant_drug_pair_id].first[resistant_type_id],
                                    std::get<0>(result),std::get<1>(result),std::get<2>(result),std::get<3>(result));
         }
@@ -368,7 +368,7 @@ TEST_F(MosquitoTest, CountResistantGenotypes) {
     for (int resistant_drug_pair_id = 0; resistant_drug_pair_id < m.resistant_drug_list.size(); resistant_drug_pair_id++) {
         auto resistant_types = m.resistant_drug_list[resistant_drug_pair_id].first.size();
         for (int resistant_type_id = 0; resistant_type_id < resistant_types; resistant_type_id++) {
-            result = m.count_resistant_genotypes(recombined_genotype, resistant_drug_pair_id, resistant_type_id);
+            result = m.two_condition_count_resistant_genotypes(recombined_genotype, resistant_drug_pair_id, resistant_type_id);
             VLOG(0) << fmt::format("{}: {} {} {} {}",m.resistant_drug_list[resistant_drug_pair_id].first[resistant_type_id],
                                    std::get<0>(result),std::get<1>(result),std::get<2>(result),std::get<3>(result));
         }
