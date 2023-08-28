@@ -26,6 +26,7 @@ class Random;
 typedef std::string GeneStr;
 typedef std::vector<GeneStr> ChromosomalGenotypeStr;
 typedef std::array<ChromosomalGenotypeStr, 14> PfGenotypeStr;
+typedef std::pair<std::vector<std::pair<int,std::string>>,std::pair<int,int>> MosquitoRecombinedGenotypeInfo;
 
 class Genotype {
   DISALLOW_COPY_AND_ASSIGN(Genotype)
@@ -36,7 +37,7 @@ public:
   std::string aa_sequence;
   double daily_fitness_multiple_infection { 1 };
   std::vector<double> EC50_power_n {};
-  std::vector<std::pair<int,int>> recombined_resistant_types;
+  std::vector<MosquitoRecombinedGenotypeInfo> resistant_recombinations_in_mosquito;
 
 public:
   explicit Genotype(const std::string& aa_sequence);

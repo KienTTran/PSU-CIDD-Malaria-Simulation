@@ -226,7 +226,7 @@ void ValidationReporter::monthly_report() {
     for (auto loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
         for(int resistant_list = 0; resistant_list < Model::MOSQUITO->resistant_drug_list.size(); resistant_list++){
             for(int resistant_type = 0; resistant_type < Model::MOSQUITO->resistant_drug_list[resistant_list].first.size(); resistant_type++){
-                ss << Model::DATA_COLLECTOR->monthly_mosquito_recombined_resistant_genotype_condition_count()[loc][resistant_list][resistant_type] << sep;
+                ss << Model::DATA_COLLECTOR->monthly_mosquito_recombined_resistant_genotype_one_condition_count()[loc][resistant_list][resistant_type] << sep;
             }
         }
         ss << group_sep;//783
@@ -234,7 +234,7 @@ void ValidationReporter::monthly_report() {
     for (auto loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
         for(int resistant_list = 0; resistant_list < Model::MOSQUITO->resistant_drug_list.size(); resistant_list++){
             for(int resistant_type = 0; resistant_type < Model::MOSQUITO->resistant_drug_list[resistant_list].first.size(); resistant_type++){
-                ss << Model::DATA_COLLECTOR->monthly_mosquito_recombined_resistant_genotype_count()[loc][resistant_list][resistant_type] << sep;
+                ss << Model::DATA_COLLECTOR->monthly_mosquito_recombined_resistant_genotype_two_condition_count()[loc][resistant_list][resistant_type] << sep;
             }
         }
         ss << group_sep;//801
@@ -242,10 +242,34 @@ void ValidationReporter::monthly_report() {
     for (auto loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
         for(int resistant_list = 0; resistant_list < Model::MOSQUITO->resistant_drug_list.size(); resistant_list++){
             for(int resistant_type = 0; resistant_type < Model::MOSQUITO->resistant_drug_list[resistant_list].first.size(); resistant_type++){
-                ss << Model::DATA_COLLECTOR->monthly_mosquito_inflict_resistant_genotype_count()[loc][resistant_list][resistant_type] << sep;
+                ss << Model::DATA_COLLECTOR->monthly_mosquito_sampled_male_resistant_genotype_count()[loc][resistant_list][resistant_type] << sep;
             }
         }
         ss << group_sep;//819
+    }
+    for (auto loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
+        for(int resistant_list = 0; resistant_list < Model::MOSQUITO->resistant_drug_list.size(); resistant_list++){
+            for(int resistant_type = 0; resistant_type < Model::MOSQUITO->resistant_drug_list[resistant_list].first.size(); resistant_type++){
+                ss << Model::DATA_COLLECTOR->monthly_mosquito_sampled_female_resistant_genotype_count()[loc][resistant_list][resistant_type] << sep;
+            }
+        }
+        ss << group_sep;//837
+    }
+    for (auto loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
+        for(int resistant_list = 0; resistant_list < Model::MOSQUITO->resistant_drug_list.size(); resistant_list++){
+            for(int resistant_type = 0; resistant_type < Model::MOSQUITO->resistant_drug_list[resistant_list].first.size(); resistant_type++){
+                ss << Model::DATA_COLLECTOR->monthly_mosquito_recombined_resistant_genotype_count()[loc][resistant_list][resistant_type] << sep;
+            }
+        }
+        ss << group_sep;//855
+    }
+    for (auto loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
+        for(int resistant_list = 0; resistant_list < Model::MOSQUITO->resistant_drug_list.size(); resistant_list++){
+            for(int resistant_type = 0; resistant_type < Model::MOSQUITO->resistant_drug_list[resistant_list].first.size(); resistant_type++){
+                ss << Model::DATA_COLLECTOR->monthly_mosquito_inflict_resistant_genotype_count()[loc][resistant_list][resistant_type] << sep;
+            }
+        }
+        ss << group_sep;//873
     }
     monthly_data_file << ss.str() << std::endl;
 
@@ -349,7 +373,7 @@ void ValidationReporter::after_run() {
     for (auto loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
         for(int resistant_list = 0; resistant_list < Model::MOSQUITO->resistant_drug_list.size(); resistant_list++){
             for(int resistant_type = 0; resistant_type < Model::MOSQUITO->resistant_drug_list[resistant_list].first.size(); resistant_type++){
-                ss << Model::DATA_COLLECTOR->mosquito_recombined_resistant_genotype_condition_count()[loc][resistant_list][resistant_type] << sep;
+                ss << Model::DATA_COLLECTOR->mosquito_recombined_resistant_genotype_one_condition_count()[loc][resistant_list][resistant_type] << sep;
             }
         }
         ss << group_sep;//141
@@ -357,7 +381,7 @@ void ValidationReporter::after_run() {
     for (auto loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
         for(int resistant_list = 0; resistant_list < Model::MOSQUITO->resistant_drug_list.size(); resistant_list++){
             for(int resistant_type = 0; resistant_type < Model::MOSQUITO->resistant_drug_list[resistant_list].first.size(); resistant_type++){
-                ss << Model::DATA_COLLECTOR->mosquito_recombined_resistant_genotype_count()[loc][resistant_list][resistant_type] << sep;
+                ss << Model::DATA_COLLECTOR->mosquito_recombined_resistant_genotype_two_condition_count()[loc][resistant_list][resistant_type] << sep;
             }
         }
         ss << group_sep;//159
@@ -365,15 +389,39 @@ void ValidationReporter::after_run() {
     for (auto loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
         for(int resistant_list = 0; resistant_list < Model::MOSQUITO->resistant_drug_list.size(); resistant_list++){
             for(int resistant_type = 0; resistant_type < Model::MOSQUITO->resistant_drug_list[resistant_list].first.size(); resistant_type++){
-                ss << Model::DATA_COLLECTOR->mosquito_inflict_resistant_genotype_count()[loc][resistant_list][resistant_type] << sep;
+                ss << Model::DATA_COLLECTOR->mosquito_sampled_male_resistant_genotype_count()[loc][resistant_list][resistant_type] << sep;
             }
         }
         ss << group_sep;//177
     }
     for (auto loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
+        for(int resistant_list = 0; resistant_list < Model::MOSQUITO->resistant_drug_list.size(); resistant_list++){
+            for(int resistant_type = 0; resistant_type < Model::MOSQUITO->resistant_drug_list[resistant_list].first.size(); resistant_type++){
+                ss << Model::DATA_COLLECTOR->mosquito_sampled_female_resistant_genotype_count()[loc][resistant_list][resistant_type] << sep;
+            }
+        }
+        ss << group_sep;//195
+    }
+    for (auto loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
+        for(int resistant_list = 0; resistant_list < Model::MOSQUITO->resistant_drug_list.size(); resistant_list++){
+            for(int resistant_type = 0; resistant_type < Model::MOSQUITO->resistant_drug_list[resistant_list].first.size(); resistant_type++){
+                ss << Model::DATA_COLLECTOR->mosquito_recombined_resistant_genotype_count()[loc][resistant_list][resistant_type] << sep;
+            }
+        }
+        ss << group_sep;//213
+    }
+    for (auto loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
+        for(int resistant_list = 0; resistant_list < Model::MOSQUITO->resistant_drug_list.size(); resistant_list++){
+            for(int resistant_type = 0; resistant_type < Model::MOSQUITO->resistant_drug_list[resistant_list].first.size(); resistant_type++){
+                ss << Model::DATA_COLLECTOR->mosquito_inflict_resistant_genotype_count()[loc][resistant_list][resistant_type] << sep;
+            }
+        }
+        ss << group_sep;//231
+    }
+    for (auto loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
         ss << Model::DATA_COLLECTOR->mosquito_recombination_events_count()[loc][0] << sep;
         ss << Model::DATA_COLLECTOR->mosquito_recombination_events_count()[loc][1] << sep;
-        ss << group_sep;//162
+        ss << group_sep;//233
     }
     summary_data_file << ss.str() << std::endl;
 

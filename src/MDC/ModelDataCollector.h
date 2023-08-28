@@ -223,13 +223,27 @@ PROPERTY_REF(IntVector3, mosquito_recombined_resistant_genotype_count)
 
 PROPERTY_REF(LongVector3, mosquito_inflict_resistant_genotype_count)
 
-PROPERTY_REF(IntVector3, mosquito_recombined_resistant_genotype_condition_count)
+PROPERTY_REF(LongVector3, mosquito_sampled_male_resistant_genotype_count)
+
+PROPERTY_REF(LongVector3, mosquito_sampled_female_resistant_genotype_count)
+
+PROPERTY_REF(IntVector3, mosquito_recombined_resistant_genotype_one_condition_count)
+
+PROPERTY_REF(IntVector3, mosquito_recombined_resistant_genotype_two_condition_count)
 
 PROPERTY_REF(IntVector3, clonal_resistant_genotype_count)
 
-PROPERTY_REF(IntVector3, monthly_mosquito_recombined_resistant_genotype_condition_count)
+PROPERTY_REF(IntVector3, monthly_mosquito_recombined_resistant_genotype_one_condition_count)
+
+PROPERTY_REF(IntVector3, monthly_mosquito_recombined_resistant_genotype_two_condition_count)
 
 PROPERTY_REF(IntVector3, monthly_mosquito_recombined_resistant_genotype_count)
+
+PROPERTY_REF(LongVector3, monthly_mosquito_sampled_resistant_genotype_count)
+
+PROPERTY_REF(LongVector3, monthly_mosquito_sampled_male_resistant_genotype_count)
+
+PROPERTY_REF(LongVector3, monthly_mosquito_sampled_female_resistant_genotype_count)
 
 PROPERTY_REF(LongVector3, monthly_mosquito_inflict_resistant_genotype_count)
 

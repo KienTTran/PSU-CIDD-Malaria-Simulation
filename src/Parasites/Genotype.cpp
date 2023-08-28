@@ -5,9 +5,7 @@
  * Created on March 17, 2014, 2:33 PM
  */
 #include "Genotype.h"
-
 #include <algorithm>
-
 #include "Core/Config/Config.h"
 #include "Core/Random.h"
 #include "Helpers/NumberHelpers.h"
@@ -30,7 +28,7 @@ Genotype::Genotype(const std::string &in_aa_sequence) : aa_sequence { in_aa_sequ
     }
     ii++;
   }
-  recombined_resistant_types = std::vector<std::pair<int, int>>();
+  resistant_recombinations_in_mosquito = std::vector<MosquitoRecombinedGenotypeInfo>();
 }
 
 Genotype::~Genotype() = default;

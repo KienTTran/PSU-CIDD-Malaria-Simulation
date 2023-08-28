@@ -15,6 +15,7 @@ class Model;
 class Config;
 class Population;
 
+typedef std::pair<std::vector<std::pair<int,std::string>>,std::pair<int,int>> MosquitoRecombinedGenotypeInfo;
 class Mosquito {
 public:
   Mosquito(const Mosquito &) = delete;
@@ -55,8 +56,10 @@ public:
 
   typedef std::tuple<bool,int,int,std::string> resistant_result_info;
   resistant_result_info count_resistant_genotypes(Genotype *genotype, int resistant_drug_pair_id,int resistant_type_id);
-  resistant_result_info count_resistant_genotypes(Config* config, int loc, std::vector<Genotype*> parent_genotypes, Genotype *genotype,
-                                                  std::vector<int> drugs, int resistant_drug_pair_id, int resistant_type_id = -1, bool verbose = false);
+  resistant_result_info one_condition_count_resistant_genotypes(Config* config, int loc, std::vector<Genotype*> parent_genotypes, Genotype *genotype,
+                                                  std::vector<int> drugs, int resistant_drug_pair_id, int resistant_type_id, bool verbose = false);
+  resistant_result_info two_condition_count_resistant_genotypes(Config* config, int loc, std::vector<Genotype*> parent_genotypes, Genotype *genotype,
+                                                  std::vector<int> drugs, int resistant_drug_pair_id, int resistant_type_id, bool verbose = false);
 
   std::vector<std::string> split_string(std::string str, char delimiter);
 };

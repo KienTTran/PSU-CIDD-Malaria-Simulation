@@ -6,6 +6,7 @@
 
 #include "Core/Config/Config.h"
 #include "Core/Random.h"
+#include "Core/TypeDef.h"
 #include "Model.h"
 #include "MDC/ModelDataCollector.h"
 #include "Population/Population.h"
@@ -161,23 +162,43 @@ void Mosquito::infect_new_cohort_in_PRMC(Config *config, Random *random, Populat
       //Count DHA-PPQ(8) ASAQ(7) AL(6)
       //Count if male genotype resists to one drug and female genotype resists to another drug only, right now work on double resistant only
       //when genotype ec50_power_n == min_ec50, it is sensitive to that drug
-        if (Model::SCHEDULER->current_time() >= Model::CONFIG->start_of_comparison_period()) {
+        if (Model::SCHEDULER->current_time() >= Model::CONFIG->start_of_comparison_period())
+        {
             for (int resistant_drug_pair_id = 0; resistant_drug_pair_id < resistant_drug_list.size(); resistant_drug_pair_id++) {
                 auto drugs = resistant_drug_list[resistant_drug_pair_id].second;
                 auto resistant_types = resistant_drug_list[resistant_drug_pair_id].first.size();
                 for (int resistant_type_id = 0; resistant_type_id < resistant_types; resistant_type_id++) {
-                    if (std::get<0>(count_resistant_genotypes(config, loc, parent_genotypes, sampled_genotype, drugs,
+                    if (std::get<0>(one_condition_count_resistant_genotypes(config, loc, parent_genotypes, sampled_genotype, drugs,
                                               resistant_drug_pair_id,
                                               resistant_type_id,
-                                              true))) {
-                        Model::DATA_COLLECTOR->mosquito_recombined_resistant_genotype_condition_count()[loc][resistant_drug_pair_id][resistant_type_id]++;
-                        Model::DATA_COLLECTOR->monthly_mosquito_recombined_resistant_genotype_condition_count()[loc][resistant_drug_pair_id][resistant_type_id]++;
+                                              false))) {
+                        Model::DATA_COLLECTOR->mosquito_recombined_resistant_genotype_one_condition_count()[loc][resistant_drug_pair_id][resistant_type_id]++;
+                        Model::DATA_COLLECTOR->monthly_mosquito_recombined_resistant_genotype_one_condition_count()[loc][resistant_drug_pair_id][resistant_type_id]++;
+                    }
+                    if (std::get<0>(two_condition_count_resistant_genotypes(config, loc, parent_genotypes, sampled_genotype, drugs,
+                                                                            resistant_drug_pair_id,
+                                                                            resistant_type_id,
+                                                                            false))) {
+                        Model::DATA_COLLECTOR->mosquito_recombined_resistant_genotype_two_condition_count()[loc][resistant_drug_pair_id][resistant_type_id]++;
+                        Model::DATA_COLLECTOR->monthly_mosquito_recombined_resistant_genotype_two_condition_count()[loc][resistant_drug_pair_id][resistant_type_id]++;
                     }
                     if(std::get<0>(count_resistant_genotypes(sampled_genotype,
                                                              resistant_drug_pair_id,
                                                              resistant_type_id))){
                         Model::DATA_COLLECTOR->mosquito_recombined_resistant_genotype_count()[loc][resistant_drug_pair_id][resistant_type_id]++;
                         Model::DATA_COLLECTOR->monthly_mosquito_recombined_resistant_genotype_count()[loc][resistant_drug_pair_id][resistant_type_id]++;
+                    }
+                    if(std::get<0>(count_resistant_genotypes(parent_genotypes[0],
+                                                             resistant_drug_pair_id,
+                                                             resistant_type_id))){
+                        Model::DATA_COLLECTOR->mosquito_sampled_male_resistant_genotype_count()[loc][resistant_drug_pair_id][resistant_type_id]++;
+                        Model::DATA_COLLECTOR->monthly_mosquito_sampled_male_resistant_genotype_count()[loc][resistant_drug_pair_id][resistant_type_id]++;
+                    }
+                    if(std::get<0>(count_resistant_genotypes(parent_genotypes[1],
+                                                             resistant_drug_pair_id,
+                                                             resistant_type_id))){
+                        Model::DATA_COLLECTOR->mosquito_sampled_female_resistant_genotype_count()[loc][resistant_drug_pair_id][resistant_type_id]++;
+                        Model::DATA_COLLECTOR->monthly_mosquito_sampled_female_resistant_genotype_count()[loc][resistant_drug_pair_id][resistant_type_id]++;
                     }
                 }
             }
@@ -202,17 +223,19 @@ std::vector<unsigned int> Mosquito::build_interrupted_feeding_indices(Random *ra
 
 int Mosquito::random_genotype(int location, int tracking_index) {
     auto genotype_index = Model::RANDOM->random_uniform_int(0, Model::CONFIG->mosquito_config().prmc_size);
-  if (Model::SCHEDULER->current_time() >= Model::CONFIG->start_of_comparison_period()) {
-      if(genotypes_table[tracking_index][location][genotype_index]->recombined_resistant_types.size() > 0){
-          for(int res_drug_id = 0; res_drug_id < genotypes_table[tracking_index][location][genotype_index]->recombined_resistant_types.size(); res_drug_id++){
-              int res_drug_pair_id = genotypes_table[tracking_index][location][genotype_index]->recombined_resistant_types[res_drug_id].first;
-              int resistant_type_id = genotypes_table[tracking_index][location][genotype_index]->recombined_resistant_types[res_drug_id].second;
+    if (Model::SCHEDULER->current_time() >= Model::CONFIG->start_of_comparison_period())
+    {
+      if(genotypes_table[tracking_index][location][genotype_index]->resistant_recombinations_in_mosquito.size() > 0){
+          for(int res_drug_id = 0; res_drug_id < genotypes_table[tracking_index][location][genotype_index]->resistant_recombinations_in_mosquito.size(); res_drug_id++){
+              MosquitoRecombinedGenotypeInfo resistant_info = genotypes_table[tracking_index][location][genotype_index]->resistant_recombinations_in_mosquito[res_drug_id];
+              int res_drug_pair_id = resistant_info.second.first;
+              int resistant_type_id = resistant_info.second.second;
               Model::DATA_COLLECTOR->mosquito_inflict_resistant_genotype_count()[location][res_drug_pair_id][resistant_type_id]++;
               Model::DATA_COLLECTOR->monthly_mosquito_inflict_resistant_genotype_count()[location][res_drug_pair_id][resistant_type_id]++;
           }
       }
-  }
-  return genotypes_table[tracking_index][location][genotype_index]->genotype_id;
+    }
+    return genotypes_table[tracking_index][location][genotype_index]->genotype_id;
 }
 
 void Mosquito::get_genotypes_profile_from_person(Person *person, std::vector<Genotype *> &sampling_genotypes,
@@ -238,8 +261,7 @@ std::vector<std::string> Mosquito::split_string(std::string str, char delimiter)
 }
 
 Mosquito::resistant_result_info Mosquito::count_resistant_genotypes(Genotype *genotype, int resistant_drug_pair_id,int resistant_type_id) {
-  std::string aa_seq = genotype->get_aa_sequence();
-  std::vector<std::string> pattern_chromosome = split_string(aa_seq, '|');
+  std::vector<std::string> pattern_chromosome = split_string(genotype->aa_sequence, '|');
   std::vector<std::string> chromosome_allele;
     int res_points = 0;
     int mut_points = 0;
@@ -365,25 +387,21 @@ Mosquito::resistant_result_info Mosquito::count_resistant_genotypes(Genotype *ge
         if(resistant_type_id == 2) is_resistant = (res_points == 3 && mut_points == 5);//DHA-PPQ-LUM:3-5
         resistant_strength = std::to_string(res_points) + "-" + std::to_string(mut_points);
         if(resistant_type_id == 3) {
-            is_resistant = (res_points == 3);//DHA-PPQ-AL:3
+            is_resistant = (res_points == 3);//DHA-PPQ-LUM:3
             resistant_strength = "";
         }
     }
     return std::make_tuple(is_resistant,resistant_drug_pair_id,resistant_type_id,resistant_strength);
 }
 
-Mosquito::resistant_result_info Mosquito::count_resistant_genotypes(Config* config, int loc, std::vector<Genotype*> parent_genotypes, Genotype *genotype,
+Mosquito::resistant_result_info Mosquito::one_condition_count_resistant_genotypes(Config* config, int loc, std::vector<Genotype*> parent_genotypes, Genotype *genotype,
                                                                 std::vector<int> drugs, int resistant_drug_pair_id, int resistant_type_id, bool verbose){
     //Double resistant
     if(drugs.size() == 2){
-        if((parent_genotypes[0]->resist_to(config->drug_db()->at(drugs[0]))      && !parent_genotypes[0]->resist_to(config->drug_db()->at(drugs[1])) //g0 - g1
-            && parent_genotypes[1]->resist_to(config->drug_db()->at(drugs[1]))   && !parent_genotypes[1]->resist_to(config->drug_db()->at(drugs[0]))) //RS-SR
-           ||(parent_genotypes[1]->resist_to(config->drug_db()->at(drugs[0]))    && !parent_genotypes[1]->resist_to(config->drug_db()->at(drugs[1])) //g1 - g0
-           && parent_genotypes[0]->resist_to(config->drug_db()->at(drugs[1]))    && !parent_genotypes[0]->resist_to(config->drug_db()->at(drugs[0]))) //RS-SR
+        if((parent_genotypes[0]->resist_to(config->drug_db()->at(drugs[0]))      && parent_genotypes[1]->resist_to(config->drug_db()->at(drugs[1]))) //R0-R1
+           ||(parent_genotypes[1]->resist_to(config->drug_db()->at(drugs[0]))    && parent_genotypes[0]->resist_to(config->drug_db()->at(drugs[1]))) //R1-R0
            ){
-            std::string aa_seq = genotype->get_aa_sequence();
-            std::vector<std::string> pattern_chromosome = split_string(aa_seq, '|');
-            std::vector<std::string> chromosome_allele;
+            std::vector<std::string> pattern_chromosome = split_string(genotype->aa_sequence, '|');
             bool is_double_resistant = false;
             int res_points = 0;
             int mut_points = 0;
@@ -451,7 +469,12 @@ Mosquito::resistant_result_info Mosquito::count_resistant_genotypes(Config* conf
                 }
             }
             if(is_double_resistant){
-                genotype->recombined_resistant_types.push_back(std::pair<int,int>(resistant_drug_pair_id,resistant_type_id));
+                std::vector<std::pair<int,std::string>> parent_info;
+                parent_info.push_back(std::make_pair(parent_genotypes[0]->genotype_id,parent_genotypes[0]->aa_sequence));
+                parent_info.push_back(std::make_pair(parent_genotypes[1]->genotype_id,parent_genotypes[1]->aa_sequence));
+                MosquitoRecombinedGenotypeInfo resistant_info = std::make_pair(parent_info,std::make_pair(resistant_drug_pair_id,resistant_type_id));
+                genotype->resistant_recombinations_in_mosquito.push_back(resistant_info);
+                parent_info.clear();
             }
             if(verbose && is_double_resistant){
                 VLOG(1) << fmt::format("{} resistant_drug_pair_id: {}\n"
@@ -466,7 +489,7 @@ Mosquito::resistant_result_info Mosquito::count_resistant_genotypes(Config* conf
                                        resistant_drug_pair_id,
                                        parent_genotypes[0]->get_aa_sequence().c_str(),
                                        parent_genotypes[1]->get_aa_sequence().c_str(),
-                                       aa_seq.c_str(),
+                                       genotype->aa_sequence.c_str(),
                                        parent_genotypes[0]->get_EC50_power_n(config->drug_db()->at(drugs[0])),
                                        parent_genotypes[0]->get_EC50_power_n(config->drug_db()->at(drugs[1])),
                                        parent_genotypes[1]->get_EC50_power_n(config->drug_db()->at(drugs[0])),
@@ -479,10 +502,10 @@ Mosquito::resistant_result_info Mosquito::count_resistant_genotypes(Config* conf
                 VLOG(1) << fmt::format("Condition Count [{}][{}][{}]: month_clonal_resistant: {}\tmonth_mos_resistant: {}\tmonth_mos_inflict: {}\tcumm_clonal_resistant: {}\tcumm_mos_resistant: {}\tcumm_mos_inflict: {}",
                                        loc,resistant_drug_pair_id,resistant_type_id,
                                        Model::DATA_COLLECTOR->monthly_clonal_resistant_genotype_count()[loc][resistant_drug_pair_id][resistant_type_id],
-                                       Model::DATA_COLLECTOR->monthly_mosquito_recombined_resistant_genotype_condition_count()[loc][resistant_drug_pair_id][resistant_type_id] + 1,
+                                       Model::DATA_COLLECTOR->monthly_mosquito_recombined_resistant_genotype_one_condition_count()[loc][resistant_drug_pair_id][resistant_type_id] + 1,
                                        Model::DATA_COLLECTOR->monthly_mosquito_inflict_resistant_genotype_count()[loc][resistant_drug_pair_id][resistant_type_id],
                                        Model::DATA_COLLECTOR->clonal_resistant_genotype_count()[loc][resistant_drug_pair_id][resistant_type_id],
-                                       Model::DATA_COLLECTOR->mosquito_recombined_resistant_genotype_condition_count()[loc][resistant_drug_pair_id][resistant_type_id] + 1,
+                                       Model::DATA_COLLECTOR->mosquito_recombined_resistant_genotype_one_condition_count()[loc][resistant_drug_pair_id][resistant_type_id] + 1,
                                        Model::DATA_COLLECTOR->mosquito_inflict_resistant_genotype_count()[loc][resistant_drug_pair_id][resistant_type_id]);
             }
             return std::make_tuple(is_double_resistant,resistant_drug_pair_id,resistant_type_id,resistant_strength);
@@ -490,22 +513,14 @@ Mosquito::resistant_result_info Mosquito::count_resistant_genotypes(Config* conf
     }
     //Triple resistant
     if(drugs.size() == 3){
-        if(((parent_genotypes[0]->resist_to(config->drug_db()->at(drugs[0]))    && !parent_genotypes[0]->resist_to(config->drug_db()->at(drugs[1]))     && !parent_genotypes[0]->resist_to(config->drug_db()->at(drugs[2]))//g0 - g1
-        && !parent_genotypes[1]->resist_to(config->drug_db()->at(drugs[0]))     && parent_genotypes[1]->resist_to(config->drug_db()->at(drugs[1]))      && parent_genotypes[1]->resist_to(config->drug_db()->at(drugs[2]))) //RSS-SRR
-        || (!parent_genotypes[0]->resist_to(config->drug_db()->at(drugs[0]))    && parent_genotypes[0]->resist_to(config->drug_db()->at(drugs[1]))      && !parent_genotypes[0]->resist_to(config->drug_db()->at(drugs[2]))
-        && parent_genotypes[1]->resist_to(config->drug_db()->at(drugs[0]))      && !parent_genotypes[1]->resist_to(config->drug_db()->at(drugs[1]))     && parent_genotypes[1]->resist_to(config->drug_db()->at(drugs[2]))) //SRS-RSR
-        || (!parent_genotypes[0]->resist_to(config->drug_db()->at(drugs[0]))    && !parent_genotypes[0]->resist_to(config->drug_db()->at(drugs[1]))     && parent_genotypes[0]->resist_to(config->drug_db()->at(drugs[2]))
-        && parent_genotypes[1]->resist_to(config->drug_db()->at(drugs[0]))      && parent_genotypes[1]->resist_to(config->drug_db()->at(drugs[1]))      && !parent_genotypes[1]->resist_to(config->drug_db()->at(drugs[2])))) //SSR-RRS
-        || ((parent_genotypes[1]->resist_to(config->drug_db()->at(drugs[0]))    && !parent_genotypes[1]->resist_to(config->drug_db()->at(drugs[1]))     && !parent_genotypes[1]->resist_to(config->drug_db()->at(drugs[2])) //g1 - g0
-        && !parent_genotypes[0]->resist_to(config->drug_db()->at(drugs[0]))     && parent_genotypes[0]->resist_to(config->drug_db()->at(drugs[1]))      && parent_genotypes[0]->resist_to(config->drug_db()->at(drugs[2]))) //RSS-SRR
-        || (!parent_genotypes[1]->resist_to(config->drug_db()->at(drugs[0]))    && parent_genotypes[1]->resist_to(config->drug_db()->at(drugs[1]))      && !parent_genotypes[1]->resist_to(config->drug_db()->at(drugs[2]))
-        && parent_genotypes[0]->resist_to(config->drug_db()->at(drugs[0]))      && !parent_genotypes[0]->resist_to(config->drug_db()->at(drugs[1]))     && parent_genotypes[0]->resist_to(config->drug_db()->at(drugs[2]))) //SRS-RSR
-        || (!parent_genotypes[1]->resist_to(config->drug_db()->at(drugs[0]))    && !parent_genotypes[1]->resist_to(config->drug_db()->at(drugs[1]))     && parent_genotypes[1]->resist_to(config->drug_db()->at(drugs[2]))
-        && parent_genotypes[0]->resist_to(config->drug_db()->at(drugs[0]))      && parent_genotypes[0]->resist_to(config->drug_db()->at(drugs[1]))      && !parent_genotypes[0]->resist_to(config->drug_db()->at(drugs[2])))) //SSR-RRS
+        if(((parent_genotypes[0]->resist_to(config->drug_db()->at(drugs[0]))    && parent_genotypes[1]->resist_to(config->drug_db()->at(drugs[1]))      && parent_genotypes[1]->resist_to(config->drug_db()->at(drugs[2]))) //0-12
+        || (parent_genotypes[0]->resist_to(config->drug_db()->at(drugs[1]))     && parent_genotypes[1]->resist_to(config->drug_db()->at(drugs[0]))      && parent_genotypes[1]->resist_to(config->drug_db()->at(drugs[2]))) //1-02
+        || (parent_genotypes[0]->resist_to(config->drug_db()->at(drugs[2]))     && parent_genotypes[1]->resist_to(config->drug_db()->at(drugs[0]))      && parent_genotypes[1]->resist_to(config->drug_db()->at(drugs[1]))))//2-01
+        || ((parent_genotypes[1]->resist_to(config->drug_db()->at(drugs[0]))    && parent_genotypes[0]->resist_to(config->drug_db()->at(drugs[1]))      && parent_genotypes[0]->resist_to(config->drug_db()->at(drugs[2]))) //0-12 g0 <-> g1
+        || (parent_genotypes[1]->resist_to(config->drug_db()->at(drugs[1]))     && parent_genotypes[0]->resist_to(config->drug_db()->at(drugs[0]))      && parent_genotypes[0]->resist_to(config->drug_db()->at(drugs[2]))) //0-12
+        || (parent_genotypes[1]->resist_to(config->drug_db()->at(drugs[2]))     && parent_genotypes[0]->resist_to(config->drug_db()->at(drugs[0]))      && parent_genotypes[0]->resist_to(config->drug_db()->at(drugs[1]))))//1-02
         ){
-            std::string aa_seq = genotype->get_aa_sequence();
-            std::vector<std::string> pattern_chromosome = split_string(aa_seq, '|');
-            std::vector<std::string> chromosome_allele;
+            std::vector<std::string> pattern_chromosome = split_string(genotype->aa_sequence, '|');
             bool is_triple_resistant = false;
             int res_points = 0;
             int mut_points = 0;
@@ -573,7 +588,12 @@ Mosquito::resistant_result_info Mosquito::count_resistant_genotypes(Config* conf
                 }
             }
             if(is_triple_resistant){
-                genotype->recombined_resistant_types.push_back(std::pair<int,int>(resistant_drug_pair_id,resistant_type_id));
+                std::vector<std::pair<int,std::string>> parent_info;
+                parent_info.push_back(std::make_pair(parent_genotypes[0]->genotype_id,parent_genotypes[0]->aa_sequence));
+                parent_info.push_back(std::make_pair(parent_genotypes[1]->genotype_id,parent_genotypes[1]->aa_sequence));
+                MosquitoRecombinedGenotypeInfo resistant_info = std::make_pair(parent_info,std::make_pair(resistant_drug_pair_id,resistant_type_id));
+                genotype->resistant_recombinations_in_mosquito.push_back(resistant_info);
+                parent_info.clear();
             }
             if(verbose && is_triple_resistant){
                 VLOG(1) << fmt::format("{} resistant_drug_pair_id: {} \n"
@@ -588,7 +608,7 @@ Mosquito::resistant_result_info Mosquito::count_resistant_genotypes(Config* conf
                                        resistant_drug_pair_id,
                                        parent_genotypes[0]->get_aa_sequence().c_str(),
                                        parent_genotypes[1]->get_aa_sequence().c_str(),
-                                       aa_seq.c_str(),
+                                       genotype->aa_sequence.c_str(),
                                        parent_genotypes[0]->get_EC50_power_n(config->drug_db()->at(drugs[0])),
                                        parent_genotypes[0]->get_EC50_power_n(config->drug_db()->at(drugs[1])),
                                        parent_genotypes[0]->get_EC50_power_n(config->drug_db()->at(drugs[2])),
@@ -604,14 +624,264 @@ Mosquito::resistant_result_info Mosquito::count_resistant_genotypes(Config* conf
                 VLOG(1) << fmt::format("Condition Count [{}][{}][{}]: month_clonal_resistant: {}\tmonth_mos_resistant: {}\tmonth_mos_inflict: {}\tcumm_clonal_resistant: {}\tcumm_mos_resistant: {}\tcumm_mos_inflict: {}",
                                        loc,resistant_drug_pair_id,resistant_type_id,
                                        Model::DATA_COLLECTOR->monthly_clonal_resistant_genotype_count()[loc][resistant_drug_pair_id][resistant_type_id],
-                                       Model::DATA_COLLECTOR->monthly_mosquito_recombined_resistant_genotype_condition_count()[loc][resistant_drug_pair_id][resistant_type_id] + 1,
+                                       Model::DATA_COLLECTOR->monthly_mosquito_recombined_resistant_genotype_one_condition_count()[loc][resistant_drug_pair_id][resistant_type_id] + 1,
                                        Model::DATA_COLLECTOR->monthly_mosquito_inflict_resistant_genotype_count()[loc][resistant_drug_pair_id][resistant_type_id],
                                        Model::DATA_COLLECTOR->clonal_resistant_genotype_count()[loc][resistant_drug_pair_id][resistant_type_id],
-                                       Model::DATA_COLLECTOR->mosquito_recombined_resistant_genotype_condition_count()[loc][resistant_drug_pair_id][resistant_type_id] + 1,
+                                       Model::DATA_COLLECTOR->mosquito_recombined_resistant_genotype_one_condition_count()[loc][resistant_drug_pair_id][resistant_type_id] + 1,
                                        Model::DATA_COLLECTOR->mosquito_inflict_resistant_genotype_count()[loc][resistant_drug_pair_id][resistant_type_id]);
             }
             return std::make_tuple(is_triple_resistant,resistant_drug_pair_id,resistant_type_id,resistant_strength);
         }
     }
   return std::make_tuple(false,resistant_drug_pair_id,resistant_type_id,"0-0");
+}
+
+Mosquito::resistant_result_info Mosquito::two_condition_count_resistant_genotypes(Config* config, int loc, std::vector<Genotype*> parent_genotypes, Genotype *genotype,
+                                                                    std::vector<int> drugs, int resistant_drug_pair_id, int resistant_type_id, bool verbose){
+    //Double resistant
+    if(drugs.size() == 2){
+        if((parent_genotypes[0]->resist_to(config->drug_db()->at(drugs[0]))      && !parent_genotypes[0]->resist_to(config->drug_db()->at(drugs[1])) //g0 - g1
+            && parent_genotypes[1]->resist_to(config->drug_db()->at(drugs[1]))   && !parent_genotypes[1]->resist_to(config->drug_db()->at(drugs[0]))) //RS-SR
+           ||(parent_genotypes[1]->resist_to(config->drug_db()->at(drugs[0]))    && !parent_genotypes[1]->resist_to(config->drug_db()->at(drugs[1])) //g1 - g0
+              && parent_genotypes[0]->resist_to(config->drug_db()->at(drugs[1]))    && !parent_genotypes[0]->resist_to(config->drug_db()->at(drugs[0]))) //RS-SR
+                ){
+            std::vector<std::string> pattern_chromosome = split_string(genotype->aa_sequence, '|');
+            bool is_double_resistant = false;
+            int res_points = 0;
+            int mut_points = 0;
+            std::string resistant_strength = "";
+            //DHA-PPQ:2-2
+            if (resistant_drug_pair_id == 0) {
+                res_points = 2;
+                mut_points = 2;
+                if(resistant_type_id == 0) is_double_resistant = (pattern_chromosome[12].substr(10, 1) == "Y" && pattern_chromosome[13].substr(0, 1) == "2");//580Y-2
+                resistant_strength = std::to_string(res_points) + "-" + std::to_string(mut_points);
+            }
+            //ASAQ
+            if (resistant_drug_pair_id == 1) {
+                if(pattern_chromosome[12].substr(10, 1) == "Y"){
+                    res_points++;
+                    mut_points++;
+                }
+                if(pattern_chromosome[6].substr(0, 1) == "T"){
+                    mut_points++;
+                }
+                if(pattern_chromosome[4].substr(0, 1) == "Y"){
+                    mut_points++;
+                }
+                if(pattern_chromosome[4].substr(1, 1) == "Y"){
+                    mut_points++;
+                }
+                if(mut_points > 1){
+                    res_points++;
+                }
+                //Note that 2-4 resistant count includes 2-3 and 2-2 count
+                if(resistant_type_id == 0) is_double_resistant = (res_points == 2 && mut_points == 2);//ASAQ:2-2
+                if(resistant_type_id == 1) is_double_resistant = (res_points == 2 && mut_points == 3);//ASAQ:2-3
+                if(resistant_type_id == 2) is_double_resistant = (res_points == 2 && mut_points == 4);//ASAQ:2-4
+                resistant_strength = std::to_string(res_points) + "-" + std::to_string(mut_points);
+                if(resistant_type_id == 3) {
+                    is_double_resistant = (res_points == 2);//ASAQ:2
+                    resistant_strength = "";
+                }
+            }
+            //AL
+            if (resistant_drug_pair_id == 2) {
+                if(pattern_chromosome[12].substr(10, 1) == "Y"){
+                    res_points++;
+                    mut_points++;
+                }
+                if(pattern_chromosome[6].substr(0, 1) == "K"){
+                    mut_points++;
+                }
+                if(pattern_chromosome[4].substr(0, 1) == "N"){
+                    mut_points++;
+                }
+                if(pattern_chromosome[4].substr(1, 1) == "F"){
+                    mut_points++;
+                }
+                if(mut_points > 1){
+                    res_points++;
+                }
+                if(resistant_type_id == 0) is_double_resistant = (res_points == 2 && mut_points == 2);//AL:2-2
+                if(resistant_type_id == 1) is_double_resistant = (res_points == 2 && mut_points == 3);//AL:2-3
+                if(resistant_type_id == 2) is_double_resistant = (res_points == 2 && mut_points == 4);//AL:2-4
+                resistant_strength = std::to_string(res_points) + "-" + std::to_string(mut_points);
+                if(resistant_type_id == 3) {
+                    is_double_resistant = (res_points == 2);//AL:2
+                    resistant_strength = "";
+                }
+            }
+            if(is_double_resistant){
+                std::vector<std::pair<int,std::string>> parent_info;
+                parent_info.push_back(std::make_pair(parent_genotypes[0]->genotype_id,parent_genotypes[0]->aa_sequence));
+                parent_info.push_back(std::make_pair(parent_genotypes[1]->genotype_id,parent_genotypes[1]->aa_sequence));
+                MosquitoRecombinedGenotypeInfo resistant_info = std::make_pair(parent_info,std::make_pair(resistant_drug_pair_id,resistant_type_id));
+                genotype->resistant_recombinations_in_mosquito.push_back(resistant_info);
+                parent_info.clear();
+            }
+            if(verbose && is_double_resistant){
+                VLOG(1) << fmt::format("{} resistant_drug_pair_id: {}\n"
+                                       "genotype_m = \"{}\";\n"
+                                       "genotype_f = \"{}\";\n"
+                                       "genotype_c = \"{}\";\n"
+                                       "m_ec50-d0: {:.10f}\tm_ec50-d1: {:.10f}\n"
+                                       "f_ec50-d0: {:.10f}\tf_ec50-d1: {:.10f}\n"
+                                       "min_ec50-d0: {:.10f}\tmin_ec50-d1: {:.10f}\n"
+                                       "resistant_type: {} {} {}",
+                                       Model::SCHEDULER->current_time(),
+                                       resistant_drug_pair_id,
+                                       parent_genotypes[0]->get_aa_sequence().c_str(),
+                                       parent_genotypes[1]->get_aa_sequence().c_str(),
+                                       genotype->aa_sequence.c_str(),
+                                       parent_genotypes[0]->get_EC50_power_n(config->drug_db()->at(drugs[0])),
+                                       parent_genotypes[0]->get_EC50_power_n(config->drug_db()->at(drugs[1])),
+                                       parent_genotypes[1]->get_EC50_power_n(config->drug_db()->at(drugs[0])),
+                                       parent_genotypes[1]->get_EC50_power_n(config->drug_db()->at(drugs[1])),
+                                       drug_id_min_ec50[drugs[0]],
+                                       drug_id_min_ec50[drugs[1]],
+                                       resistant_drug_list[resistant_drug_pair_id].first[resistant_type_id],
+                                       resistant_strength,
+                                       is_double_resistant);
+                VLOG(1) << fmt::format("Condition Count [{}][{}][{}]: month_clonal_resistant: {}\tmonth_mos_resistant: {}\tmonth_mos_inflict: {}\tcumm_clonal_resistant: {}\tcumm_mos_resistant: {}\tcumm_mos_inflict: {}",
+                                       loc,resistant_drug_pair_id,resistant_type_id,
+                                       Model::DATA_COLLECTOR->monthly_clonal_resistant_genotype_count()[loc][resistant_drug_pair_id][resistant_type_id],
+                                       Model::DATA_COLLECTOR->monthly_mosquito_recombined_resistant_genotype_two_condition_count()[loc][resistant_drug_pair_id][resistant_type_id] + 1,
+                                       Model::DATA_COLLECTOR->monthly_mosquito_inflict_resistant_genotype_count()[loc][resistant_drug_pair_id][resistant_type_id],
+                                       Model::DATA_COLLECTOR->clonal_resistant_genotype_count()[loc][resistant_drug_pair_id][resistant_type_id],
+                                       Model::DATA_COLLECTOR->mosquito_recombined_resistant_genotype_two_condition_count()[loc][resistant_drug_pair_id][resistant_type_id] + 1,
+                                       Model::DATA_COLLECTOR->mosquito_inflict_resistant_genotype_count()[loc][resistant_drug_pair_id][resistant_type_id]);
+            }
+            return std::make_tuple(is_double_resistant,resistant_drug_pair_id,resistant_type_id,resistant_strength);
+        }
+    }
+    //Triple resistant
+    if(drugs.size() == 3){
+        if(((parent_genotypes[0]->resist_to(config->drug_db()->at(drugs[0]))    && !parent_genotypes[0]->resist_to(config->drug_db()->at(drugs[1]))     && !parent_genotypes[0]->resist_to(config->drug_db()->at(drugs[2]))//g0 - g1
+             && !parent_genotypes[1]->resist_to(config->drug_db()->at(drugs[0]))     && parent_genotypes[1]->resist_to(config->drug_db()->at(drugs[1]))      && parent_genotypes[1]->resist_to(config->drug_db()->at(drugs[2]))) //RSS-SRR
+            || (!parent_genotypes[0]->resist_to(config->drug_db()->at(drugs[0]))    && parent_genotypes[0]->resist_to(config->drug_db()->at(drugs[1]))      && !parent_genotypes[0]->resist_to(config->drug_db()->at(drugs[2]))
+                && parent_genotypes[1]->resist_to(config->drug_db()->at(drugs[0]))      && !parent_genotypes[1]->resist_to(config->drug_db()->at(drugs[1]))     && parent_genotypes[1]->resist_to(config->drug_db()->at(drugs[2]))) //SRS-RSR
+            || (!parent_genotypes[0]->resist_to(config->drug_db()->at(drugs[0]))    && !parent_genotypes[0]->resist_to(config->drug_db()->at(drugs[1]))     && parent_genotypes[0]->resist_to(config->drug_db()->at(drugs[2]))
+                && parent_genotypes[1]->resist_to(config->drug_db()->at(drugs[0]))      && parent_genotypes[1]->resist_to(config->drug_db()->at(drugs[1]))      && !parent_genotypes[1]->resist_to(config->drug_db()->at(drugs[2])))) //SSR-RRS
+           || ((parent_genotypes[1]->resist_to(config->drug_db()->at(drugs[0]))    && !parent_genotypes[1]->resist_to(config->drug_db()->at(drugs[1]))     && !parent_genotypes[1]->resist_to(config->drug_db()->at(drugs[2])) //g1 - g0
+                && !parent_genotypes[0]->resist_to(config->drug_db()->at(drugs[0]))     && parent_genotypes[0]->resist_to(config->drug_db()->at(drugs[1]))      && parent_genotypes[0]->resist_to(config->drug_db()->at(drugs[2]))) //RSS-SRR
+               || (!parent_genotypes[1]->resist_to(config->drug_db()->at(drugs[0]))    && parent_genotypes[1]->resist_to(config->drug_db()->at(drugs[1]))      && !parent_genotypes[1]->resist_to(config->drug_db()->at(drugs[2]))
+                   && parent_genotypes[0]->resist_to(config->drug_db()->at(drugs[0]))      && !parent_genotypes[0]->resist_to(config->drug_db()->at(drugs[1]))     && parent_genotypes[0]->resist_to(config->drug_db()->at(drugs[2]))) //SRS-RSR
+               || (!parent_genotypes[1]->resist_to(config->drug_db()->at(drugs[0]))    && !parent_genotypes[1]->resist_to(config->drug_db()->at(drugs[1]))     && parent_genotypes[1]->resist_to(config->drug_db()->at(drugs[2]))
+                   && parent_genotypes[0]->resist_to(config->drug_db()->at(drugs[0]))      && parent_genotypes[0]->resist_to(config->drug_db()->at(drugs[1]))      && !parent_genotypes[0]->resist_to(config->drug_db()->at(drugs[2])))) //SSR-RRS
+                ){
+            std::vector<std::string> pattern_chromosome = split_string(genotype->aa_sequence, '|');
+            bool is_triple_resistant = false;
+            int res_points = 0;
+            int mut_points = 0;
+            std::string resistant_strength = "";
+            //DHA-PPQ-AQ
+            if (resistant_drug_pair_id == 3) {
+                if(pattern_chromosome[12].substr(10, 1) == "Y"){
+                    res_points++;
+                    mut_points++;
+                }
+                if(pattern_chromosome[13].substr(0, 1) == "2"){
+                    res_points++;
+                    mut_points++;
+                }
+                if(pattern_chromosome[6].substr(0, 1) == "T"){
+                    mut_points++;
+                }
+                if(pattern_chromosome[4].substr(0, 1) == "Y"){
+                    mut_points++;
+                }
+                if(pattern_chromosome[4].substr(1, 1) == "Y"){
+                    mut_points++;
+                }
+                if(mut_points > 2){
+                    res_points++;
+                }
+                if(resistant_type_id == 0) is_triple_resistant = (res_points == 3 && mut_points == 3);//DHA-PPQ-AQ:3-3
+                if(resistant_type_id == 1) is_triple_resistant = (res_points == 3 && mut_points == 4);//DHA-PPQ-AQ:3-4
+                if(resistant_type_id == 2) is_triple_resistant = (res_points == 3 && mut_points == 5);//DHA-PPQ-AQ:3-5
+                resistant_strength = std::to_string(res_points) + "-" + std::to_string(mut_points);
+                if(resistant_type_id == 3) {
+                    is_triple_resistant = (res_points == 3);//DHA-PPQ-AQ:3
+                    resistant_strength = "";
+                }
+            }
+            //DHA-PPQ-LUM
+            if (resistant_drug_pair_id == 4) {
+                if(pattern_chromosome[12].substr(10, 1) == "Y"){
+                    res_points++;
+                    mut_points++;
+                }
+                if(pattern_chromosome[13].substr(0, 1) == "2"){
+                    res_points++;
+                    mut_points++;
+                }
+                if(pattern_chromosome[6].substr(0, 1) == "K"){
+                    mut_points++;
+                }
+                if(pattern_chromosome[4].substr(0, 1) == "N"){
+                    mut_points++;
+                }
+                if(pattern_chromosome[4].substr(1, 1) == "F"){
+                    mut_points++;
+                }
+                if(mut_points > 2){
+                    res_points++;
+                }
+                if(resistant_type_id == 0) is_triple_resistant = (res_points == 3 && mut_points == 3);//DHA-PPQ-LUM:3-3
+                if(resistant_type_id == 1) is_triple_resistant = (res_points == 3 && mut_points == 4);//DHA-PPQ-LUM:3-4
+                if(resistant_type_id == 2) is_triple_resistant = (res_points == 3 && mut_points == 5);//DHA-PPQ-LUM:3-5
+                resistant_strength = std::to_string(res_points) + "-" + std::to_string(mut_points);
+                if(resistant_type_id == 3) {
+                    is_triple_resistant = (res_points == 3);//DHA-PPQ-LUM:3
+                    resistant_strength = "";
+                }
+            }
+            if(is_triple_resistant){
+                std::vector<std::pair<int,std::string>> parent_info;
+                parent_info.push_back(std::make_pair(parent_genotypes[0]->genotype_id,parent_genotypes[0]->aa_sequence));
+                parent_info.push_back(std::make_pair(parent_genotypes[1]->genotype_id,parent_genotypes[1]->aa_sequence));
+                MosquitoRecombinedGenotypeInfo resistant_info = std::make_pair(parent_info,std::make_pair(resistant_drug_pair_id,resistant_type_id));
+                genotype->resistant_recombinations_in_mosquito.push_back(resistant_info);
+                parent_info.clear();
+            }
+            if(verbose && is_triple_resistant){
+                VLOG(1) << fmt::format("{} resistant_drug_pair_id: {} \n"
+                                       "genotype_m = \"{}\";\n"
+                                       "genotype_f = \"{}\";\n"
+                                       "genotype_c = \"{}\";\n"
+                                       "m_ec50-d0: {:.10f}\tm_ec50-d1: {:.10f}\tm_ec50-d2: {:.10f}\n"
+                                       "f_ec50-d0: {:.10f}\tf_ec50-d1: {:.10f}\tf_ec50-d2: {:.10f}\n"
+                                       "min_ec50-d0: {:.10f}\tmin_ec50-d1: {:.10f}\tmin_ec50-d2: {:.10f}\n"
+                                       "resistant_type: {} {} {}",
+                                       Model::SCHEDULER->current_time(),
+                                       resistant_drug_pair_id,
+                                       parent_genotypes[0]->get_aa_sequence().c_str(),
+                                       parent_genotypes[1]->get_aa_sequence().c_str(),
+                                       genotype->aa_sequence.c_str(),
+                                       parent_genotypes[0]->get_EC50_power_n(config->drug_db()->at(drugs[0])),
+                                       parent_genotypes[0]->get_EC50_power_n(config->drug_db()->at(drugs[1])),
+                                       parent_genotypes[0]->get_EC50_power_n(config->drug_db()->at(drugs[2])),
+                                       parent_genotypes[1]->get_EC50_power_n(config->drug_db()->at(drugs[0])),
+                                       parent_genotypes[1]->get_EC50_power_n(config->drug_db()->at(drugs[1])),
+                                       parent_genotypes[1]->get_EC50_power_n(config->drug_db()->at(drugs[2])),
+                                       drug_id_min_ec50[drugs[0]],
+                                       drug_id_min_ec50[drugs[1]],
+                                       drug_id_min_ec50[drugs[2]],
+                                       resistant_drug_list[resistant_drug_pair_id].first[resistant_type_id],
+                                       resistant_strength,
+                                       is_triple_resistant);
+                VLOG(1) << fmt::format("Condition Count [{}][{}][{}]: month_clonal_resistant: {}\tmonth_mos_resistant: {}\tmonth_mos_inflict: {}\tcumm_clonal_resistant: {}\tcumm_mos_resistant: {}\tcumm_mos_inflict: {}",
+                                       loc,resistant_drug_pair_id,resistant_type_id,
+                                       Model::DATA_COLLECTOR->monthly_clonal_resistant_genotype_count()[loc][resistant_drug_pair_id][resistant_type_id],
+                                       Model::DATA_COLLECTOR->monthly_mosquito_recombined_resistant_genotype_two_condition_count()[loc][resistant_drug_pair_id][resistant_type_id] + 1,
+                                       Model::DATA_COLLECTOR->monthly_mosquito_inflict_resistant_genotype_count()[loc][resistant_drug_pair_id][resistant_type_id],
+                                       Model::DATA_COLLECTOR->clonal_resistant_genotype_count()[loc][resistant_drug_pair_id][resistant_type_id],
+                                       Model::DATA_COLLECTOR->mosquito_recombined_resistant_genotype_two_condition_count()[loc][resistant_drug_pair_id][resistant_type_id] + 1,
+                                       Model::DATA_COLLECTOR->mosquito_inflict_resistant_genotype_count()[loc][resistant_drug_pair_id][resistant_type_id]);
+            }
+            return std::make_tuple(is_triple_resistant,resistant_drug_pair_id,resistant_type_id,resistant_strength);
+        }
+    }
+    return std::make_tuple(false,resistant_drug_pair_id,resistant_type_id,"0-0");
 }

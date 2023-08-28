@@ -11,6 +11,7 @@
 #include "Genotype.h"
 #include "Helpers/NumberHelpers.h"
 #include "Model.h"
+#include "Core/TypeDef.h"
 
 GenotypeDatabase::GenotypeDatabase() : auto_id(0) {}
 
@@ -45,6 +46,7 @@ Genotype *GenotypeDatabase::get_genotype(const std::string &aa_sequence, Config 
     auto new_id = auto_id;
     auto new_genotype = new Genotype(aa_sequence);
     new_genotype->genotype_id = new_id;
+    new_genotype->resistant_recombinations_in_mosquito = std::vector<MosquitoRecombinedGenotypeInfo>();
 
     // check if aa_sequence is valid
     if (!new_genotype->is_valid(config->pf_genotype_info())) {
@@ -75,7 +77,7 @@ Genotype *GenotypeDatabase::get_genotype(const std::string &aa_sequence, Config 
 
     aa_sequence_id_map[aa_sequence] = new_genotype;
     add(new_genotype);
-    new_genotype->recombined_resistant_types = std::vector<std::pair<int, int>>();
+    new_genotype->resistant_recombinations_in_mosquito = std::vector<MosquitoRecombinedGenotypeInfo>();
 
     auto_id++;
     return new_genotype;
