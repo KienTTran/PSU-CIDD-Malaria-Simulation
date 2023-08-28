@@ -134,15 +134,17 @@ void Model::build_initial_treatment_coverage() {
 }
 
 void Model::initialize() {
-  LOG(INFO) << "Model initilizing...";
 
-  LOG(INFO) << "Initialize Random";
-  // Initialize Random Seed
-  random_->initialize(initial_seed_number_);
+    LOG(INFO) << "Model initilizing...";
 
   LOG(INFO) << fmt::format("Read input file: {}", config_filename_);
   // Read input file
   config_->read_from_file(config_filename_);
+
+  LOG(INFO) << "Initialize Random";
+  // Initialize Random Seed
+  initial_seed_number_ = Model::CONFIG->initial_seed_number() == 0 ? initial_seed_number_ : Model::CONFIG->initial_seed_number();
+  random_->initialize(initial_seed_number_);
 
   // add reporter here
   if (reporter_type_.empty()) {

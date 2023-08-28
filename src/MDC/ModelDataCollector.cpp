@@ -268,6 +268,8 @@ void ModelDataCollector::initialize() {
         Model::CONFIG->number_of_locations(),
         IntVector(2, 0));
 
+    mosquito_sampled_genotypes_has_one_genotype_ = LongVector(Model::CONFIG->number_of_locations(), 0);
+
     AMU_per_parasite_pop_ = 0;
     AMU_per_person_ = 0;
     AMU_for_clinical_caused_parasite_ = 0;

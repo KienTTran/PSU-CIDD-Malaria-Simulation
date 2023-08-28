@@ -423,6 +423,10 @@ void ValidationReporter::after_run() {
         ss << Model::DATA_COLLECTOR->mosquito_recombination_events_count()[loc][1] << sep;
         ss << group_sep;//233
     }
+    for (auto loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
+        ss << Model::DATA_COLLECTOR->mosquito_sampled_genotypes_has_one_genotype() << sep;
+        ss << group_sep;//235
+    }
     summary_data_file << ss.str() << std::endl;
 
     for (auto [g_id, genotype] : Model::CONFIG->genotype_db) {

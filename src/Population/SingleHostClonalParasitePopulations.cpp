@@ -164,7 +164,7 @@ void SingleHostClonalParasitePopulations::update_by_drugs(DrugsInBlood* drugs_in
                   for (int resistant_drug_pair_id = 0; resistant_drug_pair_id < Model::MOSQUITO->resistant_drug_list.size(); resistant_drug_pair_id++) {
                       auto resistant_types = Model::MOSQUITO->resistant_drug_list[resistant_drug_pair_id].first.size();
                       for (int resistant_type_id = 0; resistant_type_id < resistant_types; resistant_type_id++) {
-                          if (std::get<0>(Model::MOSQUITO->count_resistant_genotypes(new_genotype,resistant_drug_pair_id,resistant_type_id))) {
+                          if (std::get<0>(Model::MOSQUITO->count_no_condition_resistant_genotypes(new_genotype,resistant_drug_pair_id,resistant_type_id))) {
                               Model::DATA_COLLECTOR->clonal_resistant_genotype_count()[loc][resistant_drug_pair_id][resistant_type_id]++;
                               Model::DATA_COLLECTOR->monthly_clonal_resistant_genotype_count()[loc][resistant_drug_pair_id][resistant_type_id]++;
                           }
