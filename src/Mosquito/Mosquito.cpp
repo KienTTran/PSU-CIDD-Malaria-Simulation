@@ -468,14 +468,6 @@ Mosquito::resistant_result_info Mosquito::one_condition_count_resistant_genotype
                     resistant_strength = "";
                 }
             }
-            if(is_double_resistant){
-                std::vector<std::pair<int,std::string>> parent_info;
-                parent_info.push_back(std::make_pair(parent_genotypes[0]->genotype_id,parent_genotypes[0]->aa_sequence));
-                parent_info.push_back(std::make_pair(parent_genotypes[1]->genotype_id,parent_genotypes[1]->aa_sequence));
-                MosquitoRecombinedGenotypeInfo resistant_info = std::make_pair(parent_info,std::make_pair(resistant_drug_pair_id,resistant_type_id));
-                genotype->resistant_recombinations_in_mosquito.push_back(resistant_info);
-                parent_info.clear();
-            }
             if(verbose && is_double_resistant){
                 VLOG(1) << fmt::format("{} resistant_drug_pair_id: {}\n"
                                        "genotype_m = \"{}\";\n"
@@ -586,14 +578,6 @@ Mosquito::resistant_result_info Mosquito::one_condition_count_resistant_genotype
                     is_triple_resistant = (res_points == 3);//DHA-PPQ-LUM:3
                     resistant_strength = "";
                 }
-            }
-            if(is_triple_resistant){
-                std::vector<std::pair<int,std::string>> parent_info;
-                parent_info.push_back(std::make_pair(parent_genotypes[0]->genotype_id,parent_genotypes[0]->aa_sequence));
-                parent_info.push_back(std::make_pair(parent_genotypes[1]->genotype_id,parent_genotypes[1]->aa_sequence));
-                MosquitoRecombinedGenotypeInfo resistant_info = std::make_pair(parent_info,std::make_pair(resistant_drug_pair_id,resistant_type_id));
-                genotype->resistant_recombinations_in_mosquito.push_back(resistant_info);
-                parent_info.clear();
             }
             if(verbose && is_triple_resistant){
                 VLOG(1) << fmt::format("{} resistant_drug_pair_id: {} \n"
