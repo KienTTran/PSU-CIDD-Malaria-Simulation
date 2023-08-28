@@ -168,6 +168,18 @@ void Mosquito::infect_new_cohort_in_PRMC(Config *config, Random *random, Populat
                 auto drugs = resistant_drug_list[resistant_drug_pair_id].second;
                 auto resistant_types = resistant_drug_list[resistant_drug_pair_id].first.size();
                 for (int resistant_type_id = 0; resistant_type_id < resistant_types; resistant_type_id++) {
+                    if(std::get<0>(count_resistant_genotypes(parent_genotypes[0],
+                                                             resistant_drug_pair_id,
+                                                             resistant_type_id))){
+                        Model::DATA_COLLECTOR->mosquito_sampled_male_resistant_genotype_count()[loc][resistant_drug_pair_id][resistant_type_id]++;
+                        Model::DATA_COLLECTOR->monthly_mosquito_sampled_male_resistant_genotype_count()[loc][resistant_drug_pair_id][resistant_type_id]++;
+                    }
+                    if(std::get<0>(count_resistant_genotypes(parent_genotypes[1],
+                                                             resistant_drug_pair_id,
+                                                             resistant_type_id))){
+                        Model::DATA_COLLECTOR->mosquito_sampled_female_resistant_genotype_count()[loc][resistant_drug_pair_id][resistant_type_id]++;
+                        Model::DATA_COLLECTOR->monthly_mosquito_sampled_female_resistant_genotype_count()[loc][resistant_drug_pair_id][resistant_type_id]++;
+                    }
                     if (std::get<0>(one_condition_count_resistant_genotypes(config, loc, parent_genotypes, sampled_genotype, drugs,
                                               resistant_drug_pair_id,
                                               resistant_type_id,
@@ -187,18 +199,6 @@ void Mosquito::infect_new_cohort_in_PRMC(Config *config, Random *random, Populat
                                                              resistant_type_id))){
                         Model::DATA_COLLECTOR->mosquito_recombined_resistant_genotype_count()[loc][resistant_drug_pair_id][resistant_type_id]++;
                         Model::DATA_COLLECTOR->monthly_mosquito_recombined_resistant_genotype_count()[loc][resistant_drug_pair_id][resistant_type_id]++;
-                    }
-                    if(std::get<0>(count_resistant_genotypes(parent_genotypes[0],
-                                                             resistant_drug_pair_id,
-                                                             resistant_type_id))){
-                        Model::DATA_COLLECTOR->mosquito_sampled_male_resistant_genotype_count()[loc][resistant_drug_pair_id][resistant_type_id]++;
-                        Model::DATA_COLLECTOR->monthly_mosquito_sampled_male_resistant_genotype_count()[loc][resistant_drug_pair_id][resistant_type_id]++;
-                    }
-                    if(std::get<0>(count_resistant_genotypes(parent_genotypes[1],
-                                                             resistant_drug_pair_id,
-                                                             resistant_type_id))){
-                        Model::DATA_COLLECTOR->mosquito_sampled_female_resistant_genotype_count()[loc][resistant_drug_pair_id][resistant_type_id]++;
-                        Model::DATA_COLLECTOR->monthly_mosquito_sampled_female_resistant_genotype_count()[loc][resistant_drug_pair_id][resistant_type_id]++;
                     }
                 }
             }
