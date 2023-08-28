@@ -178,7 +178,7 @@ void Mosquito::infect_new_cohort_in_PRMC(Config *config, Random *random, Populat
                     if (std::get<0>(two_condition_count_resistant_genotypes(config, loc, parent_genotypes, sampled_genotype, drugs,
                                                                             resistant_drug_pair_id,
                                                                             resistant_type_id,
-                                                                            false))) {
+                                                                            true))) {
                         Model::DATA_COLLECTOR->mosquito_recombined_resistant_genotype_two_condition_count()[loc][resistant_drug_pair_id][resistant_type_id]++;
                         Model::DATA_COLLECTOR->monthly_mosquito_recombined_resistant_genotype_two_condition_count()[loc][resistant_drug_pair_id][resistant_type_id]++;
                     }
