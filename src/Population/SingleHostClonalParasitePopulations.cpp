@@ -158,21 +158,6 @@ void SingleHostClonalParasitePopulations::update_by_drugs(DrugsInBlood* drugs_in
           Model::DATA_COLLECTOR->record_1_mutation(person_->location(), blood_parasite->genotype(), new_genotype);
           Model::DATA_COLLECTOR->record_1_mutation_by_drug(person_->location(), blood_parasite->genotype(), new_genotype, drug_id);
 
-          if (Model::SCHEDULER->current_time() >= Model::CONFIG->start_of_comparison_period())
-          {
-              for(int loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
-                  for (int resistant_drug_pair_id = 0; resistant_drug_pair_id < Model::MOSQUITO->resistant_drug_list.size(); resistant_drug_pair_id++) {
-                      auto resistant_types = Model::MOSQUITO->resistant_drug_list[resistant_drug_pair_id].first.size();
-                      for (int resistant_type_id = 0; resistant_type_id < resistant_types; resistant_type_id++) {
-                          if (std::get<0>(Model::MOSQUITO->count_no_condition_resistant_genotypes(new_genotype,resistant_drug_pair_id,resistant_type_id))) {
-                              Model::DATA_COLLECTOR->clonal_resistant_genotype_count()[loc][resistant_drug_pair_id][resistant_type_id]++;
-                              Model::DATA_COLLECTOR->monthly_clonal_resistant_genotype_count()[loc][resistant_drug_pair_id][resistant_type_id]++;
-                          }
-                      }
-                  }
-              }
-          }
-
           //          LOG(TRACE) << Model::SCHEDULER->current_time() << "\t" << blood_parasite->genotype()->genotype_id
           //          << "\t"
           //                     << new_genotype->genotype_id << "\t"
