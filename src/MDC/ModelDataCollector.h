@@ -251,6 +251,8 @@ PROPERTY_REF(IntVector3, monthly_clonal_resistant_genotype_count)
 
 PROPERTY_REF(LongVector, mosquito_sampled_genotypes_has_one_genotype)
 
+PROPERTY_REF(LongVector, monthly_mosquito_sampled_genotypes_has_one_genotype)
+
 static const int number_of_reported_MOI = 10;
 
 typedef std::tuple<int, int, int, int, int> mutation_tracker_info;

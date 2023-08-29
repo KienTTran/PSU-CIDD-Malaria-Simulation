@@ -271,6 +271,10 @@ void ValidationReporter::monthly_report() {
         }
         ss << group_sep;//873
     }
+    for (auto loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
+        ss << Model::DATA_COLLECTOR->monthly_mosquito_sampled_genotypes_has_one_genotype()[loc] << sep;
+        ss << group_sep;//875
+    }
     monthly_data_file << ss.str() << std::endl;
 
     std::stringstream gene_freq_ss;
@@ -424,7 +428,7 @@ void ValidationReporter::after_run() {
         ss << group_sep;//233
     }
     for (auto loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
-        ss << Model::DATA_COLLECTOR->mosquito_sampled_genotypes_has_one_genotype() << sep;
+        ss << Model::DATA_COLLECTOR->mosquito_sampled_genotypes_has_one_genotype()[loc] << sep;
         ss << group_sep;//235
     }
     summary_data_file << ss.str() << std::endl;

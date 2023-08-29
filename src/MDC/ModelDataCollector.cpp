@@ -270,6 +270,8 @@ void ModelDataCollector::initialize() {
 
     mosquito_sampled_genotypes_has_one_genotype_ = LongVector(Model::CONFIG->number_of_locations(), 0);
 
+    monthly_mosquito_sampled_genotypes_has_one_genotype_ = LongVector(Model::CONFIG->number_of_locations(), 0);
+
     AMU_per_parasite_pop_ = 0;
     AMU_per_person_ = 0;
     AMU_for_clinical_caused_parasite_ = 0;
@@ -1093,6 +1095,8 @@ void ModelDataCollector::monthly_update() {
             monthly_mosquito_inflict_resistant_genotype_count_[loc][resistant_list] = LongVector(Model::MOSQUITO->resistant_drug_list[resistant_list].first.size(), 0);
         }
     }
+
+    monthly_mosquito_sampled_genotypes_has_one_genotype_ = LongVector(Model::CONFIG->number_of_locations(), 0);
   }
 }
 
