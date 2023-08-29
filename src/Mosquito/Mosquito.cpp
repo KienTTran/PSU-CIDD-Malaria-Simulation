@@ -154,6 +154,7 @@ void Mosquito::infect_new_cohort_in_PRMC(Config *config, Random *random, Populat
 
       if (sampled_genotypes.size() == 1){
             Model::DATA_COLLECTOR->mosquito_sampled_genotypes_has_one_genotype()[loc]++;
+            Model::DATA_COLLECTOR->monthly_mosquito_sampled_genotypes_has_one_genotype()[loc]++;
       }
 
       Genotype *sampled_genotype =
