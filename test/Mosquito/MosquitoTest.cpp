@@ -186,6 +186,7 @@ TEST_F(MosquitoTest, CountResistantGenotypes) {
     c.read_from_file("input.yml");
 
     //DHAPPQ:2-2
+    VLOG(0) << "\n\nTest mos count DHAPPQ:2-2";
     int resistant_drug_pair_id = 0;
     int resistant_type_id = 0;
     std::vector drugs = m.resistant_drug_list[resistant_drug_pair_id].second;
@@ -214,6 +215,7 @@ TEST_F(MosquitoTest, CountResistantGenotypes) {
     drugs = m.resistant_drug_list[resistant_drug_pair_id].second;
 
     //ASAQ:2-2
+    VLOG(0) << "\n\nTest mos count ASAQ:2-2";
     genotype_m = "||||YY1||KTHFI,x||||||FNCMYRIPRPCA|1";
     genotype_f = "||||NF1||KTHFI,x||||||FNCMYRIPRPYA|1";
     genotype_c = "||||NY1||KTHFI,x||||||FNCMYRIPRPYA|1";
@@ -240,6 +242,7 @@ TEST_F(MosquitoTest, CountResistantGenotypes) {
     EXPECT_EQ(result,std::make_tuple(true, resistant_drug_pair_id, 3, ""));
 
     //ASAQ:2-3
+    VLOG(0) << "\n\nTest mos count ASAQ:2-3";
     genotype_m = "||||YY1||KTHFI,x||||||FNCMYRIPRPCA|1";
     genotype_f = "||||NF1||KTHFI,x||||||FNCMYRIPRPYA|1";
     genotype_c = "||||YY1||KTHFI,x||||||FNCMYRIPRPYA|1";
@@ -266,6 +269,7 @@ TEST_F(MosquitoTest, CountResistantGenotypes) {
     EXPECT_EQ(result,std::make_tuple(true,resistant_drug_pair_id, 3,""));
 
     //ASAQ:2-4
+    VLOG(0) << "\n\nTest mos count ASAQ:2-4";
     genotype_m = "||||YY1||TTHFI,x||||||FNCMYRIPRPCA|1";
     genotype_f = "||||NF1||KTHFI,x||||||FNCMYRIPRPYA|1";
     genotype_c = "||||YY1||TTHFI,x||||||FNCMYRIPRPYA|1";
@@ -286,6 +290,173 @@ TEST_F(MosquitoTest, CountResistantGenotypes) {
     VLOG(0) << fmt::format("Checking: {}: {} {} {} {}",m.resistant_drug_list[resistant_drug_pair_id].first[2],
                            std::get<0>(result),std::get<1>(result),std::get<2>(result),std::get<3>(result));
     EXPECT_EQ(result,std::make_tuple(true,resistant_drug_pair_id, 2,"2-4"));
+    result = m.count_resistant_genotypes(&c, 0, parent_genotypes, recombined_genotype, drugs, resistant_drug_pair_id, 3, true);
+    VLOG(0) << fmt::format("Checking: {}: {} {} {} {}",m.resistant_drug_list[resistant_drug_pair_id].first[3],
+                           std::get<0>(result),std::get<1>(result),std::get<2>(result),std::get<3>(result));
+    EXPECT_EQ(result,std::make_tuple(true,resistant_drug_pair_id, 3,""));
+
+    //DHA-PPQ-AQ:3-3
+    resistant_drug_pair_id = 3;
+    drugs = m.resistant_drug_list[resistant_drug_pair_id].second;
+    VLOG(0) << "\n\nTest mos count DHA-PPQ-AQ:3-3";
+    genotype_m = "||||YY1||TTHFI,x||||||FNCMYRIPRPCA|1";
+    genotype_f = "||||NF1||KTHFI,x||||||FNCMYRIPRPYA|2";
+    genotype_c = "||||YF1||KTHFI,x||||||FNCMYRIPRPYA|2";
+    VLOG(0) << genotype_m;
+    VLOG(0) << genotype_f;
+    VLOG(0) << genotype_c;
+    parent_genotypes = {genotype_db.get_genotype(genotype_m,&c), genotype_db.get_genotype(genotype_f,&c)};
+    recombined_genotype = genotype_db.get_genotype(genotype_c,&c);
+    result = m.count_resistant_genotypes(&c, 0, parent_genotypes, recombined_genotype, drugs, resistant_drug_pair_id, 0, true);
+    VLOG(0) << fmt::format("Checking: {}: {} {} {} {}",m.resistant_drug_list[resistant_drug_pair_id].first[0],
+                           std::get<0>(result),std::get<1>(result),std::get<2>(result),std::get<3>(result));
+    EXPECT_EQ(result,std::make_tuple(true,resistant_drug_pair_id, 0,"3-3"));
+    result = m.count_resistant_genotypes(&c, 0, parent_genotypes, recombined_genotype, drugs, resistant_drug_pair_id, 1, true);
+    VLOG(0) << fmt::format("Checking: {}: {} {} {} {}",m.resistant_drug_list[resistant_drug_pair_id].first[1],
+                           std::get<0>(result),std::get<1>(result),std::get<2>(result),std::get<3>(result));
+    EXPECT_EQ(result,std::make_tuple(false,resistant_drug_pair_id, 1,"3-3"));
+    result = m.count_resistant_genotypes(&c, 0, parent_genotypes, recombined_genotype, drugs, resistant_drug_pair_id, 2, true);
+    VLOG(0) << fmt::format("Checking: {}: {} {} {} {}",m.resistant_drug_list[resistant_drug_pair_id].first[2],
+                           std::get<0>(result),std::get<1>(result),std::get<2>(result),std::get<3>(result));
+    EXPECT_EQ(result,std::make_tuple(false,resistant_drug_pair_id, 2,"3-3"));
+    result = m.count_resistant_genotypes(&c, 0, parent_genotypes, recombined_genotype, drugs, resistant_drug_pair_id, 3, true);
+    VLOG(0) << fmt::format("Checking: {}: {} {} {} {}",m.resistant_drug_list[resistant_drug_pair_id].first[3],
+                           std::get<0>(result),std::get<1>(result),std::get<2>(result),std::get<3>(result));
+    EXPECT_EQ(result,std::make_tuple(true,resistant_drug_pair_id, 3,""));
+
+    //DHA-PPQ-AQ:3-4
+    VLOG(0) << "\n\nTest mos count DHA-PPQ-AQ:3-4";
+    genotype_m = "||||YY1||TTHFI,x||||||FNCMYRIPRPCA|1";
+    genotype_f = "||||NF1||KTHFI,x||||||FNCMYRIPRPYA|2";
+    genotype_c = "||||YF1||TTHFI,x||||||FNCMYRIPRPYA|2";
+    VLOG(0) << genotype_m;
+    VLOG(0) << genotype_f;
+    VLOG(0) << genotype_c;
+    parent_genotypes = {genotype_db.get_genotype(genotype_m,&c), genotype_db.get_genotype(genotype_f,&c)};
+    recombined_genotype = genotype_db.get_genotype(genotype_c,&c);
+    result = m.count_resistant_genotypes(&c, 0, parent_genotypes, recombined_genotype, drugs, resistant_drug_pair_id, 0, true);
+    VLOG(0) << fmt::format("Checking: {}: {} {} {} {}",m.resistant_drug_list[resistant_drug_pair_id].first[0],
+                           std::get<0>(result),std::get<1>(result),std::get<2>(result),std::get<3>(result));
+    EXPECT_EQ(result,std::make_tuple(false,resistant_drug_pair_id, 0,"3-4"));
+    result = m.count_resistant_genotypes(&c, 0, parent_genotypes, recombined_genotype, drugs, resistant_drug_pair_id, 1, true);
+    VLOG(0) << fmt::format("Checking: {}: {} {} {} {}",m.resistant_drug_list[resistant_drug_pair_id].first[1],
+                           std::get<0>(result),std::get<1>(result),std::get<2>(result),std::get<3>(result));
+    EXPECT_EQ(result,std::make_tuple(true,resistant_drug_pair_id, 1,"3-4"));
+    result = m.count_resistant_genotypes(&c, 0, parent_genotypes, recombined_genotype, drugs, resistant_drug_pair_id, 2, true);
+    VLOG(0) << fmt::format("Checking: {}: {} {} {} {}",m.resistant_drug_list[resistant_drug_pair_id].first[2],
+                           std::get<0>(result),std::get<1>(result),std::get<2>(result),std::get<3>(result));
+    EXPECT_EQ(result,std::make_tuple(false,resistant_drug_pair_id, 2,"3-4"));
+    result = m.count_resistant_genotypes(&c, 0, parent_genotypes, recombined_genotype, drugs, resistant_drug_pair_id, 3, true);
+    VLOG(0) << fmt::format("Checking: {}: {} {} {} {}",m.resistant_drug_list[resistant_drug_pair_id].first[3],
+                           std::get<0>(result),std::get<1>(result),std::get<2>(result),std::get<3>(result));
+    EXPECT_EQ(result,std::make_tuple(true,resistant_drug_pair_id, 3,""));
+
+    //DHA-PPQ-AQ:3-5
+    VLOG(0) << "\n\nTest mos count DHA-PPQ-AQ:3-5";
+    genotype_m = "||||YY1||TTHFI,x||||||FNCMYRIPRPCA|1";
+    genotype_f = "||||NF1||KTHFI,x||||||FNCMYRIPRPYA|2";
+    genotype_c = "||||YY1||TTHFI,x||||||FNCMYRIPRPYA|2";
+    VLOG(0) << genotype_m;
+    VLOG(0) << genotype_f;
+    VLOG(0) << genotype_c;
+    parent_genotypes = {genotype_db.get_genotype(genotype_m,&c), genotype_db.get_genotype(genotype_f,&c)};
+    recombined_genotype = genotype_db.get_genotype(genotype_c,&c);
+    result = m.count_resistant_genotypes(&c, 0, parent_genotypes, recombined_genotype, drugs, resistant_drug_pair_id, 0, true);
+    VLOG(0) << fmt::format("Checking: {}: {} {} {} {}",m.resistant_drug_list[resistant_drug_pair_id].first[0],
+                           std::get<0>(result),std::get<1>(result),std::get<2>(result),std::get<3>(result));
+    EXPECT_EQ(result,std::make_tuple(false,resistant_drug_pair_id, 0,"3-5"));
+    result = m.count_resistant_genotypes(&c, 0, parent_genotypes, recombined_genotype, drugs, resistant_drug_pair_id, 1, true);
+    VLOG(0) << fmt::format("Checking: {}: {} {} {} {}",m.resistant_drug_list[resistant_drug_pair_id].first[1],
+                           std::get<0>(result),std::get<1>(result),std::get<2>(result),std::get<3>(result));
+    EXPECT_EQ(result,std::make_tuple(false,resistant_drug_pair_id, 1,"3-5"));
+    result = m.count_resistant_genotypes(&c, 0, parent_genotypes, recombined_genotype, drugs, resistant_drug_pair_id, 2, true);
+    VLOG(0) << fmt::format("Checking: {}: {} {} {} {}",m.resistant_drug_list[resistant_drug_pair_id].first[2],
+                           std::get<0>(result),std::get<1>(result),std::get<2>(result),std::get<3>(result));
+    EXPECT_EQ(result,std::make_tuple(true,resistant_drug_pair_id, 2,"3-5"));
+    result = m.count_resistant_genotypes(&c, 0, parent_genotypes, recombined_genotype, drugs, resistant_drug_pair_id, 3, true);
+    VLOG(0) << fmt::format("Checking: {}: {} {} {} {}",m.resistant_drug_list[resistant_drug_pair_id].first[3],
+                           std::get<0>(result),std::get<1>(result),std::get<2>(result),std::get<3>(result));
+    EXPECT_EQ(result,std::make_tuple(true,resistant_drug_pair_id, 3,""));
+
+
+    //DHA-PPQ-LUM:3-3
+    resistant_drug_pair_id = 4;
+    drugs = m.resistant_drug_list[resistant_drug_pair_id].second;
+    VLOG(0) << "\n\nTest mos count DHA-PPQ-LUM:3-3";
+    genotype_m = "||||YY1||TTHFI,x||||||FNCMYRIPRPCA|1";
+    genotype_f = "||||NF1||KTHFI,x||||||FNCMYRIPRPYA|2";
+    genotype_c = "||||YF1||TTHFI,x||||||FNCMYRIPRPYA|2";
+    VLOG(0) << genotype_m;
+    VLOG(0) << genotype_f;
+    VLOG(0) << genotype_c;
+    parent_genotypes = {genotype_db.get_genotype(genotype_m,&c), genotype_db.get_genotype(genotype_f,&c)};
+    recombined_genotype = genotype_db.get_genotype(genotype_c,&c);
+    result = m.count_resistant_genotypes(&c, 0, parent_genotypes, recombined_genotype, drugs, resistant_drug_pair_id, 0, true);
+    VLOG(0) << fmt::format("Checking: {}: {} {} {} {}",m.resistant_drug_list[resistant_drug_pair_id].first[0],
+                           std::get<0>(result),std::get<1>(result),std::get<2>(result),std::get<3>(result));
+    EXPECT_EQ(result,std::make_tuple(true,resistant_drug_pair_id, 0,"3-3"));
+    result = m.count_resistant_genotypes(&c, 0, parent_genotypes, recombined_genotype, drugs, resistant_drug_pair_id, 1, true);
+    VLOG(0) << fmt::format("Checking: {}: {} {} {} {}",m.resistant_drug_list[resistant_drug_pair_id].first[1],
+                           std::get<0>(result),std::get<1>(result),std::get<2>(result),std::get<3>(result));
+    EXPECT_EQ(result,std::make_tuple(false,resistant_drug_pair_id, 1,"3-3"));
+    result = m.count_resistant_genotypes(&c, 0, parent_genotypes, recombined_genotype, drugs, resistant_drug_pair_id, 2, true);
+    VLOG(0) << fmt::format("Checking: {}: {} {} {} {}",m.resistant_drug_list[resistant_drug_pair_id].first[2],
+                           std::get<0>(result),std::get<1>(result),std::get<2>(result),std::get<3>(result));
+    EXPECT_EQ(result,std::make_tuple(false,resistant_drug_pair_id, 2,"3-3"));
+    result = m.count_resistant_genotypes(&c, 0, parent_genotypes, recombined_genotype, drugs, resistant_drug_pair_id, 3, true);
+    VLOG(0) << fmt::format("Checking: {}: {} {} {} {}",m.resistant_drug_list[resistant_drug_pair_id].first[3],
+                           std::get<0>(result),std::get<1>(result),std::get<2>(result),std::get<3>(result));
+    EXPECT_EQ(result,std::make_tuple(true,resistant_drug_pair_id, 3,""));
+
+    //DHA-PPQ-LUM:3-4
+    VLOG(0) << "\n\nTest mos count DHA-PPQ-LUM:3-4";
+    genotype_m = "||||YY1||TTHFI,x||||||FNCMYRIPRPCA|1";
+    genotype_f = "||||NF1||KTHFI,x||||||FNCMYRIPRPYA|2";
+    genotype_c = "||||YF1||KTHFI,x||||||FNCMYRIPRPYA|2";
+    VLOG(0) << genotype_m;
+    VLOG(0) << genotype_f;
+    VLOG(0) << genotype_c;
+    parent_genotypes = {genotype_db.get_genotype(genotype_m,&c), genotype_db.get_genotype(genotype_f,&c)};
+    recombined_genotype = genotype_db.get_genotype(genotype_c,&c);
+    result = m.count_resistant_genotypes(&c, 0, parent_genotypes, recombined_genotype, drugs, resistant_drug_pair_id, 0, true);
+    VLOG(0) << fmt::format("Checking: {}: {} {} {} {}",m.resistant_drug_list[resistant_drug_pair_id].first[0],
+                           std::get<0>(result),std::get<1>(result),std::get<2>(result),std::get<3>(result));
+    EXPECT_EQ(result,std::make_tuple(false,resistant_drug_pair_id, 0,"3-4"));
+    result = m.count_resistant_genotypes(&c, 0, parent_genotypes, recombined_genotype, drugs, resistant_drug_pair_id, 1, true);
+    VLOG(0) << fmt::format("Checking: {}: {} {} {} {}",m.resistant_drug_list[resistant_drug_pair_id].first[1],
+                           std::get<0>(result),std::get<1>(result),std::get<2>(result),std::get<3>(result));
+    EXPECT_EQ(result,std::make_tuple(true,resistant_drug_pair_id, 1,"3-4"));
+    result = m.count_resistant_genotypes(&c, 0, parent_genotypes, recombined_genotype, drugs, resistant_drug_pair_id, 2, true);
+    VLOG(0) << fmt::format("Checking: {}: {} {} {} {}",m.resistant_drug_list[resistant_drug_pair_id].first[2],
+                           std::get<0>(result),std::get<1>(result),std::get<2>(result),std::get<3>(result));
+    EXPECT_EQ(result,std::make_tuple(false,resistant_drug_pair_id, 2,"3-4"));
+    result = m.count_resistant_genotypes(&c, 0, parent_genotypes, recombined_genotype, drugs, resistant_drug_pair_id, 3, true);
+    VLOG(0) << fmt::format("Checking: {}: {} {} {} {}",m.resistant_drug_list[resistant_drug_pair_id].first[3],
+                           std::get<0>(result),std::get<1>(result),std::get<2>(result),std::get<3>(result));
+    EXPECT_EQ(result,std::make_tuple(true,resistant_drug_pair_id, 3,""));
+
+    //DHA-PPQ-LUM:3-5
+    VLOG(0) << "\n\nTest mos count DHA-PPQ-LUM:3-5";
+    genotype_m = "||||YY1||TTHFI,x||||||FNCMYRIPRPCA|1";
+    genotype_f = "||||NF1||KTHFI,x||||||FNCMYRIPRPYA|2";
+    genotype_c = "||||NF1||KTHFI,x||||||FNCMYRIPRPYA|2";
+    VLOG(0) << genotype_m;
+    VLOG(0) << genotype_f;
+    VLOG(0) << genotype_c;
+    parent_genotypes = {genotype_db.get_genotype(genotype_m,&c), genotype_db.get_genotype(genotype_f,&c)};
+    recombined_genotype = genotype_db.get_genotype(genotype_c,&c);
+    result = m.count_resistant_genotypes(&c, 0, parent_genotypes, recombined_genotype, drugs, resistant_drug_pair_id, 0, true);
+    VLOG(0) << fmt::format("Checking: {}: {} {} {} {}",m.resistant_drug_list[resistant_drug_pair_id].first[0],
+                           std::get<0>(result),std::get<1>(result),std::get<2>(result),std::get<3>(result));
+    EXPECT_EQ(result,std::make_tuple(false,resistant_drug_pair_id, 0,"3-5"));
+    result = m.count_resistant_genotypes(&c, 0, parent_genotypes, recombined_genotype, drugs, resistant_drug_pair_id, 1, true);
+    VLOG(0) << fmt::format("Checking: {}: {} {} {} {}",m.resistant_drug_list[resistant_drug_pair_id].first[1],
+                           std::get<0>(result),std::get<1>(result),std::get<2>(result),std::get<3>(result));
+    EXPECT_EQ(result,std::make_tuple(false,resistant_drug_pair_id, 1,"3-5"));
+    result = m.count_resistant_genotypes(&c, 0, parent_genotypes, recombined_genotype, drugs, resistant_drug_pair_id, 2, true);
+    VLOG(0) << fmt::format("Checking: {}: {} {} {} {}",m.resistant_drug_list[resistant_drug_pair_id].first[2],
+                           std::get<0>(result),std::get<1>(result),std::get<2>(result),std::get<3>(result));
+    EXPECT_EQ(result,std::make_tuple(true,resistant_drug_pair_id, 2,"3-5"));
     result = m.count_resistant_genotypes(&c, 0, parent_genotypes, recombined_genotype, drugs, resistant_drug_pair_id, 3, true);
     VLOG(0) << fmt::format("Checking: {}: {} {} {} {}",m.resistant_drug_list[resistant_drug_pair_id].first[3],
                            std::get<0>(result),std::get<1>(result),std::get<2>(result),std::get<3>(result));
@@ -371,7 +542,7 @@ TEST_F(MosquitoTest, CountResistantGenotypes) {
     }
 
     //Test arbitrary genotype
-    VLOG(0) << "\n\nTest mos two condition count arbitrary";
+    VLOG(0) << "\n\nTest mos count arbitrary";
     genotype_m = "||||NY1||TTHFI,x||||||FNCMYRIPRPCA|2";
     genotype_f = "||||YY1||TTHFI,x||||||FNCMYRIPRPYA|1";
     genotype_c = "||||NY1||TTHFI,x||||||FNCMYRIPRPYA|2";

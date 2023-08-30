@@ -227,76 +227,81 @@ Mosquito::resistant_result_info Mosquito::count_resistant_genotypes(Config* conf
                                                                     std::vector<int> drugs, int resistant_drug_pair_id, int resistant_type_id, bool verbose){
     //Double resistant
     if(drugs.size() == 2){
-        if((parent_genotypes[0]->resist_to(config->drug_db()->at(drugs[0]))      && !parent_genotypes[0]->resist_to(config->drug_db()->at(drugs[1])) //g0 - g1
-        && parent_genotypes[1]->resist_to(config->drug_db()->at(drugs[1]))   && !parent_genotypes[1]->resist_to(config->drug_db()->at(drugs[0]))) //RS-SR
-        ||(parent_genotypes[1]->resist_to(config->drug_db()->at(drugs[0]))    && !parent_genotypes[1]->resist_to(config->drug_db()->at(drugs[1])) //g1 - g0
-        && parent_genotypes[0]->resist_to(config->drug_db()->at(drugs[1]))    && !parent_genotypes[0]->resist_to(config->drug_db()->at(drugs[0]))) //RS-SR
+        if((parent_genotypes[0]->resist_to(config->drug_db()->at(drugs[0]))  && !parent_genotypes[0]->resist_to(config->drug_db()->at(drugs[1])) //g0 - g1
+        &&  parent_genotypes[1]->resist_to(config->drug_db()->at(drugs[1]))  && !parent_genotypes[1]->resist_to(config->drug_db()->at(drugs[0]))) //RS-SR
+        || (parent_genotypes[1]->resist_to(config->drug_db()->at(drugs[0]))  && !parent_genotypes[1]->resist_to(config->drug_db()->at(drugs[1])) //g1 - g0
+        &&  parent_genotypes[0]->resist_to(config->drug_db()->at(drugs[1]))  && !parent_genotypes[0]->resist_to(config->drug_db()->at(drugs[0]))) //RS-SR
         ){
             std::vector<std::string> pattern_chromosome = split_string(genotype->aa_sequence, '|');
             bool is_double_resistant = false;
             int res_points = 0;
             int mut_points = 0;
             std::string resistant_strength = "";
-            //DHA-PPQ:2-2
-            if (resistant_drug_pair_id == 0) {
-                res_points = 2;
-                mut_points = 2;
-                if(resistant_type_id == 0) is_double_resistant = (pattern_chromosome[12].substr(10, 1) == "Y" && pattern_chromosome[13].substr(0, 1) == "2");//580Y-2
-                resistant_strength = std::to_string(res_points) + "-" + std::to_string(mut_points);
-            }
-            //ASAQ
-            if (resistant_drug_pair_id == 1) {
-                if(pattern_chromosome[12].substr(10, 1) == "Y"){
-                    res_points++;
-                    mut_points++;
+            switch(resistant_drug_pair_id){
+                case(0):{
+                    //DHA-PPQ:2-2
+                    res_points = 2;
+                    mut_points = 2;
+                    if(resistant_type_id == 0) is_double_resistant = (pattern_chromosome[12].substr(10, 1) == "Y" && pattern_chromosome[13].substr(0, 1) == "2");//580Y-2
+                    resistant_strength = std::to_string(res_points) + "-" + std::to_string(mut_points);
+                    break;
                 }
-                if(pattern_chromosome[6].substr(0, 1) == "T"){
-                    mut_points++;
+                case(1):{
+                    //DHA-PPQ:2-2
+                    if(pattern_chromosome[12].substr(10, 1) == "Y"){
+                        res_points++;
+                        mut_points++;
+                    }
+                    if(pattern_chromosome[6].substr(0, 1) == "T"){
+                        mut_points++;
+                    }
+                    if(pattern_chromosome[4].substr(0, 1) == "Y"){
+                        mut_points++;
+                    }
+                    if(pattern_chromosome[4].substr(1, 1) == "Y"){
+                        mut_points++;
+                    }
+                    if(mut_points > 1){
+                        res_points++;
+                    }
+                    //Note that 2-4 resistant count includes 2-3 and 2-2 count
+                    if(resistant_type_id == 0) is_double_resistant = (res_points == 2 && mut_points == 2);//ASAQ:2-2
+                    if(resistant_type_id == 1) is_double_resistant = (res_points == 2 && mut_points == 3);//ASAQ:2-3
+                    if(resistant_type_id == 2) is_double_resistant = (res_points == 2 && mut_points == 4);//ASAQ:2-4
+                    resistant_strength = std::to_string(res_points) + "-" + std::to_string(mut_points);
+                    if(resistant_type_id == 3) {
+                        is_double_resistant = (res_points == 2);//ASAQ:2
+                        resistant_strength = "";
+                    }
+                    break;
                 }
-                if(pattern_chromosome[4].substr(0, 1) == "Y"){
-                    mut_points++;
-                }
-                if(pattern_chromosome[4].substr(1, 1) == "Y"){
-                    mut_points++;
-                }
-                if(mut_points > 1){
-                    res_points++;
-                }
-                //Note that 2-4 resistant count includes 2-3 and 2-2 count
-                if(resistant_type_id == 0) is_double_resistant = (res_points == 2 && mut_points == 2);//ASAQ:2-2
-                if(resistant_type_id == 1) is_double_resistant = (res_points == 2 && mut_points == 3);//ASAQ:2-3
-                if(resistant_type_id == 2) is_double_resistant = (res_points == 2 && mut_points == 4);//ASAQ:2-4
-                resistant_strength = std::to_string(res_points) + "-" + std::to_string(mut_points);
-                if(resistant_type_id == 3) {
-                    is_double_resistant = (res_points == 2);//ASAQ:2
-                    resistant_strength = "";
-                }
-            }
-            //AL
-            if (resistant_drug_pair_id == 2) {
-                if(pattern_chromosome[12].substr(10, 1) == "Y"){
-                    res_points++;
-                    mut_points++;
-                }
-                if(pattern_chromosome[6].substr(0, 1) == "K"){
-                    mut_points++;
-                }
-                if(pattern_chromosome[4].substr(0, 1) == "N"){
-                    mut_points++;
-                }
-                if(pattern_chromosome[4].substr(1, 1) == "F"){
-                    mut_points++;
-                }
-                if(mut_points > 1){
-                    res_points++;
-                }
-                if(resistant_type_id == 0) is_double_resistant = (res_points == 2 && mut_points == 2);//AL:2-2
-                if(resistant_type_id == 1) is_double_resistant = (res_points == 2 && mut_points == 3);//AL:2-3
-                if(resistant_type_id == 2) is_double_resistant = (res_points == 2 && mut_points == 4);//AL:2-4
-                resistant_strength = std::to_string(res_points) + "-" + std::to_string(mut_points);
-                if(resistant_type_id == 3) {
-                    is_double_resistant = (res_points == 2);//AL:2
-                    resistant_strength = "";
+                case(2):{
+                    //AL
+                    if(pattern_chromosome[12].substr(10, 1) == "Y"){
+                        res_points++;
+                        mut_points++;
+                    }
+                    if(pattern_chromosome[6].substr(0, 1) == "K"){
+                        mut_points++;
+                    }
+                    if(pattern_chromosome[4].substr(0, 1) == "N"){
+                        mut_points++;
+                    }
+                    if(pattern_chromosome[4].substr(1, 1) == "F"){
+                        mut_points++;
+                    }
+                    if(mut_points > 1){
+                        res_points++;
+                    }
+                    if(resistant_type_id == 0) is_double_resistant = (res_points == 2 && mut_points == 2);//AL:2-2
+                    if(resistant_type_id == 1) is_double_resistant = (res_points == 2 && mut_points == 3);//AL:2-3
+                    if(resistant_type_id == 2) is_double_resistant = (res_points == 2 && mut_points == 4);//AL:2-4
+                    resistant_strength = std::to_string(res_points) + "-" + std::to_string(mut_points);
+                    if(resistant_type_id == 3) {
+                        is_double_resistant = (res_points == 2);//AL:2
+                        resistant_strength = "";
+                    }
+                    break;
                 }
             }
             if(is_double_resistant){
@@ -339,85 +344,77 @@ Mosquito::resistant_result_info Mosquito::count_resistant_genotypes(Config* conf
         }
     }
     //Triple resistant
-    if(drugs.size() == 3){
-        if(((parent_genotypes[0]->resist_to(config->drug_db()->at(drugs[0]))    && !parent_genotypes[0]->resist_to(config->drug_db()->at(drugs[1]))     && !parent_genotypes[0]->resist_to(config->drug_db()->at(drugs[2]))//g0 - g1
-        && !parent_genotypes[1]->resist_to(config->drug_db()->at(drugs[0]))     && parent_genotypes[1]->resist_to(config->drug_db()->at(drugs[1]))      && parent_genotypes[1]->resist_to(config->drug_db()->at(drugs[2]))) //RSS-SRR
-        || (!parent_genotypes[0]->resist_to(config->drug_db()->at(drugs[0]))    && parent_genotypes[0]->resist_to(config->drug_db()->at(drugs[1]))      && !parent_genotypes[0]->resist_to(config->drug_db()->at(drugs[2]))
-        && parent_genotypes[1]->resist_to(config->drug_db()->at(drugs[0]))      && !parent_genotypes[1]->resist_to(config->drug_db()->at(drugs[1]))     && parent_genotypes[1]->resist_to(config->drug_db()->at(drugs[2]))) //SRS-RSR
-        || (!parent_genotypes[0]->resist_to(config->drug_db()->at(drugs[0]))    && !parent_genotypes[0]->resist_to(config->drug_db()->at(drugs[1]))     && parent_genotypes[0]->resist_to(config->drug_db()->at(drugs[2]))
-        && parent_genotypes[1]->resist_to(config->drug_db()->at(drugs[0]))      && parent_genotypes[1]->resist_to(config->drug_db()->at(drugs[1]))      && !parent_genotypes[1]->resist_to(config->drug_db()->at(drugs[2])))) //SSR-RRS
-        || ((parent_genotypes[1]->resist_to(config->drug_db()->at(drugs[0]))    && !parent_genotypes[1]->resist_to(config->drug_db()->at(drugs[1]))     && !parent_genotypes[1]->resist_to(config->drug_db()->at(drugs[2])) //g1 - g0
-        && !parent_genotypes[0]->resist_to(config->drug_db()->at(drugs[0]))     && parent_genotypes[0]->resist_to(config->drug_db()->at(drugs[1]))      && parent_genotypes[0]->resist_to(config->drug_db()->at(drugs[2]))) //RSS-SRR
-        || (!parent_genotypes[1]->resist_to(config->drug_db()->at(drugs[0]))    && parent_genotypes[1]->resist_to(config->drug_db()->at(drugs[1]))      && !parent_genotypes[1]->resist_to(config->drug_db()->at(drugs[2]))
-        && parent_genotypes[0]->resist_to(config->drug_db()->at(drugs[0]))      && !parent_genotypes[0]->resist_to(config->drug_db()->at(drugs[1]))     && parent_genotypes[0]->resist_to(config->drug_db()->at(drugs[2]))) //SRS-RSR
-        || (!parent_genotypes[1]->resist_to(config->drug_db()->at(drugs[0]))    && !parent_genotypes[1]->resist_to(config->drug_db()->at(drugs[1]))     && parent_genotypes[1]->resist_to(config->drug_db()->at(drugs[2]))
-        && parent_genotypes[0]->resist_to(config->drug_db()->at(drugs[0]))      && parent_genotypes[0]->resist_to(config->drug_db()->at(drugs[1]))      && !parent_genotypes[0]->resist_to(config->drug_db()->at(drugs[2])))) //SSR-RRS
+    else if(drugs.size() == 3){
+        if(!(parent_genotypes[0]->resist_to(config->drug_db()->at(drugs[0]))  && parent_genotypes[0]->resist_to(config->drug_db()->at(drugs[1]))  && parent_genotypes[0]->resist_to(config->drug_db()->at(drugs[2])))//g0 - g1
+        && !(parent_genotypes[1]->resist_to(config->drug_db()->at(drugs[0]))  && !parent_genotypes[1]->resist_to(config->drug_db()->at(drugs[1]))  && !parent_genotypes[1]->resist_to(config->drug_db()->at(drugs[2]))) //SSS-SSS
         ){
             std::vector<std::string> pattern_chromosome = split_string(genotype->aa_sequence, '|');
             bool is_triple_resistant = false;
             int res_points = 0;
             int mut_points = 0;
             std::string resistant_strength = "";
-            //DHA-PPQ-AQ
-            if (resistant_drug_pair_id == 3) {
-                if(pattern_chromosome[12].substr(10, 1) == "Y"){
-                    res_points++;
-                    mut_points++;
+            switch(resistant_drug_pair_id){
+                case(3):{//DHA-PPQ-AQ
+                    if(pattern_chromosome[12].substr(10, 1) == "Y"){
+                        res_points++;
+                        mut_points++;
+                    }
+                    if(pattern_chromosome[13].substr(0, 1) == "2"){
+                        res_points++;
+                        mut_points++;
+                    }
+                    if(pattern_chromosome[6].substr(0, 1) == "T"){
+                        mut_points++;
+                    }
+                    if(pattern_chromosome[4].substr(0, 1) == "Y"){
+                        mut_points++;
+                    }
+                    if(pattern_chromosome[4].substr(1, 1) == "Y"){
+                        mut_points++;
+                    }
+                    if(mut_points > 2){
+                        res_points++;
+                    }
+                    if(resistant_type_id == 0) is_triple_resistant = (res_points == 3 && mut_points == 3);//DHA-PPQ-AQ:3-3
+                    if(resistant_type_id == 1) is_triple_resistant = (res_points == 3 && mut_points == 4);//DHA-PPQ-AQ:3-4
+                    if(resistant_type_id == 2) is_triple_resistant = (res_points == 3 && mut_points == 5);//DHA-PPQ-AQ:3-5
+                    resistant_strength = std::to_string(res_points) + "-" + std::to_string(mut_points);
+                    if(resistant_type_id == 3) {
+                        is_triple_resistant = (res_points == 3);//DHA-PPQ-AQ:3
+                        resistant_strength = "";
+                    }
+                    break;
                 }
-                if(pattern_chromosome[13].substr(0, 1) == "2"){
-                    res_points++;
-                    mut_points++;
-                }
-                if(pattern_chromosome[6].substr(0, 1) == "T"){
-                    mut_points++;
-                }
-                if(pattern_chromosome[4].substr(0, 1) == "Y"){
-                    mut_points++;
-                }
-                if(pattern_chromosome[4].substr(1, 1) == "Y"){
-                    mut_points++;
-                }
-                if(mut_points > 2){
-                    res_points++;
-                }
-                if(resistant_type_id == 0) is_triple_resistant = (res_points == 3 && mut_points == 3);//DHA-PPQ-AQ:3-3
-                if(resistant_type_id == 1) is_triple_resistant = (res_points == 3 && mut_points == 4);//DHA-PPQ-AQ:3-4
-                if(resistant_type_id == 2) is_triple_resistant = (res_points == 3 && mut_points == 5);//DHA-PPQ-AQ:3-5
-                resistant_strength = std::to_string(res_points) + "-" + std::to_string(mut_points);
-                if(resistant_type_id == 3) {
-                    is_triple_resistant = (res_points == 3);//DHA-PPQ-AQ:3
-                    resistant_strength = "";
-                }
-            }
-            //DHA-PPQ-LUM
-            if (resistant_drug_pair_id == 4) {
-                if(pattern_chromosome[12].substr(10, 1) == "Y"){
-                    res_points++;
-                    mut_points++;
-                }
-                if(pattern_chromosome[13].substr(0, 1) == "2"){
-                    res_points++;
-                    mut_points++;
-                }
-                if(pattern_chromosome[6].substr(0, 1) == "K"){
-                    mut_points++;
-                }
-                if(pattern_chromosome[4].substr(0, 1) == "N"){
-                    mut_points++;
-                }
-                if(pattern_chromosome[4].substr(1, 1) == "F"){
-                    mut_points++;
-                }
-                if(mut_points > 2){
-                    res_points++;
-                }
-                if(resistant_type_id == 0) is_triple_resistant = (res_points == 3 && mut_points == 3);//DHA-PPQ-LUM:3-3
-                if(resistant_type_id == 1) is_triple_resistant = (res_points == 3 && mut_points == 4);//DHA-PPQ-LUM:3-4
-                if(resistant_type_id == 2) is_triple_resistant = (res_points == 3 && mut_points == 5);//DHA-PPQ-LUM:3-5
-                resistant_strength = std::to_string(res_points) + "-" + std::to_string(mut_points);
-                if(resistant_type_id == 3) {
-                    is_triple_resistant = (res_points == 3);//DHA-PPQ-LUM:3
-                    resistant_strength = "";
+                case(4):{//DHA-PPQ-LUM
+                    if(pattern_chromosome[12].substr(10, 1) == "Y"){
+                        res_points++;
+                        mut_points++;
+                    }
+                    if(pattern_chromosome[13].substr(0, 1) == "2"){
+                        res_points++;
+                        mut_points++;
+                    }
+                    if(pattern_chromosome[6].substr(0, 1) == "K"){
+                        mut_points++;
+                    }
+                    if(pattern_chromosome[4].substr(0, 1) == "N"){
+                        mut_points++;
+                    }
+                    if(pattern_chromosome[4].substr(1, 1) == "F"){
+                        mut_points++;
+                    }
+                    if(mut_points > 2){
+                        res_points++;
+                    }
+                    if(resistant_type_id == 0) is_triple_resistant = (res_points == 3 && mut_points == 3);//DHA-PPQ-LUM:3-3
+                    if(resistant_type_id == 1) is_triple_resistant = (res_points == 3 && mut_points == 4);//DHA-PPQ-LUM:3-4
+                    if(resistant_type_id == 2) is_triple_resistant = (res_points == 3 && mut_points == 5);//DHA-PPQ-LUM:3-5
+                    resistant_strength = std::to_string(res_points) + "-" + std::to_string(mut_points);
+                    if(resistant_type_id == 3) {
+                        is_triple_resistant = (res_points == 3);//DHA-PPQ-LUM:3
+                        resistant_strength = "";
+                    }
+                    break;
                 }
             }
             if(is_triple_resistant){
@@ -429,7 +426,7 @@ Mosquito::resistant_result_info Mosquito::count_resistant_genotypes(Config* conf
                 parent_info.clear();
             }
             if(verbose && is_triple_resistant){
-                VLOG(1) << fmt::format("Count two condition {} resistant_drug_pair_id: {} \n"
+                VLOG(1) << fmt::format("Count {} resistant_drug_pair_id: {} \n"
                                        "genotype_m = \"{}\";\n"
                                        "genotype_f = \"{}\";\n"
                                        "genotype_c = \"{}\";\n"
@@ -454,13 +451,16 @@ Mosquito::resistant_result_info Mosquito::count_resistant_genotypes(Config* conf
                                        resistant_drug_list[resistant_drug_pair_id].first[resistant_type_id],
                                        resistant_strength,
                                        is_triple_resistant);
-                VLOG(1) << fmt::format("Count two condition [{}][{}][{}]: month_mos_resistant: {}\tcumm_mos_resistant: {}",
+                VLOG(1) << fmt::format("Count [{}][{}][{}]: month_mos_resistant: {}\tcumm_mos_resistant: {}",
                                        loc,resistant_drug_pair_id,resistant_type_id,
                                        Model::DATA_COLLECTOR->monthly_mosquito_recombined_resistant_genotype_count()[loc][resistant_drug_pair_id][resistant_type_id],
                                        Model::DATA_COLLECTOR->mosquito_recombined_resistant_genotype_count()[loc][resistant_drug_pair_id][resistant_type_id] + 1);
             }
             return std::make_tuple(is_triple_resistant,resistant_drug_pair_id,resistant_type_id,resistant_strength);
         }
+    }
+    else{
+        return std::make_tuple(false,resistant_drug_pair_id,resistant_type_id,"0-0");
     }
     return std::make_tuple(false,resistant_drug_pair_id,resistant_type_id,"0-0");
 }
