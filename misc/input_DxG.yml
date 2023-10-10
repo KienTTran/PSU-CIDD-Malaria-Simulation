@@ -348,20 +348,20 @@ drug_db:
     n: 25
     age_specific_drug_concentration_sd: [0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4]
     #age_specific_drug_concentration_sd: [0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.2]
-    mutation_probability: 0.005
+    mutation_probability: 0.001
     affecting_loci: [2]
     selecting_alleles: [[1]]
     k: 4
     EC50:
-       ..0.. : 0.75
-       ..1.. : 1.2
+      ..0.. : 0.62
+      ..1.. : 1.215
   1:
     name: "LM"
     half_life: 4.5
     maximum_parasite_killing_rate: 0.99
     n: 20
     age_specific_drug_concentration_sd: [0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4]
-    mutation_probability: 0.005
+    mutation_probability: 0.001
     affecting_loci: [0,1]
     selecting_alleles: [[0],[0,2,3,4,6,7]]
     k: 4
@@ -404,7 +404,7 @@ drug_db:
     maximum_parasite_killing_rate: 0.95
     n: 19
     age_specific_drug_concentration_sd: [0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4]
-    mutation_probability: 0.005
+    mutation_probability: 0.001
     affecting_loci: [0,1]
     selecting_alleles: [[1],[0,1,3,4,5,7]]
     k: 4
@@ -447,14 +447,14 @@ drug_db:
     maximum_parasite_killing_rate: 0.9
     n: 15
     age_specific_drug_concentration_sd: [0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4]
-    mutation_probability: 0.005
+    mutation_probability: 0.001
     affecting_loci: [3]
     selecting_alleles: [[1]]
     resistant_factor: [[1]]
     k: 4
     EC50:
-       ...0. : 0.58
-       ...1. : 1.4
+       ...0. : 0.0
+       ...1. : 0.11
   #MQ
   4:
     name: "MQ"
@@ -462,7 +462,7 @@ drug_db:
     maximum_parasite_killing_rate: 0.9
     n: 15
     age_specific_drug_concentration_sd: [0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4]
-    mutation_probability: 0.005
+    mutation_probability: 0.001
     affecting_loci: [1]
     selecting_alleles: [[4,5,6,7]]
     k: 4
@@ -493,7 +493,7 @@ drug_db:
     maximum_parasite_killing_rate: 0.95
     n: 19
     age_specific_drug_concentration_sd: [0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4]
-    mutation_probability: 0.005
+    mutation_probability: 0.001
     affecting_loci: [0,1]
     selecting_alleles: [[1],[1,3,5,7]]
     k: 4
@@ -536,7 +536,7 @@ drug_db:
     maximum_parasite_killing_rate: 0.999
     n: 10
     age_specific_drug_concentration_sd: [0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4]
-    mutation_probability: 0.005
+    mutation_probability: 0.001
     affecting_loci: [2]
     selecting_alleles: [[1]]
     k: 4
@@ -548,7 +548,7 @@ drug_db:
     maximum_parasite_killing_rate: 0.99
     n: 5
     age_specific_drug_concentration_sd: [0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4]
-    mutation_probability: 0.005
+    mutation_probability: 0.001
     affecting_loci: [2]
     selecting_alleles: [[1]]
     k: 4

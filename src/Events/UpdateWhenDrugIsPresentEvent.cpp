@@ -54,7 +54,10 @@ void UpdateWhenDrugIsPresentEvent::execute() {
     for (auto i = 0; i < person->all_clonal_parasite_populations()->size(); i++) {
       const auto blood_parasite = person->all_clonal_parasite_populations()->parasites()->at(i);
       if (blood_parasite->update_function()==Model::MODEL->having_drug_update_function()) {
-        person->determine_relapse_or_not(blood_parasite);
+        //Prevent parasite density fall back to asymptomatic level early when day for parasite cleared by mono drug less than day of clinical ended.
+        //This makes parasite density fall back to asymptomatic level after clinical ended.
+//        person->determine_relapse_or_not(blood_parasite);
+        blood_parasite->set_update_function(Model::MODEL->immunity_clearance_update_function());
       }
     }
   }
