@@ -35,6 +35,7 @@
 #include "Strategies/SFTStrategy.h"
 #include "Therapies//SCTherapy.h"
 #include "Therapies/Therapy.h"
+#include "Parasites/Genotype.h"
 #include "easylogging++.h"
 
 INITIALIZE_EASYLOGGINGPP
@@ -112,15 +113,13 @@ int main(int argc, char** argv) {
   }
 
   // TODO: Genotype should be imported  from input files
-  std::vector<Genotype*> genotypes;
-
   std::cout << "ID,Genotype";
   for (auto therapy_id = min_therapy_id; therapy_id <= max_therapy_id; therapy_id++) {
     std::cout << "," << *Model::CONFIG->therapy_db()[therapy_id];
   }
   std::cout << std::endl;
 
-  for (auto* p_genotype : genotypes) {
+  for (auto [g_id, p_genotype] : Model::CONFIG->genotype_db) {
     std::stringstream ss;
     ss << p_genotype->genotype_id << "," << p_genotype->get_aa_sequence() << ",";
 
