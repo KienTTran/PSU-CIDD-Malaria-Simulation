@@ -44,6 +44,8 @@ typedef std::map<EF50Key, double> efficacy_map;
 
 double getEfficacyForTherapy(Genotype* g, int therapy_id, Model* p_model);
 
+double getEfficacyForTherapy2(int therapy_id, Model* p_model);
+
 void create_cli_option(CLI::App& app);
 
 EF50Key get_EC50_key(SCTherapy* p_therapy, Genotype* p_genotype);
@@ -114,51 +116,57 @@ int main(int argc, char** argv) {
     max_therapy_id = therapies[1];
   }
 
-  int max_genotype_id { 0 }, min_genotype_id { 0 };
-  if (genotypes.empty()) {
-    min_genotype_id = 0;
-    max_genotype_id = Model::CONFIG->number_of_parasite_types() - 1;
-  } else if (genotypes.size() == 1) {
-    min_genotype_id = genotypes[0];
-    max_genotype_id = genotypes[0];
-  } else if (genotypes.size() == 2) {
-    min_genotype_id = genotypes[0];
-    max_genotype_id = genotypes[1];
-  }
+//  int max_genotype_id { 0 }, min_genotype_id { 0 };
+//  if (genotypes.empty()) {
+//    min_genotype_id = 0;
+//    max_genotype_id = Model::CONFIG->number_of_parasite_types() - 1;
+//  } else if (genotypes.size() == 1) {
+//    min_genotype_id = genotypes[0];
+//    max_genotype_id = genotypes[0];
+//  } else if (genotypes.size() == 2) {
+//    min_genotype_id = genotypes[0];
+//    max_genotype_id = genotypes[1];
+//  }
+//  std::cout << "ID,Genotype";
+//  for (auto therapy_id = min_therapy_id; therapy_id <= max_therapy_id; therapy_id++) {
+//    std::cout << "," << *Model::CONFIG->therapy_db()[therapy_id];
+//  }
+//  std::cout << std::endl;
+//  for (auto genotype_id = min_genotype_id; genotype_id <= max_genotype_id; genotype_id++) {
+//    std::stringstream ss;
+//    auto p_genotype = (*Model::CONFIG->genotype_db())[genotype_id];
+//    ss << p_genotype->genotype_id() << "," << p_genotype->get_gene_string() << ",";
+//
+//    for (auto therapy_id = min_therapy_id; therapy_id <= max_therapy_id; therapy_id++) {
+//      auto* therapy = dynamic_cast<SCTherapy*>(Model::CONFIG->therapy_db()[therapy_id]);
+////      double efficacy = getEfficacyForTherapy(p_genotype, therapy_id, p_model);
+//      double efficacy = getEfficacyForTherapy2(therapy_id, p_model);
+//      ss << efficacy << (therapy_id == max_therapy_id ? "" : ",");
+//
+////      EF50Key key = get_EC50_key(therapy, p_genotype);
+////      auto search = efficacies.find(key);
+////      if (search == efficacies.end()) {
+////        double efficacy = getEfficacyForTherapy(p_genotype, therapy_id, p_model);
+////        ss << efficacy << (therapy_id == max_therapy_id ? "" : ",");
+////        efficacies.insert(std::make_pair(key, efficacy));
+////      } else {
+////        ss << search->second << (therapy_id == max_therapy_id ? "" : ",");
+////      }
+//
+//      //      double efficacy = getEfficacyForTherapy(p_genotype, therapy_id, p_model);
+//      //      ss << efficacy << "\t";
+//    }
+//    std::cout << ss.str() << std::endl;
+//  }
 
-  std::cout << "ID,Genotype";
-  for (auto therapy_id = min_therapy_id; therapy_id <= max_therapy_id; therapy_id++) {
-    std::cout << "," << *Model::CONFIG->therapy_db()[therapy_id];
-  }
-  std::cout << std::endl;
-
-  for (auto genotype_id = min_genotype_id; genotype_id <= max_genotype_id; genotype_id++) {
+    std::cout << "Eff"<< std::endl;
     std::stringstream ss;
-    auto p_genotype = (*Model::CONFIG->genotype_db())[genotype_id];
-    ss << p_genotype->genotype_id() << "," << p_genotype->get_gene_string() << ",";
-
     for (auto therapy_id = min_therapy_id; therapy_id <= max_therapy_id; therapy_id++) {
-      auto* therapy = dynamic_cast<SCTherapy*>(Model::CONFIG->therapy_db()[therapy_id]);
-      double efficacy = getEfficacyForTherapy(p_genotype, therapy_id, p_model);
-      ss << efficacy << (therapy_id == max_therapy_id ? "" : ",");
-
-//      EF50Key key = get_EC50_key(therapy, p_genotype);
-//      auto search = efficacies.find(key);
-//      if (search == efficacies.end()) {
-//        double efficacy = getEfficacyForTherapy(p_genotype, therapy_id, p_model);
-//        ss << efficacy << (therapy_id == max_therapy_id ? "" : ",");
-//        efficacies.insert(std::make_pair(key, efficacy));
-//      } else {
-//        ss << search->second << (therapy_id == max_therapy_id ? "" : ",");
-//      }
-
-      //      double efficacy = getEfficacyForTherapy(p_genotype, therapy_id, p_model);
-      //      ss << efficacy << "\t";
+        auto* therapy = dynamic_cast<SCTherapy*>(Model::CONFIG->therapy_db()[therapy_id]);
+        double efficacy = getEfficacyForTherapy2(therapy_id, p_model);
+        ss << efficacy << (therapy_id == max_therapy_id ? "" : ",");
+        std::cout << ss.str() << std::endl;
     }
-    std::cout << ss.str() << std::endl;
-  }
-
-  //    std::cout << p_model->CONFIG->drug_db()->at(0)->age_group_specific_drug_concentration_sd()[0] << std::endl;
   delete p_model;
 
   return 0;
@@ -234,4 +242,61 @@ double getEfficacyForTherapy(Genotype* g, int therapy_id, Model* p_model) {
   p_model->population()->initialize();
 
   return result;
+}
+
+double getEfficacyForTherapy2(int therapy_id, Model* p_model) {
+    auto* mainTherapy = Model::CONFIG->therapy_db()[therapy_id];
+    dynamic_cast<SFTStrategy*>(Model::TREATMENT_STRATEGY)->get_therapy_list().clear();
+    dynamic_cast<SFTStrategy*>(Model::TREATMENT_STRATEGY)->add_therapy(mainTherapy);
+
+    // reset reporter
+    for (auto reporter : p_model->reporters()) {
+        delete reporter;
+    }
+
+    p_model->reporters().clear();
+
+    p_model->add_reporter(new PkPdReporter());
+    // p_model->add_reporter(new IndividualsFileReporter("out.txt"));
+
+    for (auto person : Model::POPULATION->all_persons()->vPerson()) {
+        int g_id = 0;
+        int infect_prob = Model::RANDOM->random_uniform_int(0, 140);
+        if(infect_prob < 103) {
+            g_id = 2;
+        }
+        else if(infect_prob < 124){
+            g_id = 4;
+        }
+        else{
+            g_id = 6;
+        }
+        auto* genotype = Model::CONFIG->genotype_db()->at(g_id);
+
+        auto density = Model::CONFIG->parasite_density_level().log_parasite_density_from_liver;
+        auto* blood_parasite = person->add_new_parasite_to_blood(genotype);
+
+        person->immune_system()->set_increase(true);
+        person->set_host_state(Person::EXPOSED);
+
+        blood_parasite->set_gametocyte_level(Model::CONFIG->gametocyte_level_full());
+        blood_parasite->set_last_update_log10_parasite_density(density);
+
+        ProgressToClinicalEvent::schedule_event(Model::SCHEDULER, person, blood_parasite, 0);
+    }
+
+    p_model->run();
+    const auto result = 1 - Model::DATA_COLLECTOR->blood_slide_prevalence_by_location()[0];
+
+    delete Model::POPULATION;
+    delete Model::SCHEDULER;
+    p_model->set_population(new Population(p_model));
+    Model::POPULATION = p_model->population();
+    p_model->set_scheduler(new Scheduler(p_model));
+    Model::SCHEDULER = p_model->scheduler();
+
+    p_model->scheduler()->initialize(Model::CONFIG->starting_date(), Model::CONFIG->total_time());
+    p_model->population()->initialize();
+
+    return result;
 }
