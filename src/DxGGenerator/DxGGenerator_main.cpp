@@ -62,59 +62,59 @@ double as_ec50 = -1.0;
 std::string input_file = "input_DxG.yml";
 
 inline double round(double val) {
-  if (val < 0) return ceil(val - 0.5);
-  return floor(val + 0.5);
+    if (val < 0) return ceil(val - 0.5);
+    return floor(val + 0.5);
 }
 
 /*
  *
  */
 int main(int argc, char** argv) {
-  CLI::App app { "PKPD model" };
-  create_cli_option(app);
-  CLI11_PARSE(app, argc, argv);
+    CLI::App app { "PKPD model" };
+    create_cli_option(app);
+    CLI11_PARSE(app, argc, argv);
 
-  // Turn off logger
-  el::Configurations default_conf;
-  default_conf.setToDefault();
-  default_conf.setGlobally(el::ConfigurationType::Enabled, "false");
-  el::Loggers::reconfigureLogger("default", default_conf);
-  START_EASYLOGGINGPP(argc, argv);
+    // Turn off logger
+    el::Configurations default_conf;
+    default_conf.setToDefault();
+    default_conf.setGlobally(el::ConfigurationType::Enabled, "false");
+    el::Loggers::reconfigureLogger("default", default_conf);
+    START_EASYLOGGINGPP(argc, argv);
 
-  auto* p_model = new Model();
-  p_model->set_config_filename(input_file);
-  p_model->initialize();
+    auto* p_model = new Model();
+    p_model->set_config_filename(input_file);
+    p_model->initialize();
 
-  if (as_iov != -1) {
-    p_model->CONFIG->as_iov() = as_iov;
-  }
-
-  if (as_iiv != -1) {
-    for (auto& sd : p_model->CONFIG->drug_db()->at(0)->age_group_specific_drug_concentration_sd()) {
-      sd = as_iiv;
+    if (as_iov != -1) {
+        p_model->CONFIG->as_iov() = as_iov;
     }
-  }
 
-  if (as_ec50 != -1) {
-    p_model->CONFIG->EC50_power_n_table()[0][0] = pow(as_ec50, p_model->CONFIG->drug_db()->at(0)->n());
-  }
+    if (as_iiv != -1) {
+        for (auto& sd : p_model->CONFIG->drug_db()->at(0)->age_group_specific_drug_concentration_sd()) {
+            sd = as_iiv;
+        }
+    }
 
-  // initialEC50Table
-  std::vector<std::vector<double>> EC50_table(Model::CONFIG->genotype_db()->size(),
-                                              std::vector<double>(Model::CONFIG->drug_db()->size(), 0));
-  std::cout << std::setprecision(5);
-  int max_therapy_id { 0 }, min_therapy_id { 0 };
+    if (as_ec50 != -1) {
+        p_model->CONFIG->EC50_power_n_table()[0][0] = pow(as_ec50, p_model->CONFIG->drug_db()->at(0)->n());
+    }
 
-  if (therapies.empty()) {
-    min_therapy_id = 0;
-    max_therapy_id = 0;
-  } else if (therapies.size() == 1) {
-    min_therapy_id = therapies[0];
-    max_therapy_id = therapies[0];
-  } else if (therapies.size() == 2) {
-    min_therapy_id = therapies[0];
-    max_therapy_id = therapies[1];
-  }
+    // initialEC50Table
+    std::vector<std::vector<double>> EC50_table(Model::CONFIG->genotype_db()->size(),
+                                                std::vector<double>(Model::CONFIG->drug_db()->size(), 0));
+    std::cout << std::setprecision(5);
+    int max_therapy_id { 0 }, min_therapy_id { 0 };
+
+    if (therapies.empty()) {
+        min_therapy_id = 0;
+        max_therapy_id = 0;
+    } else if (therapies.size() == 1) {
+        min_therapy_id = therapies[0];
+        max_therapy_id = therapies[0];
+    } else if (therapies.size() == 2) {
+        min_therapy_id = therapies[0];
+        max_therapy_id = therapies[1];
+    }
 
 //  int max_genotype_id { 0 }, min_genotype_id { 0 };
 //  if (genotypes.empty()) {
@@ -167,81 +167,81 @@ int main(int argc, char** argv) {
         ss << efficacy << (therapy_id == max_therapy_id ? "" : ",");
         std::cout << ss.str() << std::endl;
     }
-  delete p_model;
+    delete p_model;
 
-  return 0;
+    return 0;
 }
 
 EF50Key get_EC50_key(SCTherapy* p_therapy, Genotype* p_genotype) {
-  EF50Key result;
+    EF50Key result;
 
-  for (int j = 0; j < p_therapy->drug_ids.size(); ++j) {
-    //    drug_type->ec50_map()
-    auto ec50 = Model::CONFIG->EC50_power_n_table()[p_genotype->genotype_id()][p_therapy->drug_ids[j]];
-    //    std::cout << p_therapy->drug_ids[j] << "-" << ec50 << std::endl;
-    result.push_back(p_therapy->drug_ids[j]);
-    result.push_back(ec50);
-  }
+    for (int j = 0; j < p_therapy->drug_ids.size(); ++j) {
+        //    drug_type->ec50_map()
+        auto ec50 = Model::CONFIG->EC50_power_n_table()[p_genotype->genotype_id()][p_therapy->drug_ids[j]];
+        //    std::cout << p_therapy->drug_ids[j] << "-" << ec50 << std::endl;
+        result.push_back(p_therapy->drug_ids[j]);
+        result.push_back(ec50);
+    }
 
-  return result;
+    return result;
 }
 
 void create_cli_option(CLI::App& app) {
-  app.add_option("-t", therapies, "Get efficacies for range therapies [from to]");
+    app.add_option("-t", therapies, "Get efficacies for range therapies [from to]");
 
-  app.add_option("-g", genotypes, "Get efficacies for range genotypes [from to]");
+    app.add_option("-g", genotypes, "Get efficacies for range genotypes [from to]");
 
-  app.add_option("--iov", as_iov, "AS inter-occasion-variability");
-  app.add_option("--iiv", as_iiv, "AS inter-individual-variability");
-  app.add_option("--ec50", as_ec50, "EC50 for AS on C580 only");
+    app.add_option("--iov", as_iov, "AS inter-occasion-variability");
+    app.add_option("--iiv", as_iiv, "AS inter-individual-variability");
+    app.add_option("--ec50", as_ec50, "EC50 for AS on C580 only");
 
-  app.add_option("-i,--input", input_file, "Input filename for DxG");
+    app.add_option("-i,--input", input_file, "Input filename for DxG");
 }
 
 double getEfficacyForTherapy(Genotype* g, int therapy_id, Model* p_model) {
-  auto* mainTherapy = Model::CONFIG->therapy_db()[therapy_id];
-  dynamic_cast<SFTStrategy*>(Model::TREATMENT_STRATEGY)->get_therapy_list().clear();
-  dynamic_cast<SFTStrategy*>(Model::TREATMENT_STRATEGY)->add_therapy(mainTherapy);
+    auto* mainTherapy = Model::CONFIG->therapy_db()[therapy_id];
+    dynamic_cast<SFTStrategy*>(Model::TREATMENT_STRATEGY)->get_therapy_list().clear();
+    dynamic_cast<SFTStrategy*>(Model::TREATMENT_STRATEGY)->add_therapy(mainTherapy);
 
-  // reset reporter
-  for (auto reporter : p_model->reporters()) {
-    delete reporter;
-  }
+    // reset reporter
+    for (auto reporter : p_model->reporters()) {
+        delete reporter;
+    }
 
-  p_model->reporters().clear();
+    p_model->reporters().clear();
 
-  p_model->add_reporter(new PkPdReporter());
-  // p_model->add_reporter(new IndividualsFileReporter("out.txt"));
+    p_model->add_reporter(new PkPdReporter());
+    // p_model->add_reporter(new IndividualsFileReporter("out.txt"));
 
-  auto* genotype = Model::CONFIG->genotype_db()->at(g->genotype_id());
+    auto* genotype = Model::CONFIG->genotype_db()->at(g->genotype_id());
 
-  for (auto person : Model::POPULATION->all_persons()->vPerson()) {
-    auto density = Model::CONFIG->parasite_density_level().log_parasite_density_from_liver;
-    auto* blood_parasite = person->add_new_parasite_to_blood(genotype);
+    for (auto person : Model::POPULATION->all_persons()->vPerson()) {
+        auto density = Model::CONFIG->parasite_density_level().log_parasite_density_from_liver;
+        auto* blood_parasite = person->add_new_parasite_to_blood(genotype);
 
-    person->immune_system()->set_increase(true);
-    person->set_host_state(Person::EXPOSED);
+        person->immune_system()->set_increase(true);
+        person->set_host_state(Person::EXPOSED);
 
-    blood_parasite->set_gametocyte_level(Model::CONFIG->gametocyte_level_full());
-    blood_parasite->set_last_update_log10_parasite_density(density);
+        blood_parasite->set_gametocyte_level(Model::CONFIG->gametocyte_level_full());
+        blood_parasite->set_last_update_log10_parasite_density(density);
 
-    ProgressToClinicalEvent::schedule_event(Model::SCHEDULER, person, blood_parasite, 0);
-  }
+        ProgressToClinicalEvent::schedule_event(Model::SCHEDULER, person, blood_parasite, 0);
+    }
 
-  p_model->run();
-  const auto result = 1 - Model::DATA_COLLECTOR->blood_slide_prevalence_by_location()[0];
+    p_model->run();
+    const auto result = 1 - Model::DATA_COLLECTOR->blood_slide_prevalence_by_location()[0];
 
-  delete Model::POPULATION;
-  delete Model::SCHEDULER;
-  p_model->set_population(new Population(p_model));
-  Model::POPULATION = p_model->population();
-  p_model->set_scheduler(new Scheduler(p_model));
-  Model::SCHEDULER = p_model->scheduler();
+    delete Model::POPULATION;
+    delete Model::SCHEDULER;
+    p_model->set_population(new Population(p_model));
+    Model::POPULATION = p_model->population();
+    p_model->set_scheduler(new Scheduler(p_model));
+    Model::SCHEDULER = p_model->scheduler();
 
-  p_model->scheduler()->initialize(Model::CONFIG->starting_date(), Model::CONFIG->total_time());
-  p_model->population()->initialize();
+    p_model->scheduler()->initialize(Model::CONFIG->starting_date(), Model::CONFIG->total_time());
+    p_model->population()->initialize();
 
-  return result;
+    return result;
 }
 
 double getEfficacyForTherapy2(int therapy_id, Model* p_model) {
@@ -261,15 +261,15 @@ double getEfficacyForTherapy2(int therapy_id, Model* p_model) {
 
     for (auto person : Model::POPULATION->all_persons()->vPerson()) {
         int g_id = 0;
-        int infect_prob = Model::RANDOM->random_uniform_int(0, 140);
-        if(infect_prob < 103) {
-            g_id = 2;
+        int infect_prob = Model::RANDOM->random_uniform_int(0, 104);
+        if(infect_prob < 74) {
+            g_id = 6;
         }
-        else if(infect_prob < 124){
+        else if(infect_prob < 91){
             g_id = 4;
         }
         else{
-            g_id = 6;
+            g_id = 0;
         }
         auto* genotype = Model::CONFIG->genotype_db()->at(g_id);
 
