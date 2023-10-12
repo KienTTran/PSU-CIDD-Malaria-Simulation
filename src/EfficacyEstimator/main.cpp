@@ -82,12 +82,12 @@ int main(int argc, char** argv) {
     dt->set_maximum_parasite_killing_rate(input.k_max[i]);
     dt->set_n(input.slope[i]);
     // TODO: add app arguments later
-    dt->set_p_mutation(0.0);
+//    dt->set_p_mutation(0.0);
     dt->set_k(4);
     for (double& mda:dt->age_specific_drug_absorption()) {
       mda = input.mean_drug_absorption[i];
     }
-    Model::CONFIG->EC50_power_n_table()[0][i + start_drug_id] = pow(input.EC50[i], dt->n());
+//    Model::CONFIG->EC50_power_n_table()[0][i + start_drug_id] = pow(input.EC50[i], dt->n());
   }
 
   // ======= override therapy 0 ==========
@@ -110,7 +110,7 @@ int main(int argc, char** argv) {
   p_model->add_reporter(new PkPdReporter(&input));
 
   // =========infect population with genotype 0================
-  auto* genotype = Model::CONFIG->genotype_db.at(0);
+  auto* genotype = Model::CONFIG->genotype_db.get_genotype("||||NY1||KTHFI,x||||||FNCMYRIPRPCA|1", Model::CONFIG);
 
   for (auto person : Model::POPULATION->all_persons()->vPerson()) {
     auto density = Model::CONFIG->parasite_density_level().log_parasite_density_from_liver;
