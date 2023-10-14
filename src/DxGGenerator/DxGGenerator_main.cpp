@@ -42,13 +42,14 @@ INITIALIZE_EASYLOGGINGPP
 
 using namespace std;
 
-double getEfficacyForTherapy(Genotype* g, int therapy_id, Model* p_model);
+double getEfficacyForTherapy(Genotype* g, Model* p_model, int therapy_id);
 
 void create_cli_option(CLI::App& app);
 
 // efficacy_map efficacies;
 
 std::vector<int> therapies;
+std::vector<int> therapy_list;
 std::vector<std::string> genotypes;
 
 double as_iov = -1.0;
@@ -98,24 +99,32 @@ int main(int argc, char** argv) {
     std::cout << std::setprecision(5);
     int max_therapy_id { 0 }, min_therapy_id { 0 };
 
-    if (therapies.empty()) {
-        min_therapy_id = 0;
-        max_therapy_id = 0;
-    } else if (therapies.size() == 1) {
-        min_therapy_id = therapies[0];
-        max_therapy_id = therapies[0];
-    } else if (therapies.size() == 2) {
-        min_therapy_id = therapies[0];
-        max_therapy_id = therapies[1];
+    if(therapy_list.empty()){
+        if (therapies.empty()) {
+            min_therapy_id = 0;
+            max_therapy_id = 0;
+        } else if (therapies.size() == 1) {
+            min_therapy_id = therapies[0];
+            max_therapy_id = therapies[0];
+        } else if (therapies.size() == 2) {
+            min_therapy_id = therapies[0];
+            max_therapy_id = therapies[1];
+        }
     }
 
     // TODO: Genotype should be imported  from input files
-    std::cout << "ID,Genotype";
-    for (auto therapy_id = min_therapy_id; therapy_id <= max_therapy_id; therapy_id++) {
-        std::cout << "," << *Model::CONFIG->therapy_db()[therapy_id];
-    }
+    std::cout << "ID\tGenotype";
+    if(therapy_list.empty())
+        for (auto therapy_id = min_therapy_id; therapy_id <= max_therapy_id; therapy_id++) {
+            std::cout << "\t" << *Model::CONFIG->therapy_db()[therapy_id];
+        }
+    else
+        for (auto therapy_id : therapy_list) {
+            std::cout << "\t" << *Model::CONFIG->therapy_db()[therapy_id];
+        }
     std::cout << std::endl;
 
+    Model::CONFIG->genotype_db.clear();
     std::vector<Genotype*> genotype_inputs;
     for(auto genotype_str : genotypes){
         genotype_inputs.push_back(Model::CONFIG->genotype_db.get_genotype(genotype_str,p_model->CONFIG));
@@ -123,11 +132,19 @@ int main(int argc, char** argv) {
 
     for (auto [g_id, p_genotype] : Model::CONFIG->genotype_db) {
         std::stringstream ss;
-        ss << p_genotype->genotype_id << "," << p_genotype->get_aa_sequence() << ",";
+        ss << p_genotype->genotype_id << "\t" << p_genotype->get_aa_sequence() << "\t";
 
-        for (auto therapy_id = min_therapy_id; therapy_id <= max_therapy_id; therapy_id++) {
-            double efficacy = getEfficacyForTherapy(p_genotype, therapy_id, p_model);
-            ss << efficacy << (therapy_id == max_therapy_id ? "" : ",");
+        if(therapy_list.empty()){
+            for (auto therapy_id = min_therapy_id; therapy_id <= max_therapy_id; therapy_id++) {
+                double efficacy = getEfficacyForTherapy(p_genotype, p_model, therapy_id);
+                ss << efficacy << (therapy_id == max_therapy_id ? "" : "\t");
+            }
+        }
+        else{
+            for (int t_index = 0; t_index < therapy_list.size(); t_index++) {
+                double efficacy = getEfficacyForTherapy(p_genotype, p_model, therapy_list[t_index]);
+                ss << efficacy << (therapy_list[t_index] == therapy_list.size() - 1 ? "" : "\t");
+            }
         }
         std::cout << ss.str() << std::endl;
     }
@@ -140,6 +157,7 @@ int main(int argc, char** argv) {
 void create_cli_option(CLI::App& app) {
     app.add_option("-g", genotypes, "Get efficacies for range genotypes [0 1 2 ...]");
     app.add_option("-t", therapies, "Get efficacies for range therapies [from to]");
+    app.add_option("-p", therapy_list, "Get efficacies for list of therapies [0 1 2 ...]");
     app.add_option("--iov", as_iov, "AS inter-occasion-variability");
     app.add_option("--iiv", as_iiv, "AS inter-individual-variability");
     app.add_option("--ec50", as_ec50, "EC50 for AS on C580 only");
@@ -147,7 +165,7 @@ void create_cli_option(CLI::App& app) {
     app.add_option("-i,--input", input_file, "Input filename for DxG");
 }
 
-double getEfficacyForTherapy(Genotype* g, int therapy_id, Model* p_model) {
+double getEfficacyForTherapy(Genotype* g, Model* p_model, int therapy_id) {
     auto* mainTherapy = Model::CONFIG->therapy_db()[therapy_id];
     dynamic_cast<SFTStrategy*>(Model::TREATMENT_STRATEGY)->get_therapy_list().clear();
     dynamic_cast<SFTStrategy*>(Model::TREATMENT_STRATEGY)->add_therapy(mainTherapy);

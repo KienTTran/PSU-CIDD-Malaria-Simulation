@@ -20,7 +20,7 @@ ending_date: 1990/3/2
 # the day at which the simulation's reporting functionality begins collecting data for
 # EIR, # of clinical episodes, # death , # of treatment, #TF by location,...
 # for monthly data display
-start_collect_data_day: 365
+start_collect_data_day: 0
 
 # the day at which the MDC will begin collecting NTF, AMU, UTL
 start_of_comparison_period: 2019/12/1
@@ -171,7 +171,7 @@ circulation_info:
     mean: 5
     sd: 10
 
-mutation_mask: "||||111||10000,0||||||000000000010|1"
+mutation_mask: "||||000||00000,0||||||000000000010|0"
 
 # the appearance of gene should be in order
 pf_genotype_info:
