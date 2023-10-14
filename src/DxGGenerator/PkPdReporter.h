@@ -11,6 +11,10 @@
 #include "Core/PropertyMacro.h"
 #include "Core/TypeDef.h"
 #include "Reporters/Reporter.h"
+#include <sstream>
+#include <fstream>
+
+class AppInput;
 
 class PkPdReporter : public Reporter {
  DISALLOW_COPY_AND_ASSIGN(PkPdReporter)
@@ -18,9 +22,12 @@ class PkPdReporter : public Reporter {
  PROPERTY_REF(DoubleVector, yesterday_density)
 
  public:
-  PkPdReporter();
+    std::stringstream ss;
+    const std::string group_sep = "-1111\t";
+    const std::string sep = ",";
 
-  //    PkPdReporter(const PkPdReporter& orig);
+    PkPdReporter(AppInput* appInput=nullptr);
+
   virtual ~PkPdReporter();
 
   void initialize() override;
@@ -36,6 +43,8 @@ class PkPdReporter : public Reporter {
   void monthly_report() override;
 
  private:
+    AppInput* appInput{nullptr};
+    std::ofstream outputFStream;
 
 };
 

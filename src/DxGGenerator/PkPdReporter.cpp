@@ -5,6 +5,7 @@
  * Created on October 29, 2014, 12:56 PM
  */
 
+#include "AppInput.h"
 #include "PkPdReporter.h"
 #include "Model.h"
 #include "Core/Random.h"
@@ -16,12 +17,19 @@
 #include "Population/ClonalParasitePopulation.h"
 #include "Population/SingleHostClonalParasitePopulations.h"
 
-PkPdReporter::PkPdReporter() {}
+PkPdReporter::PkPdReporter(AppInput* appInput) : appInput { appInput } {
+  if (appInput && !appInput->output_file.empty()) {
+    outputFStream.open(appInput->output_file);
+  }
+}
 
-PkPdReporter::~PkPdReporter() = default;
+PkPdReporter::~PkPdReporter(){
+  if (outputFStream.is_open()) {
+    outputFStream.close();
+  }
+}
 
 void PkPdReporter::initialize() {
-  yesterday_density_.clear();
 }
 
 void PkPdReporter::before_run() {
@@ -29,12 +37,21 @@ void PkPdReporter::before_run() {
 }
 
 void PkPdReporter::begin_time_step() {
-  // Model::DATA_COLLECTOR->perform_population_statistic();
-  // std::cout << Model::SCHEDULER->current_time() << "\t";
-  // std::cout << Model::DATA_COLLECTOR->blood_slide_prevalence_by_location()[0]*100 << "\t";
-  // std::cout << Model::DATA_COLLECTOR->number_of_positive_by_location()[0]*100 / static_cast<double>(Model::DATA_COLLECTOR->popsize_by_location()[0]) << "\t";
-  // std::cout << Model::DATA_COLLECTOR->current_TF_by_location()[0] << "\t";
-  // std::cout << std::endl;
+  ss << Model::SCHEDULER->current_time();
+
+  // parasiteamia profile
+
+  for (int i = 0; i < Model::POPULATION->all_persons()->vPerson().size(); i++) {
+    auto p_person = Model::POPULATION->all_persons()->vPerson()[i];
+    if (p_person->all_clonal_parasite_populations()->size() > 0) {
+      ss << sep << p_person->all_clonal_parasite_populations()->parasites()->at(0)->get_log10_infectious_density();
+    } else {
+      ss << sep << Model::CONFIG->parasite_density_level().log_parasite_density_cured;
+    }
+  }
+
+  outputFStream << ss.str() << std::endl;
+  ss.str("");
 }
 
 void PkPdReporter::after_time_step() {
