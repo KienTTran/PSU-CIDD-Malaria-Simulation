@@ -169,7 +169,7 @@ int main(int argc, char** argv) {
 }
 
 void create_cli_option(CLI::App& app, AppInput& input) {
-    app.add_option("-g", input.genotypes, "Get efficacies for range genotypes [0 1 2 ...]");
+    app.add_option("-g", input.genotypes, "Genotype patterns for population (3 only) [WT KEL1 KEL1/PL1]");
     app.add_option("-t", input.therapies, "Get efficacies for range therapies [from to]");
     app.add_option("-p", input.therapy_list, "Get efficacies for list of therapies [0 1 2 ...]");
     app.add_option("-c", input.is_crt_calibration, "Enable pfcrt calibration");
@@ -252,15 +252,15 @@ double getEfficacyForTherapyCRT(Model* p_model, AppInput& input, int therapy_id)
 
     for (auto person : Model::POPULATION->all_persons()->vPerson()) {
         std::string g_str = "";
-        int infect_prob = Model::RANDOM->random_uniform_int(0, 104);
+        int infect_prob = Model::RANDOM->random_uniform_int(1, 104);
         if(infect_prob < 74) {
-            g_str = "||||NY1||KTHFI,x||||||FNCMYRIPRPYA|2";
+            g_str = input.genotypes[2];
         }
         else if(infect_prob < 91){
-            g_str = "||||NY1||KTHFI,x||||||FNCMYRIPRPYA|1";
+            g_str = input.genotypes[1];
         }
         else{
-            g_str = "||||NY1||KTHFI,x||||||FNCMYRIPRPCA|1";
+            g_str = input.genotypes[0];
         }
         auto* genotype = Model::CONFIG->genotype_db.get_genotype(g_str,p_model->CONFIG);
 
