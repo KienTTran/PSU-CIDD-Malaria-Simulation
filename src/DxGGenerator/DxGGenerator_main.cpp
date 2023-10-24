@@ -122,17 +122,21 @@ int main(int argc, char** argv) {
     std::cout << std::endl;
 
     if(input.is_crt_calibration){
+        if(input.genotypes.empty()){
+            std::cout << "List of population genotypes is empty" << std::endl;
+            exit(0);
+        }
         std::stringstream ss;
         if(input.therapy_list.empty()){
             for (auto therapy_id = min_therapy_id; therapy_id <= max_therapy_id; therapy_id++) {
-                double efficacy = getEfficacyForTherapyCRT(p_model, input, therapy_id);
-                ss << efficacy << (therapy_id == max_therapy_id ? "" : "\t");
+              double efficacy = getEfficacyForTherapyCRT(p_model, input, therapy_id);
+              ss << efficacy << (therapy_id == max_therapy_id ? "" : "\t");
             }
         }
         else{
             for (int t_index = 0; t_index < input.therapy_list.size(); t_index++) {
-                double efficacy = getEfficacyForTherapyCRT(p_model, input, input.therapy_list[t_index]);
-                ss << efficacy << (input.therapy_list[t_index] == input.therapy_list.size() - 1 ? "" : "\t");
+              double efficacy = getEfficacyForTherapyCRT(p_model, input, input.therapy_list[t_index]);
+              ss << efficacy << (input.therapy_list[t_index] == input.therapy_list.size() - 1 ? "" : "\t");
             }
         }
         std::cout << ss.str() << std::endl;
@@ -171,13 +175,12 @@ int main(int argc, char** argv) {
 void create_cli_option(CLI::App& app, AppInput& input) {
     app.add_option("-g", input.genotypes, "Genotype patterns for population (3 only) [WT KEL1 KEL1/PL1]");
     app.add_option("-t", input.therapies, "Get efficacies for range therapies [from to]");
-    app.add_option("-p", input.therapy_list, "Get efficacies for list of therapies [0 1 2 ...]");
-    app.add_option("-c", input.is_crt_calibration, "Enable pfcrt calibration");
-    app.add_option("-f", input.output_file, "Output density to file");
     app.add_option("--iov", input.as_iov, "AS inter-occasion-variability");
     app.add_option("--iiv", input.as_iiv, "AS inter-individual-variability");
     app.add_option("--ec50", input.as_ec50, "EC50 for AS on C580 only");
-
+    app.add_option("--cc", input.is_crt_calibration, "Enable pfcrt calibration");
+    app.add_option("--of", input.output_file, "Output density to file");
+    app.add_option("--tl", input.therapy_list, "Get efficacies for list of therapies [0 1 2 ...]");
     app.add_option("-i", input.input_file, "Input filename for DxG");
 }
 
@@ -252,20 +255,19 @@ double getEfficacyForTherapyCRT(Model* p_model, AppInput& input, int therapy_id)
 
     for (auto person : Model::POPULATION->all_persons()->vPerson()) {
         std::string g_str = "";
-        int infect_prob = Model::RANDOM->random_uniform_int(1, 104);
-        if(infect_prob < 74) {
+        int infect_prob = Model::RANDOM->random_uniform_int(0, 99);
+        if(infect_prob < 73) {
             g_str = input.genotypes[2];
         }
-        else if(infect_prob < 91){
+        else if(infect_prob < 90){
             g_str = input.genotypes[1];
         }
         else{
             g_str = input.genotypes[0];
         }
         auto* genotype = Model::CONFIG->genotype_db.get_genotype(g_str,p_model->CONFIG);
-
-        auto density = Model::CONFIG->parasite_density_level().log_parasite_density_from_liver;
         auto* blood_parasite = person->add_new_parasite_to_blood(genotype);
+        auto density = Model::CONFIG->parasite_density_level().log_parasite_density_from_liver;
 
         person->immune_system()->set_increase(true);
         person->set_host_state(Person::EXPOSED);
