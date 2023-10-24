@@ -3,7 +3,7 @@
  *
  * Main entry point for the simulation, reads the CLI and starts the model.
  */
-#include <fmt/format.h>
+//#include <fmt/format.h>
 
 #include <args.hxx>
 #include <iostream>
@@ -111,10 +111,10 @@ void handle_cli(Model *model, int argc, char **argv) {
     std::cout << e.what() << parser;
     exit(EXIT_SUCCESS);
   } catch (const args::ParseError &e) {
-    LOG(ERROR) << fmt::format("{0} {1}", e.what(), parser);
+//    LOG(ERROR) << fmt::format("{0} {1}", e.what(), parser);
     exit(EXIT_FAILURE);
   } catch (const args::ValidationError &e) {
-    LOG(ERROR) << fmt::format("{0} {1}", e.what(), parser);
+//    LOG(ERROR) << fmt::format("{0} {1}", e.what(), parser);
     exit(EXIT_FAILURE);
   }
 
