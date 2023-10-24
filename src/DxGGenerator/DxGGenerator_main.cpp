@@ -254,12 +254,13 @@ double getEfficacyForTherapyCRT(Model* p_model, AppInput& input, int therapy_id)
     }
 
     for (auto person : Model::POPULATION->all_persons()->vPerson()) {
+        //The genotype distribution is from table 2 in http://dx.doi.org/10.1016/S1473-3099(19)30391-3
         std::string g_str = "";
-        int infect_prob = Model::RANDOM->random_uniform_int(0, 99);
-        if(infect_prob < 73) {
+        int infect_prob = Model::RANDOM->random_uniform_int(1, 100);
+        if(infect_prob < 74) {
             g_str = input.genotypes[2];
         }
-        else if(infect_prob < 90){
+        else if(infect_prob < 91){
             g_str = input.genotypes[1];
         }
         else{
