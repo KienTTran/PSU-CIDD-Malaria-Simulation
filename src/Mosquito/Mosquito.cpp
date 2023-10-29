@@ -40,7 +40,7 @@ void Mosquito::initialize(Config *config) {
     // add min ec50 of each drug to db
     for (int drug_id = 0; drug_id < config->drug_db()->size(); drug_id++) {
         drug_id_min_ec50[drug_id] = pow(config->drug_db()->at(drug_id)->base_EC50, config->drug_db()->at(drug_id)->n());
-        printf("Drug id: %d base_EC50: %.3f n: %.1f min_EC50: %.10f\n", drug_id,
+        LOG(INFO) << fmt::format("Drug id: {} base_EC50: {} n: {} min_EC50: {}",drug_id,
                config->drug_db()->at(drug_id)->base_EC50, config->drug_db()->at(drug_id)->n(),
                drug_id_min_ec50[drug_id]);
     }
