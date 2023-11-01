@@ -16,6 +16,9 @@
 #include "Population/Person.h"
 #include "Population/ClonalParasitePopulation.h"
 #include "Population/SingleHostClonalParasitePopulations.h"
+#include "Population/DrugsInBlood.h"
+#include "Therapies/Drug.h"
+#include "Population/ImmuneSystem.h"
 
 PkPdReporter::PkPdReporter(AppInput* appInput) : appInput { appInput } {
   if (appInput && !appInput->output_file.empty()) {
@@ -49,6 +52,44 @@ void PkPdReporter::begin_time_step() {
       ss << sep << Model::CONFIG->parasite_density_level().log_parasite_density_cured;
     }
   }
+
+//  auto start_drug_id = appInput->is_art ? 0 : 1;
+//  // drug concentrate profile
+//  for (int drug_id = start_drug_id; drug_id < appInput->number_of_drugs_in_combination + start_drug_id; drug_id++) {
+//    for (int i = 0; i < Model::POPULATION->all_persons()->vPerson().size(); i++) {
+//      auto p_person = Model::POPULATION->all_persons()->vPerson()[i];
+//      bool found { false };
+//      for (const auto& [did, active_drug] : *(p_person->drugs_in_blood()->drugs())) {
+//        if (drug_id == did) {
+//          found = true;
+//          ss << sep << active_drug->last_update_value();
+//          break;
+//        }
+//      }
+//      if (!found) {
+//        ss << sep << 0;
+//      }
+//    }
+//  }
+//
+//  // drug killing profile
+//  for (int drug_id = start_drug_id; drug_id < appInput->number_of_drugs_in_combination + start_drug_id; drug_id++) {
+//    for (int i = 0; i < Model::POPULATION->all_persons()->vPerson().size(); i++) {
+//      auto p_person = Model::POPULATION->all_persons()->vPerson()[i];
+//
+//      bool found { false };
+//      for (const auto& [did, active_drug] : *(p_person->drugs_in_blood()->drugs())) {
+//        if (drug_id == did) {
+//          found = true;
+//          ss << sep << active_drug->get_parasite_killing_rate(0);
+//          break;
+//        }
+//      }
+//      if (!found) {
+//        ss << sep << 0;
+//      }
+//    }
+//  }
 
   outputFStream << ss.str() << std::endl;
   ss.str("");

@@ -99,7 +99,7 @@ void handle_cli(Model *model, int argc, char **argv) {
   args::ValueFlag<int> cluster_job_number(commands, "int", "Cluster job number. \nEx: MaSim -j 1", { 'j' });
   args::ValueFlag<std::string> reporter(commands, "string", "Reporter Type. \nEx: MaSim -r mmc", { 'r' });
   args::ValueFlag<std::string> output_path(
-      commands, "string", "Path for output files, default is current directory. \nEx: MaSim -p out", { 'o' });
+      commands, "string", "Path for output files, default is current directory. \nEx: MaSim -o out", { 'o' });
 
   // Allow the --v=[int] flag to be processed by START_EASYLOGGINGPP
   args::Group arguments(parser, "verbosity", args::Group::Validators::DontCare, args::Options::Global);
@@ -111,10 +111,10 @@ void handle_cli(Model *model, int argc, char **argv) {
     std::cout << e.what() << parser;
     exit(EXIT_SUCCESS);
   } catch (const args::ParseError &e) {
-//    LOG(ERROR) << fmt::format("{0} {1}", e.what(), parser);
+    std::cout << e.what() << parser << std::endl;
     exit(EXIT_FAILURE);
   } catch (const args::ValidationError &e) {
-//    LOG(ERROR) << fmt::format("{0} {1}", e.what(), parser);
+    std::cout << e.what() << parser << std::endl;
     exit(EXIT_FAILURE);
   }
 

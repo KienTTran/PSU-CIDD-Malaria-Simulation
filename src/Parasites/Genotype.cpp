@@ -67,8 +67,8 @@ bool Genotype::is_valid(const PfGeneInfo &gene_info) {
 
       // check same size with aa postions info
       if (gene_info.aa_position_infos.size() != max_aa_pos) {
-        std::cout << pf_genotype_str[chromosome_i][gene_i] << std::endl;
-        std::cout << gene_info.aa_position_infos.size() << std::endl;
+        std::cout << "Error " << pf_genotype_str[chromosome_i][gene_i] << std::endl;
+        std::cout << "Error " << gene_info.aa_position_infos.size() << std::endl;
         return false;
       }
 
@@ -168,6 +168,9 @@ void Genotype::calculate_EC50_power_n(const PfGeneInfo &gene_info, DrugDatabase 
                 multiplicative_effect_factor =
                     res_gene_info.multiplicative_effect_on_EC50_for_2_or_more_mutations[drug_id];
               }
+              LOG(TRACE) << aa_sequence << " drug_id: " << drug_id << " chr: " << chromosome_i + 1 << " gene: " << gene_i << " aa: " << aa_i
+                        << " EC50_power_n: " << EC50_power_n[drug_id] << " * multiplicative_effect_factor: " << multiplicative_effect_factor
+                        << "  = " << EC50_power_n[drug_id]*multiplicative_effect_factor;
             }
             EC50_power_n[drug_id] *= multiplicative_effect_factor;
           }
@@ -181,6 +184,9 @@ void Genotype::calculate_EC50_power_n(const PfGeneInfo &gene_info, DrugDatabase 
           for (const auto &[drug_id, dt] : *drug_db) {
             if (res_gene_info.cnv_multiplicative_effect_on_EC50.find(drug_id)
                 != res_gene_info.cnv_multiplicative_effect_on_EC50.end()) {
+              LOG(TRACE) << aa_sequence << " drug_id: " << drug_id << " chr: " << chromosome_i + 1 << " gene: " << gene_i
+                        << " EC50_power_n: " << EC50_power_n[drug_id] << " * multiplicative_effect_factor: " << res_gene_info.cnv_multiplicative_effect_on_EC50[drug_id][copy_number - 1]
+                        << "  = " << EC50_power_n[drug_id]*res_gene_info.cnv_multiplicative_effect_on_EC50[drug_id][copy_number - 1];
               EC50_power_n[drug_id] *= res_gene_info.cnv_multiplicative_effect_on_EC50[drug_id][copy_number - 1];
             }
           }

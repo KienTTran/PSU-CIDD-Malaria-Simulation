@@ -43,6 +43,7 @@ INITIALIZE_EASYLOGGINGPP
 
 using namespace std;
 
+bool validate_config_for_ee(AppInput& input);
 double getEfficacyForTherapy(Genotype* g, Model* p_model,AppInput& input, int therapy_id);
 double getEfficacyForTherapyCRT(Model* p_model,AppInput& input, int therapy_id);
 
@@ -72,7 +73,7 @@ int main(int argc, char** argv) {
     el::Loggers::reconfigureLogger("default", default_conf);
     START_EASYLOGGINGPP(argc, argv);
 
-    auto* p_model = new Model();
+    auto p_model = std::make_unique<Model>();
     p_model->set_config_filename(input.input_file);
     p_model->initialize();
 
@@ -108,19 +109,6 @@ int main(int argc, char** argv) {
 
     // TODO: Genotype should be imported  from input files
 
-    if(!input.is_crt_calibration){
-        std::cout << "ID\tGenotype\t";
-    }
-    if(input.therapy_list.empty())
-        for (auto therapy_id = min_therapy_id; therapy_id <= max_therapy_id; therapy_id++) {
-            std::cout << *Model::CONFIG->therapy_db()[therapy_id] << "\t" ;
-        }
-    else
-        for (auto therapy_id : input.therapy_list) {
-            std::cout << *Model::CONFIG->therapy_db()[therapy_id] << "\t";
-        }
-    std::cout << std::endl;
-
     if(input.is_crt_calibration){
         if(input.genotypes.empty()){
             std::cout << "List of population genotypes is empty" << std::endl;
@@ -129,19 +117,119 @@ int main(int argc, char** argv) {
         std::stringstream ss;
         if(input.therapy_list.empty()){
             for (auto therapy_id = min_therapy_id; therapy_id <= max_therapy_id; therapy_id++) {
-              double efficacy = getEfficacyForTherapyCRT(p_model, input, therapy_id);
+              std::cout << *Model::CONFIG->therapy_db()[therapy_id] << "\t" ;
+            }
+        }
+        else{
+            for (auto therapy_id : input.therapy_list) {
+              std::cout << *Model::CONFIG->therapy_db()[therapy_id] << "\t";
+            }
+        }
+        std::cout << std::endl;
+        if(input.therapy_list.empty()){
+            for (auto therapy_id = min_therapy_id; therapy_id <= max_therapy_id; therapy_id++) {
+              double efficacy = getEfficacyForTherapyCRT(p_model.get(), input, therapy_id);
               ss << efficacy << (therapy_id == max_therapy_id ? "" : "\t");
             }
         }
         else{
             for (int t_index = 0; t_index < input.therapy_list.size(); t_index++) {
-              double efficacy = getEfficacyForTherapyCRT(p_model, input, input.therapy_list[t_index]);
+              double efficacy = getEfficacyForTherapyCRT(p_model.get(), input, input.therapy_list[t_index]);
               ss << efficacy << (input.therapy_list[t_index] == input.therapy_list.size() - 1 ? "" : "\t");
             }
         }
         std::cout << ss.str() << std::endl;
     }
+    else if(input.is_ee_calibration){
+        if (!validate_config_for_ee(input)){
+            std::cout << "Parameters for Efficacy Estimator are not correct" << std::endl;
+            exit(0);
+        }
+        else if(input.genotypes.size() > 1){
+              std::cout << "Only 1 genotype is accepted using Efficacy Estimator" << std::endl;
+              exit(0);
+        }
+        else{
+            // ==== override drug type info ========
+            auto start_drug_id = input.is_art ? 0 : 1;
+            for (int i = 0; i < input.number_of_drugs_in_combination; i++) {
+              auto* dt = Model::CONFIG->drug_db()->at(i + start_drug_id);
+              dt->set_name(fmt::format("D{}", i));
+              dt->set_drug_half_life(input.half_life[i]);
+              dt->set_maximum_parasite_killing_rate(input.k_max[i]);
+              dt->set_n(input.slope[i]);
+              // TODO: add app arguments later
+              //    dt->set_p_mutation(0.0);
+              dt->set_k(4);
+              for (double& mda:dt->age_specific_drug_absorption()) {
+                mda = input.mean_drug_absorption[i];
+              }
+              //    Model::CONFIG->EC50_power_n_table()[0][i + start_drug_id] = pow(input.EC50[i], dt->n());
+            }
+
+            // ======= override therapy 0 ==========
+            auto scTherapy = dynamic_cast<SCTherapy*>(Model::CONFIG->therapy_db()[0]);
+            scTherapy->drug_ids.clear();
+            scTherapy->dosing_day.clear();
+
+            for (int i = 0; i < input.number_of_drugs_in_combination; i++) {
+              scTherapy->drug_ids.push_back(i + start_drug_id);
+              scTherapy->dosing_day.push_back(input.dosing_days[i]);
+            }
+
+            // ==========reset and override reporters ==================
+            for (auto reporter : p_model->reporters()) {
+              delete reporter;
+            }
+            p_model->reporters().clear();
+            p_model->add_reporter(new PkPdReporter(&input));
+
+            Model::CONFIG->genotype_db.clear();
+            std::vector<Genotype*> genotype_inputs;
+            for(auto genotype_str : input.genotypes){
+              genotype_inputs.push_back(Model::CONFIG->genotype_db.get_genotype(genotype_str,p_model->CONFIG));
+            }
+
+            // =========infect population with genotype 0================
+            auto* genotype = Model::CONFIG->genotype_db.get_genotype(genotype_inputs.front()->aa_sequence,p_model->CONFIG);
+
+            for (auto person : Model::POPULATION->all_persons()->vPerson()) {
+              auto density = Model::CONFIG->parasite_density_level().log_parasite_density_from_liver;
+              auto* blood_parasite = person->add_new_parasite_to_blood(genotype);
+
+              person->immune_system()->set_increase(true);
+              person->set_host_state(Person::EXPOSED);
+
+              blood_parasite->set_gametocyte_level(Model::CONFIG->gametocyte_level_full());
+              blood_parasite->set_last_update_log10_parasite_density(density);
+
+              ProgressToClinicalEvent::schedule_event(Model::SCHEDULER, person, blood_parasite, 0);
+            }
+
+            // run model
+            p_model->run();
+
+            const auto result = 1 - Model::DATA_COLLECTOR->blood_slide_prevalence_by_location()[0];
+            fmt::print(
+                "{}\t{}\t{}\t{}\t{}\t{}\t{}\t{:f}\n", input.population_size, fmt::join(input.dosing_days, "\t"),
+                fmt::join(input.half_life, "\t"), fmt::join(input.k_max, "\t"), fmt::join(input.EC50, "\t"),
+                fmt::join(input.slope, "\t"), input.is_art ? 1 : 0, result
+            );
+        }
+    }
     else{
+        std::cout << "ID\tGenotype\t";
+        if(input.therapy_list.empty()){
+            for (auto therapy_id = min_therapy_id; therapy_id <= max_therapy_id; therapy_id++) {
+              std::cout << *Model::CONFIG->therapy_db()[therapy_id] << "\t" ;
+            }
+        }
+        else{
+            for (auto therapy_id : input.therapy_list) {
+              std::cout << *Model::CONFIG->therapy_db()[therapy_id] << "\t";
+            }
+        }
+        std::cout << std::endl;
         Model::CONFIG->genotype_db.clear();
         std::vector<Genotype*> genotype_inputs;
         for(auto genotype_str : input.genotypes){
@@ -152,36 +240,46 @@ int main(int argc, char** argv) {
             ss << p_genotype->genotype_id << "\t" << p_genotype->get_aa_sequence() << "\t";
 
             if(input.therapy_list.empty()){
-                for (auto therapy_id = min_therapy_id; therapy_id <= max_therapy_id; therapy_id++) {
-                    double efficacy = getEfficacyForTherapy(p_genotype, p_model, input, therapy_id);
-                    ss << efficacy << (therapy_id == max_therapy_id ? "" : "\t");
-                }
+              for (auto therapy_id = min_therapy_id; therapy_id <= max_therapy_id; therapy_id++) {
+                double efficacy = getEfficacyForTherapy(p_genotype, p_model.get(), input, therapy_id);
+                ss << efficacy << (therapy_id == max_therapy_id ? "" : "\t");
+              }
             }
             else{
-                for (int t_index = 0; t_index < input.therapy_list.size(); t_index++) {
-                    double efficacy = getEfficacyForTherapy(p_genotype, p_model, input, input.therapy_list[t_index]);
-                    ss << efficacy << (input.therapy_list[t_index] == input.therapy_list.size() - 1 ? "" : "\t");
-                }
+              for (int t_index = 0; t_index < input.therapy_list.size(); t_index++) {
+                double efficacy = getEfficacyForTherapy(p_genotype, p_model.get(), input, input.therapy_list[t_index]);
+                ss << efficacy << (input.therapy_list[t_index] == input.therapy_list.size() - 1 ? "" : "\t");
+              }
             }
             std::cout << ss.str() << std::endl;
         }
     }
 
-    delete p_model;
+//    delete p_model;
 
     return 0;
 }
 
 void create_cli_option(CLI::App& app, AppInput& input) {
+    app.add_option("-i", input.input_file, "Input filename for DxG");
     app.add_option("-g", input.genotypes, "Genotype patterns for population (3 only) [WT KEL1 KEL1/PL1]");
     app.add_option("-t", input.therapies, "Get efficacies for range therapies [from to]");
+    app.add_option("--of", input.output_file, "Output density to file");
     app.add_option("--iov", input.as_iov, "AS inter-occasion-variability");
     app.add_option("--iiv", input.as_iiv, "AS inter-individual-variability");
     app.add_option("--ec50", input.as_ec50, "EC50 for AS on C580 only");
+    app.add_option("--pop", input.population_size, "override population");
     app.add_option("--cc", input.is_crt_calibration, "Enable pfcrt calibration");
-    app.add_option("--of", input.output_file, "Output density to file");
     app.add_option("--tl", input.therapy_list, "Get efficacies for list of therapies [0 1 2 ...]");
-    app.add_option("-i", input.input_file, "Input filename for DxG");
+    app.add_option("--ee", input.is_ee_calibration, "Enable EfficacyEstimator");
+    app.add_option("--EC50", input.EC50, "ee ec50");
+    app.add_option("--art", input.is_art, "ee is art");
+    app.add_option("--nd", input.number_of_drugs_in_combination, "ee number of drug");
+    app.add_option("--dose", input.dosing_days, "ee dose");
+    app.add_option("--kmax", input.k_max, "ee kmax");
+    app.add_option("--halflife", input.half_life, "ee half life");
+    app.add_option("--slope", input.slope, "ee slope");
+    app.add_option("--mda", input.mean_drug_absorption, "ee mean drug absorption");
 }
 
 double getEfficacyForTherapy(Genotype* g, Model* p_model, AppInput& input, int therapy_id) {
@@ -293,4 +391,60 @@ double getEfficacyForTherapyCRT(Model* p_model, AppInput& input, int therapy_id)
     p_model->population()->initialize();
 
     return result;
+}
+
+bool validate_config_for_ee(AppInput& input) {
+    input.number_of_drugs_in_combination = input.half_life.size();
+
+    if (input.number_of_drugs_in_combination > 5) {
+        std::cerr << "Error: Number of drugs in combination should not greater than 5" << std::endl;
+        return false;
+    }
+
+    if (input.k_max.size() != input.number_of_drugs_in_combination
+        || input.EC50.size() != input.number_of_drugs_in_combination
+        || input.slope.size() != input.number_of_drugs_in_combination
+        || input.dosing_days.size() != input.number_of_drugs_in_combination) {
+        std::cerr << "Error: Wrong number of drugs in combination" << std::endl;
+        return false;
+    }
+
+    for (auto k : input.k_max) {
+        if (k >= 1 || k < 0) {
+            std::cerr << "Error: k_max should be in range of (0,1]" << std::endl;
+            return false;
+        }
+    }
+
+    for (auto ec50 : input.EC50) {
+        if (ec50 < 0) {
+            std::cerr << "Error: EC50 should be greater than 0." << std::endl;
+            return false;
+        }
+    }
+
+    for (auto n : input.slope) {
+        if (n < 0) {
+            std::cerr << "Error: n should greater than 0." << std::endl;
+            return false;
+        }
+    }
+
+    for (auto dosing : input.dosing_days) {
+        if (dosing < 0) {
+            std::cerr << "Error: dosing should greater than 0." << std::endl;
+            return false;
+        }
+    }
+
+    if (input.mean_drug_absorption.empty()) {
+        for (int i = 0; i < input.number_of_drugs_in_combination; ++i) {
+            input.mean_drug_absorption.push_back(1.0);
+        }
+    } else if (input.mean_drug_absorption.size() != input.number_of_drugs_in_combination) {
+        std::cerr << "Error: Wrong number of drugs in combination" << std::endl;
+        return false;
+    }
+
+    return true;
 }
