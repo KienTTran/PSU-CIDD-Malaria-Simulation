@@ -167,7 +167,11 @@ void Genotype::calculate_EC50_power_n(const PfGeneInfo &gene_info, DrugDatabase 
                 // if multiplicative effect can apply to this drug
                 multiplicative_effect_factor =
                     res_gene_info.multiplicative_effect_on_EC50_for_2_or_more_mutations[drug_id];
+                LOG(TRACE) << aa_sequence << " drug_id: " << drug_id << " chr: " << chromosome_i + 1 << " gene: " << gene_i << " aa: " << aa_i
+                           << " EC50_power_n: " << EC50_power_n[drug_id] << " * multiplicative_effect_factor: " << multiplicative_effect_factor
+                           << "  = " << EC50_power_n[drug_id]*multiplicative_effect_factor;
               }
+
               LOG(TRACE) << aa_sequence << " drug_id: " << drug_id << " chr: " << chromosome_i + 1 << " gene: " << gene_i << " aa: " << aa_i
                         << " EC50_power_n: " << EC50_power_n[drug_id] << " * multiplicative_effect_factor: " << multiplicative_effect_factor
                         << "  = " << EC50_power_n[drug_id]*multiplicative_effect_factor;

@@ -73,7 +73,7 @@ int main(int argc, char** argv) {
     el::Loggers::reconfigureLogger("default", default_conf);
     START_EASYLOGGINGPP(argc, argv);
 
-    auto p_model = std::make_unique<Model>();
+    auto p_model = new Model();
     p_model->set_config_filename(input.input_file);
     p_model->initialize();
 
@@ -128,13 +128,13 @@ int main(int argc, char** argv) {
         std::cout << std::endl;
         if(input.therapy_list.empty()){
             for (auto therapy_id = min_therapy_id; therapy_id <= max_therapy_id; therapy_id++) {
-              double efficacy = getEfficacyForTherapyCRT(p_model.get(), input, therapy_id);
+              double efficacy = getEfficacyForTherapyCRT(p_model, input, therapy_id);
               ss << efficacy << (therapy_id == max_therapy_id ? "" : "\t");
             }
         }
         else{
             for (int t_index = 0; t_index < input.therapy_list.size(); t_index++) {
-              double efficacy = getEfficacyForTherapyCRT(p_model.get(), input, input.therapy_list[t_index]);
+              double efficacy = getEfficacyForTherapyCRT(p_model, input, input.therapy_list[t_index]);
               ss << efficacy << (input.therapy_list[t_index] == input.therapy_list.size() - 1 ? "" : "\t");
             }
         }
@@ -211,7 +211,8 @@ int main(int argc, char** argv) {
 
             const auto result = 1 - Model::DATA_COLLECTOR->blood_slide_prevalence_by_location()[0];
             fmt::print(
-                "{}\t{}\t{}\t{}\t{}\t{}\t{}\t{:f}\n", input.population_size, fmt::join(input.dosing_days, "\t"),
+                "pop\tdose\thalflife\tkmax\tec50\tslope\tis_art\tefficacy\n"
+                "{}\t{}\t{}\t{}\t{}\t{}\t{}\t{:f}\n", p_model->population()->all_persons()->size(), fmt::join(input.dosing_days, "\t"),
                 fmt::join(input.half_life, "\t"), fmt::join(input.k_max, "\t"), fmt::join(input.EC50, "\t"),
                 fmt::join(input.slope, "\t"), input.is_art ? 1 : 0, result
             );
@@ -235,42 +236,42 @@ int main(int argc, char** argv) {
         for(auto genotype_str : input.genotypes){
             genotype_inputs.push_back(Model::CONFIG->genotype_db.get_genotype(genotype_str,p_model->CONFIG));
         }
-        for (auto [g_id, p_genotype] : Model::CONFIG->genotype_db) {
+        for(auto p_genotype : genotype_inputs){
             std::stringstream ss;
             ss << p_genotype->genotype_id << "\t" << p_genotype->get_aa_sequence() << "\t";
 
             if(input.therapy_list.empty()){
               for (auto therapy_id = min_therapy_id; therapy_id <= max_therapy_id; therapy_id++) {
-                double efficacy = getEfficacyForTherapy(p_genotype, p_model.get(), input, therapy_id);
+                double efficacy = getEfficacyForTherapy(p_genotype, p_model, input, therapy_id);
                 ss << efficacy << (therapy_id == max_therapy_id ? "" : "\t");
               }
             }
             else{
               for (int t_index = 0; t_index < input.therapy_list.size(); t_index++) {
-                double efficacy = getEfficacyForTherapy(p_genotype, p_model.get(), input, input.therapy_list[t_index]);
+                double efficacy = getEfficacyForTherapy(p_genotype, p_model, input, input.therapy_list[t_index]);
                 ss << efficacy << (input.therapy_list[t_index] == input.therapy_list.size() - 1 ? "" : "\t");
               }
             }
             std::cout << ss.str() << std::endl;
         }
     }
-
-//    delete p_model;
-
+    delete p_model;
     return 0;
 }
 
 void create_cli_option(CLI::App& app, AppInput& input) {
     app.add_option("-i", input.input_file, "Input filename for DxG");
-    app.add_option("-g", input.genotypes, "Genotype patterns for population (3 only) [WT KEL1 KEL1/PL1]");
-    app.add_option("-t", input.therapies, "Get efficacies for range therapies [from to]");
+    app.add_option("-g", input.genotypes, "Genotype patterns for population (3 only) ex: [WT KEL1 KEL1/PLA1]");
+    app.add_option("-t", input.therapies, "Get efficacy for range therapies [from to]");
     app.add_option("--of", input.output_file, "Output density to file");
     app.add_option("--iov", input.as_iov, "AS inter-occasion-variability");
     app.add_option("--iiv", input.as_iiv, "AS inter-individual-variability");
     app.add_option("--ec50", input.as_ec50, "EC50 for AS on C580 only");
-    app.add_option("--pop", input.population_size, "override population");
-    app.add_option("--cc", input.is_crt_calibration, "Enable pfcrt calibration");
-    app.add_option("--tl", input.therapy_list, "Get efficacies for list of therapies [0 1 2 ...]");
+    app.add_option("--pil", input.is_print_immunity_level, "print immunity level");
+    //DxG to calibrate PfCRT factor. --cc to enable and use with -g to distribute 3 genotypes to population, --tl to get efficacy of list of therapy
+    app.add_option("--cc", input.is_crt_calibration, "Enable PfCRT ec50 calibration");
+    app.add_option("--tl", input.therapy_list, "Get efficacy for list of therapies [0 1 2 ...]");
+    //EfficacyEstimator. --ee to enable and use below params
     app.add_option("--ee", input.is_ee_calibration, "Enable EfficacyEstimator");
     app.add_option("--EC50", input.EC50, "ee ec50");
     app.add_option("--art", input.is_art, "ee is art");
@@ -283,7 +284,7 @@ void create_cli_option(CLI::App& app, AppInput& input) {
 }
 
 double getEfficacyForTherapy(Genotype* g, Model* p_model, AppInput& input, int therapy_id) {
-    auto* mainTherapy = Model::CONFIG->therapy_db()[therapy_id];
+    auto* mainTherapy = p_model->CONFIG->therapy_db()[therapy_id];
     dynamic_cast<SFTStrategy*>(Model::TREATMENT_STRATEGY)->get_therapy_list().clear();
     dynamic_cast<SFTStrategy*>(Model::TREATMENT_STRATEGY)->add_therapy(mainTherapy);
 
@@ -301,11 +302,9 @@ double getEfficacyForTherapy(Genotype* g, Model* p_model, AppInput& input, int t
         p_model->add_reporter(new PkPdReporter());
     }
 
-    auto* genotype = Model::CONFIG->genotype_db.at(g->genotype_id);
-
     for (auto person : Model::POPULATION->all_persons()->vPerson()) {
         auto density = Model::CONFIG->parasite_density_level().log_parasite_density_from_liver;
-        auto* blood_parasite = person->add_new_parasite_to_blood(genotype);
+        auto* blood_parasite = person->add_new_parasite_to_blood(g);
 
         person->immune_system()->set_increase(true);
         person->set_host_state(Person::EXPOSED);
@@ -354,7 +353,7 @@ double getEfficacyForTherapyCRT(Model* p_model, AppInput& input, int therapy_id)
     for (auto person : Model::POPULATION->all_persons()->vPerson()) {
         //The genotype distribution is from table 2 in http://dx.doi.org/10.1016/S1473-3099(19)30391-3
         std::string g_str = "";
-        int infect_prob = Model::RANDOM->random_uniform_int(1, 100);
+        int infect_prob = Model::RANDOM->random_uniform_int(1, 101);
         if(infect_prob < 74) {
             g_str = input.genotypes[2];
         }
