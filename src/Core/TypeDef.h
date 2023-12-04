@@ -208,6 +208,7 @@ struct GeneInfo {
   std::vector<AaPositionInfo> aa_position_infos;
   std::map<int, double> multiplicative_effect_on_EC50_for_2_or_more_mutations;
   friend std::ostream &operator<<(std::ostream &os, const GeneInfo &aa) { return os; }
+  double average_daily_crs { -1.0 };
 };
 
 struct ChromosomeInfo {

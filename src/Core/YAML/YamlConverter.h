@@ -194,6 +194,10 @@ struct convert<GeneInfo> {
       }
     }
 
+    if (node["average_daily_crs"]) {
+      gene.average_daily_crs = node["average_daily_crs"].as<double>();
+    }
+
     for (const auto& aa_node : node["aa_positions"]) {
       auto aa_position = aa_node.as<AaPositionInfo>();
       gene.aa_position_infos.push_back(aa_position);

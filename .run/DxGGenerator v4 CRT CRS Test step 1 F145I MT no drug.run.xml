@@ -1,0 +1,7 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="DxGGenerator v4 CRT CRS Test step 1 F145I MT no drug" type="CMakeRunConfiguration" factoryName="Application" PROGRAM_PARAMS="-i input_CRS_F145I_WT_MT_no_drug.yml --of output_F145I_MT_no_drug.csv --pil 1 --tl 3 -g &quot;||||NY1||KTHIIMG,x||||||FNCMYRIPRPCA|1&quot;" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" WORKING_DIR="file://$PROJECT_DIR$/cmake-build-release/bin" PASS_PARENT_ENVS_2="true" PROJECT_NAME="POMS" TARGET_NAME="DxGGenerator" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="POMS" RUN_TARGET_NAME="DxGGenerator">
+    <method v="2">
+      <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+    </method>
+  </configuration>
+</component>

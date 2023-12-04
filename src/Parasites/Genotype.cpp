@@ -102,17 +102,35 @@ void Genotype::calculate_daily_fitness(const PfGeneInfo &gene_info) {
       auto res_gene_info = chromosome_info.gene_infos[gene_i];
       auto max_aa_pos = res_gene_info.max_copies > 1 ? pf_genotype_str[chromosome_i][gene_i].size() - 1
                                                      : pf_genotype_str[chromosome_i][gene_i].size();
-      for (int aa_i = 0; aa_i < max_aa_pos; ++aa_i) {
-        // calculate cost of resistance
-        auto aa_pos_info = res_gene_info.aa_position_infos[aa_i];
-        auto element = pf_genotype_str[chromosome_i][gene_i][aa_i];
 
-        auto it = std::find(aa_pos_info.amino_acids.begin(), aa_pos_info.amino_acids.end(), element);
-        auto element_id = it - aa_pos_info.amino_acids.begin();
+      if(res_gene_info.average_daily_crs > 0){
+        std::cout << "Average daily crs: " << res_gene_info.average_daily_crs << std::endl;
+        for (int aa_i = 0; aa_i < max_aa_pos; ++aa_i) {
+          // calculate cost of resistance
+          auto aa_pos_info = res_gene_info.aa_position_infos[aa_i];
+          auto element = pf_genotype_str[chromosome_i][gene_i][aa_i];
 
-        auto cr = aa_pos_info.daily_crs[element_id];
+          auto it = std::find(aa_pos_info.amino_acids.begin(), aa_pos_info.amino_acids.end(), element);
+          auto element_id = it - aa_pos_info.amino_acids.begin();
 
-        daily_fitness_multiple_infection *= (1 - cr);
+          auto cr = aa_pos_info.daily_crs[element_id];
+
+          daily_fitness_multiple_infection *= res_gene_info.average_daily_crs * (1 - cr);
+        }
+      }
+      else{
+        for (int aa_i = 0; aa_i < max_aa_pos; ++aa_i) {
+          // calculate cost of resistance
+          auto aa_pos_info = res_gene_info.aa_position_infos[aa_i];
+          auto element = pf_genotype_str[chromosome_i][gene_i][aa_i];
+
+          auto it = std::find(aa_pos_info.amino_acids.begin(), aa_pos_info.amino_acids.end(), element);
+          auto element_id = it - aa_pos_info.amino_acids.begin();
+
+          auto cr = aa_pos_info.daily_crs[element_id];
+
+          daily_fitness_multiple_infection *= (1 - cr);
+        }
       }
 
       // calculate for number copy variation
@@ -167,12 +185,12 @@ void Genotype::calculate_EC50_power_n(const PfGeneInfo &gene_info, DrugDatabase 
                 // if multiplicative effect can apply to this drug
                 multiplicative_effect_factor =
                     res_gene_info.multiplicative_effect_on_EC50_for_2_or_more_mutations[drug_id];
-                LOG(TRACE) << aa_sequence << " drug_id: " << drug_id << " chr: " << chromosome_i + 1 << " gene: " << gene_i << " aa: " << aa_i
+                LOG(INFO) << aa_sequence << " DOUBLE MUT drug_id: " << drug_id << " chr: " << chromosome_i + 1 << " gene: " << gene_i << " aa: " << aa_i
                            << " EC50_power_n: " << EC50_power_n[drug_id] << " * multiplicative_effect_factor: " << multiplicative_effect_factor
                            << "  = " << EC50_power_n[drug_id]*multiplicative_effect_factor;
               }
 
-              LOG(TRACE) << aa_sequence << " drug_id: " << drug_id << " chr: " << chromosome_i + 1 << " gene: " << gene_i << " aa: " << aa_i
+              LOG(INFO) << aa_sequence << " SINGLE MUT drug_id: " << drug_id << " chr: " << chromosome_i + 1 << " gene: " << gene_i << " aa: " << aa_i
                         << " EC50_power_n: " << EC50_power_n[drug_id] << " * multiplicative_effect_factor: " << multiplicative_effect_factor
                         << "  = " << EC50_power_n[drug_id]*multiplicative_effect_factor;
             }

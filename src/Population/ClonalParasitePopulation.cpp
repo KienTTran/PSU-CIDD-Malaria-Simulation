@@ -93,14 +93,17 @@ void ClonalParasitePopulation::perform_drug_action(const double &percent_parasit
   if (percent_parasite_remove > 1) {
     newSize = Model::CONFIG->parasite_density_level().log_parasite_density_cured;
   } else {
+//    std::cout << "Day: " << Model::SCHEDULER->current_time() << "\tDrug: old density: "
+//    << newSize << "\tremoved by drug: " << log10(1 - percent_parasite_remove);
     newSize += log10(1 - percent_parasite_remove);
+//    std::cout << "\tnew density: " << newSize << std::endl;
   }
 
   if (newSize < Model::CONFIG->parasite_density_level().log_parasite_density_cured) {
     newSize = Model::CONFIG->parasite_density_level().log_parasite_density_cured;
   }
 
-  //    std::cout << Model::SCHEDULER->current_time() << "\t" <<parasite_population()->person() << "\t"  <<
-  //    percent_parasite_remove << "\t"<<last_update_log10_parasite_density_ << "\t" <<newSize << std::endl;
+//      std::cout << Model::SCHEDULER->current_time() << "\t" <<parasite_population()->person()->last_therapy_id() << "\t"  <<
+//      percent_parasite_remove << "\t"<<last_update_log10_parasite_density_ << "\t" <<newSize << std::endl;
   set_last_update_log10_parasite_density(newSize);
 }
