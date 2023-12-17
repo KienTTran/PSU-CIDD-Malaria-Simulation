@@ -352,15 +352,17 @@ double getEfficacyForTherapyCRT(Model* p_model, AppInput& input, int therapy_id)
 
     for (auto person : Model::POPULATION->all_persons()->vPerson()) {
         //The genotype distribution is from table 2 in http://dx.doi.org/10.1016/S1473-3099(19)30391-3
+        //Run these 3 genotypes in population with and without F145I,T93S,H97Y and I218F
+        //to get ec50 of WT and mutant genotypes
         std::string g_str = "";
         int infect_prob = Model::RANDOM->random_uniform_int(1, 101);
-        if(infect_prob < 74) {
+        if(infect_prob < 74) {//KEL1/PLA1
             g_str = input.genotypes[2];
         }
-        else if(infect_prob < 91){
+        else if(infect_prob < 91){//KEL1
             g_str = input.genotypes[1];
         }
-        else{
+        else{//WT
             g_str = input.genotypes[0];
         }
         auto* genotype = Model::CONFIG->genotype_db.get_genotype(g_str,p_model->CONFIG);

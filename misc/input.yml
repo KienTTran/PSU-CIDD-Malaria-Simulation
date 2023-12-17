@@ -214,7 +214,7 @@ pf_genotype_info:
               - drug_id: -1
                 factors: [ 1, 1.6 ]
           - position: 97
-            amino_acids: [ 'H', 'T' ]
+            amino_acids: [ 'H', 'Y' ]
             daily_crs: [ 0, 0.0005 ]
             multiplicative_effect_on_EC50:
               - drug_id: -1

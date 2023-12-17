@@ -1,0 +1,7 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="DxGGenerator v4 CRT EC50 Test step 2 F145I KEL1/PLA1 noCC DHAPPQ" type="CMakeRunConfiguration" factoryName="Application" PROGRAM_PARAMS="-i input_DxG_CRT_v4_EC50_Test_step_2_THFI.yml --of output.txt --tl 8 -g &quot;||||NY1||KTHIIMG,x||||||FNCMYRIPRPYA|2&quot;" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" WORKING_DIR="file://$PROJECT_DIR$/cmake-build-release/bin" PASS_PARENT_ENVS_2="true" PROJECT_NAME="POMS" TARGET_NAME="DxGGenerator" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="POMS" RUN_TARGET_NAME="DxGGenerator">
+    <method v="2">
+      <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+    </method>
+  </configuration>
+</component>
