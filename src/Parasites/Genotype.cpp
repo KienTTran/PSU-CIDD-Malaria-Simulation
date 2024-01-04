@@ -218,7 +218,8 @@ Genotype *Genotype::perform_mutation_by_drug(Config *pConfig, Random *pRandom, D
                 auto old_copy_number = NumberHelpers::char_to_single_digit_number(aa_sequence[aa_pos.aa_index_in_aa_string]);
                 if (old_copy_number == 1) {
                     new_aa_sequence[aa_pos.aa_index_in_aa_string] = NumberHelpers::single_digit_number_to_char(old_copy_number + 1);
-                } else if (old_copy_number == pConfig->pf_genotype_info()
+                } else if (old_copy_number
+                           == pConfig->pf_genotype_info()
                                    .chromosome_infos[aa_pos.chromosome_id]
                                    .gene_infos[aa_pos.gene_id]
                                    .max_copies) {
