@@ -103,18 +103,27 @@ void Genotype::calculate_daily_fitness(const PfGeneInfo &gene_info) {
       auto res_gene_info = chromosome_info.gene_infos[gene_i];
       auto max_aa_pos = res_gene_info.max_copies > 1 ? pf_genotype_str[chromosome_i][gene_i].size() - 1
                                                      : pf_genotype_str[chromosome_i][gene_i].size();
-      for (int aa_i = 0; aa_i < max_aa_pos; ++aa_i) {
-        // calculate cost of resistance
-        auto aa_pos_info = res_gene_info.aa_position_infos[aa_i];
-        auto element = pf_genotype_str[chromosome_i][gene_i][aa_i];
 
-        auto it = std::find(aa_pos_info.amino_acids.begin(), aa_pos_info.amino_acids.end(), element);
-        auto element_id = it - aa_pos_info.amino_acids.begin();
 
-        auto cr = aa_pos_info.daily_crs[element_id];
+        for (int aa_i = 0; aa_i < max_aa_pos; ++aa_i) {
+            // calculate cost of resistance
+            auto aa_pos_info = res_gene_info.aa_position_infos[aa_i];
+            auto element = pf_genotype_str[chromosome_i][gene_i][aa_i];
 
-        daily_fitness_multiple_infection *= (1 - cr);
-      }
+            auto it = std::find(aa_pos_info.amino_acids.begin(), aa_pos_info.amino_acids.end(), element);
+            auto element_id = it - aa_pos_info.amino_acids.begin();
+
+            auto cr = aa_pos_info.daily_crs[element_id];
+
+            if (res_gene_info.average_daily_crs > 0) {
+                daily_fitness_multiple_infection *= (1 - res_gene_info.average_daily_crs*cr);
+                LOG(TRACE) << "Using average CRS chromosome_i: " << chromosome_i << " gene_i: " << gene_i << " aa_i: " << aa_i << " cr: " << cr
+                << " average_daily_crs: " << res_gene_info.average_daily_crs
+                << " daily_fitness_multiple_infection: " << daily_fitness_multiple_infection;
+            } else {
+                daily_fitness_multiple_infection *= (1 - cr);
+            }
+        }
 
       // calculate for number copy variation
       if (res_gene_info.max_copies > 1) {
