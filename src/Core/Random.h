@@ -132,6 +132,7 @@ template <class T>
 std::vector<T *> Random::roulette_sampling(int number_of_samples, std::vector<double> &distribution,
                                            std::vector<T *> &all_objects, bool is_shuffled, double sum_distribution) {
   std::vector<T *> samples(number_of_samples, nullptr);
+  if(all_objects.size() == 0) return samples;
   double sum { sum_distribution };
   if (sum_distribution == 0) {
     return samples;

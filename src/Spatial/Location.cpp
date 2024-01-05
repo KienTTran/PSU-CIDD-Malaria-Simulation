@@ -3,12 +3,14 @@
 //
 
 #include "Location.h"
+#include "../GIS/SpatialData.h"
 
 namespace Spatial {
   Location::Location(const int id, float latitude, float longitude, const int population_size) :
     id{id}, population_size{population_size}, beta{0.0f}, p_treatment_less_than_5{0.0f},
     p_treatment_more_than_5{0.0f}, coordinate{std::make_unique<Coordinate>(latitude, longitude)} {
-
+      location_cols = 0;
+      location_rows = 0;
   }
 
   Location::~Location() = default;
@@ -23,15 +25,14 @@ namespace Spatial {
                                             age_distribution(org.age_distribution) {}
 
   std::ostream &operator<<(std::ostream &os, const Location &location) {
-    os << "id: " << location.id << ", populationSize: " << location.population_size << ", beta: " << location.beta
-       << ", coordinate: " << *location.coordinate << ", age_distribution: [";
-
-    for (auto i : location.age_distribution) {
-      os << i << ",";
-    }
-    os << "]";
-    os << ", p_treatment: [" << location.p_treatment_less_than_5 << "," << location.p_treatment_more_than_5 << "]"
-       << std::endl;
+//    os << "id: " << location.id << ", population size: " << location.population_size << ", beta: " << location.beta
+//       << ", coordinate: " << *location.coordinate << ", district " << SpatialData::get_instance().get_district(location.id) << ", age_distribution: [";
+//    for (auto i : location.age_distribution) {
+//      os << i << ",";
+//    }
+//    os << "]";
+//    os << ", p_treatment: [" << location.p_treatment_less_than_5 << "," << location.p_treatment_more_than_5 << "]"
+//       << std::endl;
     return os;
   }
 

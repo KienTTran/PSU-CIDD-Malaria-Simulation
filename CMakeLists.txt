@@ -4,7 +4,20 @@ set(CMAKE_TOOLCHAIN_FILE
   ${CMAKE_CURRENT_SOURCE_DIR}/ext/vcpkg/scripts/buildsystems/vcpkg.cmake CACHE
   STRING "Vcpkg toolchain file")
 
-project(POMS)
+if(WIN32)
+  message(STATUS "Build in Windows")
+  set(CMAKE_CUDA_COMPILER "D:/SDK/CUDA/12.2.1/Toolkit/bin/nvcc.exe")
+elseif(UNIX)
+  if(DOCKER)
+    message(STATUS "Build in Docker")
+    set(CMAKE_CUDA_COMPILER "/usr/local/cuda/bin/nvcc")
+  else()
+    message(STATUS "Build in Linux")
+    set(CMAKE_CUDA_COMPILER "/usr/local/cuda/bin/nvcc")
+  endif()
+endif()
+
+project(POMS LANGUAGES CXX CUDA)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED YES)

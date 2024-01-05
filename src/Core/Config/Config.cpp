@@ -6,15 +6,9 @@
  */
 
 #include "Config.h"
-
-#include <fmt/format.h>
-
-#include <cmath>
 #include <fstream>
 
 #include "Core/Random.h"
-#include "Helpers/OSHelpers.h"
-#include "Helpers/StringHelpers.h"
 #include "Model.h"
 #include "Therapies/SCTherapy.h"
 #include "easylogging++.h"

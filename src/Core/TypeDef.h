@@ -14,6 +14,13 @@
 #include <ostream>
 #include <string>
 #include <vector>
+#include <cuda_runtime.h>
+#include <thrust/tuple.h>
+#include <thrust/host_vector.h>
+#include <thrust/device_vector.h>
+#include <glm/mat4x4.hpp>
+#include <glm/vec4.hpp>
+#include <GL/glew.h>
 
 class Person;
 
@@ -28,6 +35,56 @@ class Drug;
 class IStrategy;
 
 class Therapy;
+
+
+template <typename T>
+using ThrustTuple4T = thrust::tuple<T,T,T,T> ;
+
+template <typename T>
+using ThrustTTuple = thrust::tuple<T>;
+template <typename T>
+using ThrustTTupleVectorDevice = thrust::device_vector<ThrustTTuple<T>>;
+template <typename T>
+using ThrustTTupleVectorHost = thrust::host_vector<ThrustTTuple<T>>;
+
+template <typename T, typename T2>
+using ThrustT2Tuple = thrust::tuple<T, T2>;
+template <typename T, typename T2>
+using ThrustT2TupleVectorDevice = thrust::device_vector<ThrustT2Tuple<T,T2>>;
+template <typename T, typename T2>
+using ThrustT2TupleVectorHost = thrust::host_vector<ThrustT2Tuple<T,T2>>;
+
+template <typename T, typename T2, typename T3>
+using ThrustT3Tuple = thrust::tuple<T, T2, T3>;
+template <typename T, typename T2, typename T3>
+using ThrustT3TupleVectorDevice = thrust::device_vector<ThrustT3Tuple<T,T2,T3>>;
+template <typename T, typename T2, typename T3>
+using ThrustT3TupleVectorHost = thrust::host_vector<ThrustT3Tuple<T,T2,T3>>;
+
+template <typename T, typename T2, typename T3, typename T4>
+using ThrustT4Tuple = thrust::tuple<T, T2, T3, T4>;
+template <typename T, typename T2, typename T3, typename T4>
+using ThrustT4TupleVectorDevice = thrust::device_vector<ThrustT4Tuple<T,T2,T3,T4>>;
+template <typename T, typename T2, typename T3, typename T4>
+using ThrustT4TupleVectorHost = thrust::host_vector<ThrustT4Tuple<T,T2,T3,T4>>;
+
+template <typename T, typename T2, typename T3, typename T4, typename T5>
+using ThrustT5Tuple = thrust::tuple<T, T2, T3, T4, T5>;
+template <typename T, typename T2, typename T3, typename T4, typename T5>
+using ThrustT5TupleVectorDevice = thrust::device_vector<ThrustT5Tuple<T,T2,T3,T4,T5>>;
+template <typename T, typename T2, typename T3, typename T4, typename T5>
+using ThrustT5TupleVectorHost = thrust::host_vector<ThrustT5Tuple<T,T2,T3,T4,T5>>;
+
+template <typename T>
+using ThrustTVectorHost = thrust::host_vector<T>;
+template <typename T>
+using ThrustTVectorHost2 = thrust::host_vector<ThrustTVectorHost<T>>;
+template <typename T>
+using ThrustTVectorHost3 = thrust::host_vector<ThrustTVectorHost2<T>>;
+template <typename T>
+using ThrustTVectorHost4 = thrust::host_vector<ThrustTVectorHost3<T>>;
+template <typename T>
+using ThrustTVectorDevice = thrust::device_vector<T>;
 
 typedef unsigned long ul;
 
@@ -68,6 +125,13 @@ typedef std::map<int, Drug *> DrugPtrMap;
 
 typedef std::vector<Therapy *> TherapyPtrVector;
 typedef std::vector<IStrategy *> StrategyPtrVector;
+
+struct RasterDb {
+    friend std::ostream &operator<<(std::ostream &os, const RasterDb &rdb) {
+        os << "raster_db";
+        return os;
+    }
+};
 
 struct SeasonalInfo {
   bool enable { false };

@@ -13,10 +13,11 @@
 #include "Events/Population/PopulationEventBuilder.h"
 #include "Helpers/NumberHelpers.h"
 #include "Helpers/ObjectHelpers.h"
-#include "Spatial/SpatialModelBuilder.h"
+#include "Spatial/SpatialModelBuilder.hxx"
 #include "Strategies/IStrategy.h"
 #include "Strategies/StrategyBuilder.h"
 #include "Therapies/Therapy.h"
+#include "GIS/SpatialData.h"
 #include "Therapies/TherapyBuilder.h"
 
 void total_time::set_value(const YAML::Node &node) {
@@ -27,11 +28,21 @@ void number_of_age_classes::set_value(const YAML::Node &node) {
   value_ = static_cast<int>(config_->age_structure().size());
 }
 
-void number_of_locations::set_value(const YAML::Node &node) {
+void number_of_locations::set_value() {
   value_ = static_cast<int>(config_->location_db().size());
 }
 
+void number_of_locations::set_value(const YAML::Node &node) {
+    set_value();
+}
+
 void spatial_distance_matrix::set_value(const YAML::Node &node) {
+  if (SpatialData::get_instance().has_raster()) {
+    LOG(WARNING) << "Raster data detected, using it to generate distances";
+    SpatialData::get_instance().generate_distances();
+    return;
+  }
+
   value_.resize(static_cast<unsigned long>(config_->number_of_locations()));
   for (auto from_location = 0ul; from_location < config_->number_of_locations(); from_location++) {
     value_[from_location].resize(static_cast<unsigned long long int>(config_->number_of_locations()));
@@ -42,6 +53,14 @@ void spatial_distance_matrix::set_value(const YAML::Node &node) {
       //            std::cout << "distance[" << from_location << "," << to_location << "]: "
       //                      << spatial_distance_matrix_[from_location][to_location] << std::endl;
     }
+  }
+}
+
+void spatial_districts::set_value(const YAML::Node &node) {
+  if (SpatialData::get_instance().has_raster()) {
+    LOG(WARNING) << "Raster data detected, using it for districts";
+    SpatialData::get_instance().generate_districts();
+    return;
   }
 }
 

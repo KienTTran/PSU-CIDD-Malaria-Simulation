@@ -5,8 +5,8 @@
 #ifndef SPATIAL_BARABASISM_H
 #define SPATIAL_BARABASISM_H
 
-#include "Core/PropertyMacro.h"
-#include "SpatialModel.h"
+#include "../Core/PropertyMacro.h"
+#include "SpatialModel.hxx"
 #include "yaml-cpp/yaml.h"
 
 namespace Spatial {

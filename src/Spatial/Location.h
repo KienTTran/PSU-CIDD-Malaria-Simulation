@@ -5,8 +5,9 @@
 #ifndef SPATIAL_LOCATION_H
 #define SPATIAL_LOCATION_H
 
-#include "Core/PropertyMacro.h"
+#include "../Core/PropertyMacro.h"
 #include "Coordinate.h"
+#include "../Core/TypeDef.h"
 #include <memory>
 #include <ostream>
 #include <vector>
@@ -29,6 +30,9 @@ class Location {
   float p_treatment_more_than_5;
   std::unique_ptr<Coordinate> coordinate;
   std::vector<double> age_distribution;
+  ThrustTuple4T<int> asc_cell_data;
+  int location_cols;
+  int location_rows;
  public:
   Location(int id, float latitude, float longitude, int population_size);
 

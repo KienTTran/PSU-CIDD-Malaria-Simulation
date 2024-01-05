@@ -73,6 +73,7 @@ public:
   CONFIG_ITEM(fraction_mosquitoes_interrupted_feeding, double, 0.0)
   CONFIG_ITEM(inflation_factor, double, 0.01)
 
+  CONFIG_ITEM(raster_db, RasterDb, RasterDb())
   CONFIG_ITEM(location_db, std::vector<Spatial::Location>,
               std::vector<Spatial::Location> { Spatial::Location(0, 0, 0, 10000) })
 
@@ -122,8 +123,6 @@ public:
 
   CUSTOM_CONFIG_ITEM(spatial_distance_matrix, DoubleVector2())
 
-  CUSTOM_CONFIG_ITEM(seasonal_info, SeasonalInfo())
-
   CUSTOM_CONFIG_ITEM(spatial_model, nullptr)
 
   CUSTOM_CONFIG_ITEM(immune_system_information, ImmuneSystemInformation())
@@ -153,6 +152,21 @@ public:
   VIRTUAL_PROPERTY_REF(double, modified_daily_cost_of_resistance)
 
   VIRTUAL_PROPERTY_REF(double, modified_mutation_probability)
+
+    CONFIG_ITEM(asc_pop_nrows, int, 0)
+    CONFIG_ITEM(asc_pop_ncols, int, 0)
+    CONFIG_ITEM(n_people_init, int, 0)
+
+    CUSTOM_CONFIG_ITEM(spatial_districts, IntVector())
+    CUSTOM_CONFIG_ITEM(seasonal_info, SeasonalInfo())
+    CONFIG_ITEM(initial_seed_number, unsigned long, 0)
+
+    ThrustTVectorHost<double> h_spatial_distances;
+    ThrustTVectorHost<int> h_spatial_districts;
+    ThrustTVectorHost<int> h_location_indices;
+    ThrustTVectorHost<glm::vec4> h_location_colors;
+
+    ThrustTVectorHost<int> h_popsize_by_moving_level;
 
 public:
   GenotypeDatabase genotype_db {};

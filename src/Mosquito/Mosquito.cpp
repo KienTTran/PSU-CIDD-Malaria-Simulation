@@ -155,8 +155,11 @@ std::vector<unsigned int> Mosquito::build_interrupted_feeding_indices(Random *ra
 
 int Mosquito::random_genotype(int location, int tracking_index) {
   auto genotype_index = Model::RANDOM->random_uniform_int(0, Model::CONFIG->mosquito_config().prmc_size);
-
-  return genotypes_table[tracking_index][location][genotype_index]->genotype_id;
+  auto genotype = genotypes_table[tracking_index][location][genotype_index];
+  if(genotype == nullptr) {
+    return -1;
+  }
+  return genotype->genotype_id;
 }
 
 void Mosquito::get_genotypes_profile_from_person(Person *person, std::vector<Genotype *> &sampling_genotypes,

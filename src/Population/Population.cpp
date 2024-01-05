@@ -27,7 +27,7 @@
 #include "Properties/PersonIndexByLocationMovingLevel.h"
 #include "Properties/PersonIndexByLocationStateAgeClass.h"
 #include "SingleHostClonalParasitePopulations.h"
-#include "Spatial/SpatialModel.h"
+#include "Spatial/SpatialModel.hxx"
 #include "easylogging++.h"
 
 Population::Population(Model* model) : model_(model) {
@@ -169,6 +169,8 @@ void Population::perform_infection_event() {
       person->increase_number_of_times_bitten();
 
       auto genotype_id = Model::MOSQUITO->random_genotype(loc, tracking_index);
+
+      if(genotype_id == -1) continue;
 
       const auto p_infectious = Model::RANDOM->random_flat(0.0, 1.0);
       // only infect with real infectious bite
@@ -329,7 +331,7 @@ void Population::introduce_initial_cases() {
       auto* genotype = Model::CONFIG->genotype_db.at(p_info.parasite_type_id);
       LOG(INFO) << "Introducing genotype " << p_info.parasite_type_id << " with prevalence: " << p_info.prevalence
                 << " : " << num_of_infections << " infections at location " << p_info.location;
-      // std::cout << p_info.location << "-" << p_info.parasite_type_id << "-" << num_of_infections << std::endl;
+//       std::cout << p_info.location << "-" << p_info.parasite_type_id << "-" << num_of_infections << std::endl;
       introduce_parasite(p_info.location, genotype, num_of_infections);
     }
     // update current foi
@@ -358,6 +360,7 @@ void Population::introduce_parasite(const int& location, Genotype* parasite_type
 }
 
 void Population::initial_infection(Person* person, Genotype* parasite_type) const {
+  if(person == nullptr) return;
   person->immune_system()->set_increase(true);
   person->set_host_state(Person::ASYMPTOMATIC);
 

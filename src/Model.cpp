@@ -5,7 +5,6 @@
  * Created on March 22, 2013, 2:26 PM
  */
 #include "Model.h"
-
 #include <fmt/format.h>
 
 #include "Constants.h"
@@ -39,6 +38,7 @@
 #include "Strategies/IStrategy.h"
 #include "Therapies/Drug.h"
 #include "easylogging++.h"
+#include "Spatial/SpatialModel.hxx"
 
 Model* Model::MODEL = nullptr;
 Config* Model::CONFIG = nullptr;
@@ -136,13 +136,20 @@ void Model::build_initial_treatment_coverage() {
 void Model::initialize() {
   LOG(INFO) << "Model initilizing...";
 
-  LOG(INFO) << "Initialize Random";
-  // Initialize Random Seed
-  random_->initialize(initial_seed_number_);
-
   LOG(INFO) << fmt::format("Read input file: {}", config_filename_);
   // Read input file
   config_->read_from_file(config_filename_);
+
+  auto now = std::chrono::high_resolution_clock::now();
+  auto milliseconds = std::chrono::duration_cast<std::chrono::microseconds>(now.time_since_epoch());
+
+  LOG(INFO) << "Initialize Random";
+  // Initialize Random Seed
+  initial_seed_number_ = Model::CONFIG->initial_seed_number() <= 0 ? static_cast<unsigned long>(milliseconds.count()) : Model::CONFIG->initial_seed_number();
+
+  LOG(INFO) << "Initialize Random";
+  // Initialize Random Seed
+  random_->initialize(initial_seed_number_);
 
   // add reporter here
   if (reporter_type_.empty()) {
@@ -178,6 +185,9 @@ void Model::initialize() {
   LOG(INFO) << "Initializing population";
   // initialize Population
   population_->initialize();
+
+  LOG(INFO) << "Initializing movement model...";
+  config_->spatial_model()->prepare();
 
   LOG(INFO) << "Initializing mosquito";
   // initialize Population

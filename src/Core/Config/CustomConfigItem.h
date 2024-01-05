@@ -36,8 +36,11 @@ class number_of_locations : public ConfigItem<unsigned long> {
   number_of_locations(const std::string &name, const unsigned long &default_value, Config *config) : ConfigItem<unsigned long>(name,
                                                                                                            default_value,
                                                                                                            config) {}
+    // Update the number of locations based upon the location_db size
+    void set_value();
 
-  void set_value(const YAML::Node &node) override;
+    // Update the number of locations based upon the location_db size, the node is ignored
+    void set_value(const YAML::Node &node) override;
 };
 
 class spatial_distance_matrix : public ConfigItem<std::vector<std::vector<double>>> {
@@ -49,6 +52,14 @@ class spatial_distance_matrix : public ConfigItem<std::vector<std::vector<double
       name, default_value, config) {}
 
   void set_value(const YAML::Node &node) override;
+};
+
+class spatial_districts : public ConfigItem<std::vector<int>> {
+public:
+    spatial_districts(const std::string &name, const std::vector<int> &default_value,
+                      Config *config) : ConfigItem<std::vector<int>>(name, default_value, config) {}
+
+    void set_value(const YAML::Node &node) override;
 };
 
 class seasonal_info : public IConfigItem {

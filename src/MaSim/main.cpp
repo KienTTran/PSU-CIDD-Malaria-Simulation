@@ -3,13 +3,8 @@
  *
  * Main entry point for the simulation, reads the CLI and starts the model.
  */
-#include <fmt/format.h>
-
 #include <args.hxx>
 #include <iostream>
-
-#include "easylogging++.h"
-
 // need to have execinfo lib
 // #include "error_handler.hxx"
 #include "Helpers/OSHelpers.h"
@@ -111,10 +106,10 @@ void handle_cli(Model *model, int argc, char **argv) {
     std::cout << e.what() << parser;
     exit(EXIT_SUCCESS);
   } catch (const args::ParseError &e) {
-    LOG(ERROR) << fmt::format("{0} {1}", e.what(), parser);
+    LOG(ERROR) << e.what() << " " << parser;
     exit(EXIT_FAILURE);
   } catch (const args::ValidationError &e) {
-    LOG(ERROR) << fmt::format("{0} {1}", e.what(), parser);
+    LOG(ERROR) << e.what() << " " << parser;
     exit(EXIT_FAILURE);
   }
 
