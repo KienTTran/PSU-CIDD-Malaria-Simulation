@@ -29,6 +29,14 @@ class Reporter;
 
 class Mosquito;
 
+class Renderer;
+namespace GPU{
+    class RenderEntity;
+    class Utils;
+    class Random;
+    class Population;
+}
+
 class Model {
  DISALLOW_COPY_AND_ASSIGN(Model)
  void end_time_step();
@@ -73,6 +81,13 @@ class Model {
  PROPERTY_REF(bool, is_farm_output)
 
  PROPERTY_REF(std::string, reporter_type)
+
+POINTER_PROPERTY(Renderer, renderer)
+POINTER_PROPERTY(GPU::RenderEntity, gpu_render_entity)
+POINTER_PROPERTY(GPU::Utils, gpu_utils)
+POINTER_PROPERTY(GPU::Random, gpu_random)
+POINTER_PROPERTY(GPU::Population, gpu_population)
+
  public:
     Mosquito* mosquito;
  public:
@@ -83,6 +98,13 @@ class Model {
   static ModelDataCollector *DATA_COLLECTOR;
   static Population *POPULATION;
   static Mosquito *MOSQUITO;
+
+    static Renderer *RENDERER;
+    static GPU::RenderEntity *GPU_RENDER_ENTITY;
+    static GPU::Utils *GPU_UTILS;
+    static GPU::Random *GPU_RANDOM;
+    static GPU::Population *GPU_POPULATION;
+    bool model_finished = false;
 
   static IStrategy *TREATMENT_STRATEGY;
   static ITreatmentCoverageModel *TREATMENT_COVERAGE;

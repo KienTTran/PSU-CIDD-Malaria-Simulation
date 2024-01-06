@@ -19,6 +19,8 @@
 #include "Therapies/SCTherapy.h"
 #include "Population/ClonalParasitePopulation.h"
 #include "Constants.h"
+#include "Gpu/Population/Properties/PersonIndexGPU.h"
+#include "Gpu/Utils.cuh"
 
 ModelDataCollector::ModelDataCollector(Model* model) : model_(model), current_utl_duration_(0),
                                                        AMU_per_parasite_pop_(0),
@@ -42,6 +44,7 @@ void ModelDataCollector::initialize() {
   if (model_ != nullptr) {
     popsize_by_location_ = IntVector(Model::CONFIG->number_of_locations(), 0);
     popsize_residence_by_location_ = IntVector(Model::CONFIG->number_of_locations(), 0);
+    popsize_residence_by_location_gpu_ = ThrustTVectorHost<int>(Model::CONFIG->number_of_locations(), 0);
 
     blood_slide_prevalence_by_location_ = DoubleVector(Model::CONFIG->number_of_locations(), 0.0);
     blood_slide_prevalence_by_location_age_group_ = DoubleVector2(
@@ -251,6 +254,7 @@ void ModelDataCollector::initialize() {
 }
 
 void ModelDataCollector::perform_population_statistic() {
+  auto tp_start = std::chrono::high_resolution_clock::now();
   //this will do every time the reporter execute the report
 
   //reset vector
@@ -268,7 +272,6 @@ void ModelDataCollector::perform_population_statistic() {
   //
   //    total_immune_by_location_age_class_.clear();
   //    total_immune_by_location_age_class_.assign(Model::CONFIG->number_of_locations(), DoubleVector(Model::CONFIG->number_of_age_classes(), 0.0));
-
 
   for (auto location = 0ul; location < Model::CONFIG->number_of_locations(); location++) {
     popsize_by_location_[location] = 0;
@@ -453,6 +456,8 @@ void ModelDataCollector::perform_population_statistic() {
         static_cast<double>(popsize_by_location_age_[loc][age]);
     }
   }
+  auto tp_end = std::chrono::high_resolution_clock::now();
+  LOG(INFO) << "[MDC] Time to perform population statistic CPU: " << std::chrono::duration_cast<std::chrono::milliseconds>(tp_end - tp_start).count() << " ms";
 }
 
 void ModelDataCollector::collect_number_of_bites(const int& location, const int& number_of_bites) {

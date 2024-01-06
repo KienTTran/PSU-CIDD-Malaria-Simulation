@@ -126,6 +126,45 @@ typedef std::map<int, Drug *> DrugPtrMap;
 typedef std::vector<Therapy *> TherapyPtrVector;
 typedef std::vector<IStrategy *> StrategyPtrVector;
 
+struct GPUConfig{
+    int n_threads;
+    int people_1_batch;
+    double pre_allocated_mem_ratio;
+    int n_parasites_per_person;
+    friend std::ostream &operator<<(std::ostream &os, const GPUConfig &mcf) {
+        os << "gpu_config";
+        return os;
+    }
+};
+
+struct RenderConfig{
+    int window_width;
+    int window_height;
+    bool display_gui;
+    bool close_window_on_finish;
+    double point_coord;
+    std::string vertex_shader_path;
+    std::string fragment_shader_path;
+    friend std::ostream &operator<<(std::ostream &os, const RenderConfig &mcf) {
+        os << "render_config";
+        return os;
+    }
+};
+
+struct DebugConfig{
+    int width;
+    int height;
+    bool enable_update;
+    bool enable_debug_text;
+    bool enable_debug_render;
+    bool enable_debug_render_text;
+    int log_interval;
+    friend std::ostream &operator<<(std::ostream &os, const DebugConfig &mcf) {
+        os << "debug_config";
+        return os;
+    }
+};
+
 struct RasterDb {
     friend std::ostream &operator<<(std::ostream &os, const RasterDb &rdb) {
         os << "raster_db";

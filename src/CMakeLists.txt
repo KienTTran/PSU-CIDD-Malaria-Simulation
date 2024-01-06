@@ -9,12 +9,15 @@ file(GLOB SRC_FILES *.cpp
         Core/Index/*.cpp 
         Events/*.cpp 
         Events/Population/*.cpp 
-        Helpers/*.cpp 
+        Helpers/*.cpp
+        Helpers/*.h
+        Helpers/*.hxx
         Malaria/*.cpp
         MDC/*.cpp 
         Parasites/*.cpp GeneInfo.h
         Population/*.cpp
         Population/Properties/*.cpp
+        Population/Properties/*.hxx
         Reporters/*.cpp 
         Spatial/*.cpp
         Spatial/*.hxx
@@ -22,6 +25,17 @@ file(GLOB SRC_FILES *.cpp
         Therapies/*.cpp
         Mosquito/*.cpp
         GIS/*.cpp
+        Gpu/*.cu
+        Gpu/*.cuh
+        Gpu/Renderer/*.cpp
+        Gpu/Population/*.cu
+        Gpu/Population/*.cuh
+        Gpu/Population/Properties/*.cpp
+        Gpu/Population/Properties/*.hxx
+        Gpu/Events/*.cu
+        Gpu/Events/*.cuh
+        Gpu/Events/Population/*.cu
+        Gpu/Events/Population/*.cuh
 )
 
 set(SRC_FILES ${SRC_FILES}

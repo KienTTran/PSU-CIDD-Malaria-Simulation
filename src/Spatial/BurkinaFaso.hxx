@@ -115,7 +115,7 @@ namespace Spatial {
             }
 
             ThrustTVectorHost<double> getSpatialModelTravels() {
-                return ThrustTVectorHost<double>(travel,travel+Model::CONFIG->number_of_locations());
+                return {travel,travel+Model::CONFIG->number_of_locations()};
             }
 
             [[nodiscard]]

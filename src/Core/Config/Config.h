@@ -153,6 +153,10 @@ public:
 
   VIRTUAL_PROPERTY_REF(double, modified_mutation_probability)
 
+    CONFIG_ITEM(gpu_config, GPUConfig, GPUConfig())
+    CONFIG_ITEM(render_config, RenderConfig, RenderConfig())
+    CONFIG_ITEM(debug_config, DebugConfig, DebugConfig())
+
     CONFIG_ITEM(asc_pop_nrows, int, 0)
     CONFIG_ITEM(asc_pop_ncols, int, 0)
     CONFIG_ITEM(n_people_init, int, 0)

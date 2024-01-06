@@ -103,6 +103,7 @@ void spatial_model::set_value(const YAML::Node &node) {
   const auto sm_name = node[name_]["name"].as<std::string>();
   // std::cout << sm_name << std::endl;
   value_ = Spatial::SpatialModelBuilder::Build(sm_name, node[name_][sm_name]);
+  LOG(INFO) << "Using spatial model: " << sm_name;
 }
 
 void immune_system_information::set_value(const YAML::Node &node) {
@@ -212,6 +213,7 @@ void drug_db::set_value(const YAML::Node &node) {
   }
 }
 
+
 void circulation_info::set_value(const YAML::Node &node) {
   auto info_node = node[name_];
   value_.max_relative_moving_value = info_node["max_relative_moving_value"].as<double>();
@@ -223,20 +225,17 @@ void circulation_info::set_value(const YAML::Node &node) {
   value_.mean = info_node["moving_level_distribution"]["Gamma"]["mean"].as<double>();
   value_.sd = info_node["moving_level_distribution"]["Gamma"]["sd"].as<double>();
 
-  // calculate density and level value here
+  //calculate density and level value here
 
   const auto var = value_.sd * value_.sd;
 
-  // mean = k * theta
-  // var = k * theta^2
-
-  const auto b = var / (value_.mean - 1);  // theta
-  const auto a = (value_.mean - 1) / b;    // k
+  const auto b = var / (value_.mean - 1); //theta
+  const auto a = (value_.mean - 1) / b; //k
 
   value_.v_moving_level_density.clear();
   value_.v_moving_level_value.clear();
 
-  const auto max = value_.max_relative_moving_value - 1;  // maxRelativeBiting -1
+  const auto max = value_.max_relative_moving_value - 1; //maxRelativeBiting -1
   const auto number_of_level = value_.number_of_moving_levels;
 
   const auto step = max / static_cast<double>(number_of_level - 1);
@@ -253,17 +252,18 @@ void circulation_info::set_value(const YAML::Node &node) {
     value_.v_moving_level_value.push_back(i + 1);
     sum += value;
     j++;
+
   }
 
-  // normalized
+  //normalized
   double t = 0;
   for (auto &i : value_.v_moving_level_density) {
     i = i + (1 - sum) / value_.v_moving_level_density.size();
     t += i;
   }
 
-  assert(value_.number_of_moving_levels == value_.v_moving_level_density.size());
-  assert(value_.number_of_moving_levels == value_.v_moving_level_value.size());
+  assert((unsigned)value_.number_of_moving_levels == value_.v_moving_level_density.size());
+  assert((unsigned)value_.number_of_moving_levels == value_.v_moving_level_value.size());
   assert(fabs(t - 1) < 0.0001);
 
   value_.circulation_percent = info_node["circulation_percent"].as<double>();
@@ -272,8 +272,8 @@ void circulation_info::set_value(const YAML::Node &node) {
   const auto length_of_stay_sd = info_node["length_of_stay"]["sd"].as<double>();
 
   const auto stay_variance = length_of_stay_sd * length_of_stay_sd;
-  const auto k = stay_variance / length_of_stay_mean;  // k
-  const auto theta = length_of_stay_mean / k;          // theta
+  const auto k = stay_variance / length_of_stay_mean; //k
+  const auto theta = length_of_stay_mean / k; //theta
 
   value_.length_of_stay_mean = length_of_stay_mean;
   value_.length_of_stay_sd = length_of_stay_sd;

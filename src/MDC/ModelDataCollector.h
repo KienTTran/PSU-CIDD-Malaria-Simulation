@@ -33,6 +33,7 @@ PROPERTY_REF(DoubleVector2, total_immune_by_location_age_class)
 PROPERTY_REF(IntVector, popsize_by_location)
 
 PROPERTY_REF(IntVector, popsize_residence_by_location)
+PROPERTY_REF(ThrustTVectorHost<int>, popsize_residence_by_location_gpu)
 
 PROPERTY_REF(IntVector2, popsize_by_location_age_class)
 

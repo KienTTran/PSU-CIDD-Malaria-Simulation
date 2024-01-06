@@ -39,6 +39,11 @@
 #include "Therapies/Drug.h"
 #include "easylogging++.h"
 #include "Spatial/SpatialModel.hxx"
+#include "Gpu/Renderer/Renderer.h"
+#include "Gpu/RenderEntity.cuh"
+#include "Gpu/Utils.cuh"
+#include "Gpu/Random.cuh"
+#include "Gpu/Population/Population.cuh"
 
 Model* Model::MODEL = nullptr;
 Config* Model::CONFIG = nullptr;
@@ -50,6 +55,11 @@ Mosquito* Model::MOSQUITO = nullptr;
 IStrategy* Model::TREATMENT_STRATEGY = nullptr;
 ITreatmentCoverageModel* Model::TREATMENT_COVERAGE = nullptr;
 // std::shared_ptr<spdlog::logger> LOGGER;
+Renderer* Model::RENDERER = nullptr;
+GPU::RenderEntity* Model::GPU_RENDER_ENTITY = nullptr;
+GPU::Random* Model::GPU_RANDOM = nullptr;
+GPU::Utils* Model::GPU_UTILS = nullptr;
+GPU::Population* Model::GPU_POPULATION = nullptr;
 
 Model::Model(const int& object_pool_size) {
   initialize_object_pool(object_pool_size);
@@ -60,6 +70,11 @@ Model::Model(const int& object_pool_size) {
   //  mosquito = new Mosquito(this);
   data_collector_ = new ModelDataCollector(this);
   mosquito = new Mosquito(this);
+  renderer_ = new Renderer(this);
+  gpu_render_entity_ = new GPU::RenderEntity(this);
+  gpu_random_ = new GPU::Random();
+  gpu_utils_ = new GPU::Utils();
+  gpu_population_ = new GPU::Population();
 
   MODEL = this;
   CONFIG = config_;
@@ -68,6 +83,12 @@ Model::Model(const int& object_pool_size) {
   DATA_COLLECTOR = data_collector_;
   POPULATION = population_;
   MOSQUITO = mosquito;
+
+  RENDERER = renderer_;
+  GPU_RENDER_ENTITY = gpu_render_entity_;
+  GPU_RANDOM = gpu_random_;
+  GPU_UTILS = gpu_utils_;
+  GPU_POPULATION = gpu_population_;
 
   // LOGGER = spdlog::stdout_logger_mt("console");
 
@@ -197,10 +218,13 @@ void Model::initialize() {
   // initialize infected_cases
   population_->introduce_initial_cases();
 
-  // mosquito_->initialize();
+  gpu_population_->init();
+  //Random always init with max population size
+  gpu_random_->init(Model::CONFIG->n_people_init() * Model::CONFIG->gpu_config().pre_allocated_mem_ratio,initial_seed_number_);
+  gpu_utils_->init();
 
-  // initialize external population
-  //     external_population_->initialize();
+  gpu_render_entity_->init_entity();//send h_population to render
+  renderer_->init(gpu_render_entity_);
 
   LOG(INFO) << "Schedule for population event";
   for (auto* event : config_->preconfig_population_events()) {
@@ -276,7 +300,15 @@ void Model::release_object_pool() {
 void Model::run() {
   LOG(INFO) << "Model starting...";
   before_run();
-  scheduler_->run();
+  if(Model::CONFIG->render_config().display_gui && Model::CONFIG->gpu_config().pre_allocated_mem_ratio > 1.0){
+    std::thread scheduler_thread(&Scheduler::run, scheduler_);
+    renderer_->start();
+    scheduler_thread.join();
+  }
+  else{
+    Model::CONFIG->render_config().display_gui = false;
+    scheduler_->run();
+  }
   after_run();
   LOG(INFO) << "Model finished.";
 }
@@ -317,7 +349,8 @@ void Model::daily_update() {
   population_->update_current_foi();
 
   population_->perform_infection_event();
-  population_->perform_circulation_event();
+//  population_->perform_circulation_event();
+  gpu_population_->perform_circulation_event();
 
   // infect new mosquito cohort in prmc must be run after population perform infection event and update current foi
   // because the prmc at the tracking index will be overridden with new cohort to use N days later and

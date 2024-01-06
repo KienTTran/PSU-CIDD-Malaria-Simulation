@@ -13,6 +13,7 @@
 #include "Core/ObjectPool.h"
 #include "Core/PropertyMacro.h"
 #include "Properties/PersonIndexAllHandler.h"
+#include "Gpu/Population/Properties/PersonIndexGPUHandler.hxx"
 #include "Properties/PersonIndexByLocationMovingLevelHandler.h"
 #include "Properties/PersonIndexByLocationStateAgeClassHandler.h"
 
@@ -51,6 +52,7 @@ class Genotype;
 class Person : public PersonIndexAllHandler,
                public PersonIndexByLocationStateAgeClassHandler,
                public PersonIndexByLocationMovingLevelHandler,
+               public PersonIndexGPUHandler,
                public Dispatcher {
 public:
   enum Property {
@@ -83,6 +85,8 @@ public:
 
   PROPERTY_HEADER(int, age_class)
 
+  PROPERTY_REF(long, id)
+
   // birthday has the unit of time in the scheduler
   // if birthday is -100 which is that person was born 100 day before the simulation start
   PROPERTY_REF(int, birthday)
@@ -110,6 +114,11 @@ public:
   PROPERTY_REF(int, last_therapy_id)
 
   PROPERTY_REF(std::vector<double>, prob_present_at_mda_by_age)
+
+  PROPERTY_REF(int, location_col)
+  PROPERTY_REF(int, location_row)
+  PROPERTY_REF(glm::mat4, model)
+  PROPERTY_REF(glm::vec4, color)
 
 public:
   std::map<int, double> starting_drug_values_for_MAC;
@@ -223,6 +232,8 @@ public:
   bool has_effective_drug_in_blood() const;
 
   static double draw_random_relative_biting_rate(Random *pRandom, Config *pConfig);
+
+    void generate_render_entity(int location, bool is_circulate = false);
 };
 
 #endif /* PERSON_H */

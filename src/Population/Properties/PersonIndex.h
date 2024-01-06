@@ -9,7 +9,7 @@
 #define    PERSONINDEX_H
 
 #include "Core/PropertyMacro.h"
-#include "../Person.h"
+#include "Population/Person.h"
 
 class PersonIndex {
  DISALLOW_COPY_AND_ASSIGN(PersonIndex)

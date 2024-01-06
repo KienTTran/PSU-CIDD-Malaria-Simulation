@@ -26,6 +26,8 @@ void PersonIndexByLocationMovingLevel::Initialize(const int &no_location, const 
   ppv2.assign(no_level, ppv);
 
   vPerson_.assign(no_location, ppv2);
+
+  Model::CONFIG->h_popsize_by_moving_level = ThrustTVectorHost<int>(no_location*no_level,0);
 }
 
 void PersonIndexByLocationMovingLevel::add(Person *p) {
@@ -57,6 +59,7 @@ std::size_t PersonIndexByLocationMovingLevel::size() const {
 void PersonIndexByLocationMovingLevel::add(Person *p, const int &location, const int &moving_level) {
   vPerson_[location][moving_level].push_back(p);
   p->PersonIndexByLocationMovingLevelHandler::set_index(vPerson_[location][moving_level].size() - 1);
+  Model::CONFIG->h_popsize_by_moving_level[location * Model::CONFIG->circulation_info().number_of_moving_levels + moving_level] = vPerson_[location][moving_level].size();
 }
 
 void PersonIndexByLocationMovingLevel::remove_without_set_index(Person *p) {
@@ -65,6 +68,7 @@ void PersonIndexByLocationMovingLevel::remove_without_set_index(Person *p) {
   vPerson_[p->location()][p->moving_level()][p->PersonIndexByLocationMovingLevelHandler::index()] =
       vPerson_[p->location()][p->moving_level()].back();
   vPerson_[p->location()][p->moving_level()].pop_back();
+  Model::CONFIG->h_popsize_by_moving_level[p->location() * Model::CONFIG->circulation_info().number_of_moving_levels + p->moving_level()] = vPerson_[p->location()][p->moving_level()].size();
 }
 
 void PersonIndexByLocationMovingLevel::change_property(Person *p, const int &location, const int &moving_level) {

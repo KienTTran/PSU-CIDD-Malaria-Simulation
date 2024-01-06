@@ -11,7 +11,7 @@
 gpu_config:
   n_threads: 1024
   people_1_batch: 102400000
-  pre_allocated_mem_ratio: 1.0 #1.0 will turn off displaying GUI as well
+  pre_allocated_mem_ratio: 1.1 #1.0 will turn off displaying GUI as well
   n_parasites_per_person: 1
 
 render_config:
@@ -20,6 +20,9 @@ render_config:
   display_gui: true #in order to displaying GUI, pre_allocated_mem_ratio must be set to > 1.0
   close_window_on_finish: true
   point_coord: 0.075
+  shaders:
+    vertex: "../../input/shaders/shader.vert"
+    fragment: "../../input/shaders/shader.frag"
 
 debug_config:
   width: 0
@@ -28,6 +31,7 @@ debug_config:
   enable_debug_text: true
   enable_debug_render: false
   enable_debug_render_text: false
+  log_interval: 100
 
 #set <0 to randomize seed using clock
 initial_seed_number: 123456789
@@ -38,7 +42,7 @@ initial_seed_number: 123456789
 starting_date: 2000/1/1
 
 # ending time point of the simulation (in yyyy/m/d format)
-ending_date: 2020/1/1
+ending_date: 2001/1/1
 
 # the day at which the simulation's reporting functionality begins collecting data for
 # EIR, # of clinical episodes, # death , # of treatment, #TF by location,...
@@ -122,7 +126,6 @@ death_rate_by_age_class: [ 0.053979329, 0.018935757, 0.006867257, 0.001124347, 0
 # when received treatment, this rate drop by factor of 10 in code
 mortality_when_treatment_fail_by_age_class: [ 0.040, 0.020,0.020,0.020,0.020,0.004,0.004,0.004,0.004,0.004,0.004, 0.001, 0.001, 0.001, 0.001 ]
 
-
 # definitions of some log parasite density levels
 #
 parasite_density_level:
@@ -188,7 +191,7 @@ circulation_info:
     Gamma:
       mean: 5
       sd: 10
-  circulation_percent: 0.0
+  circulation_percent: 0.00336
   length_of_stay:
     mean: 5
     sd: 10
@@ -897,7 +900,7 @@ events:
   - name: change_treatment_strategy
     info:
       - day: 2010/1/1
-        strategy_id: 8
+        strategy_id: 5
   - name: change_treatment_coverage
     info:
       - type: SteadyTCM

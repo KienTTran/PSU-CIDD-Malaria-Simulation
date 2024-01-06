@@ -48,8 +48,18 @@ void PersonIndexByLocationStateAgeClass::add(Person *p) {
 
 void PersonIndexByLocationStateAgeClass::add(Person *p, const int &location, const Person::HostStates &host_state,
                                              const int &age_class) {
+//  LOG_IF(p->location() == 0 && p->host_state() == 2 && p->age_class() == 14,INFO)
+//    << fmt::format("LocHostAC add before loc {}->{} hs {}->{} ac {}->{} size {}->{}",
+//                   p->location(),location,static_cast<int>(p->host_state()),static_cast<int>(host_state),p->age_class(),age_class,
+//                   vPerson()[p->location()][p->host_state()][p->age_class()].size(),
+//                   vPerson()[location][host_state][age_class].size());
   vPerson_[location][host_state][age_class].push_back(p);
   p->PersonIndexByLocationStateAgeClassHandler::set_index(vPerson_[location][host_state][age_class].size() - 1);
+//  LOG_IF(p->location() == 0 && p->host_state() == 2 && p->age_class() == 14,INFO)
+//    << fmt::format("LocHostAC add before loc {}->{} hs {}->{} ac {}->{} size {}->{}",
+//                   p->location(),location,static_cast<int>(p->host_state()),static_cast<int>(host_state),p->age_class(),age_class,
+//                   vPerson()[p->location()][p->host_state()][p->age_class()].size(),
+//                   vPerson()[location][host_state][age_class].size());
 }
 
 void PersonIndexByLocationStateAgeClass::remove(Person *p) {
@@ -58,11 +68,19 @@ void PersonIndexByLocationStateAgeClass::remove(Person *p) {
 }
 
 void PersonIndexByLocationStateAgeClass::remove_without_set_index(Person *p) {
+//  LOG_IF(p->location() == 0 && p->host_state() == 2 && p->age_class() == 14,INFO)
+//    << fmt::format("LocHostAC remove before loc {} hs {} ac {} size {}",
+//                   p->location(),static_cast<int>(p->host_state()),p->age_class(),
+//                   vPerson()[p->location()][p->host_state()][p->age_class()].size());
   vPerson_[p->location()][p->host_state()][p->age_class()].back()->PersonIndexByLocationStateAgeClassHandler::set_index(
       p->PersonIndexByLocationStateAgeClassHandler::index());
   vPerson_[p->location()][p->host_state()][p->age_class()][p->PersonIndexByLocationStateAgeClassHandler::index()] =
       vPerson_[p->location()][p->host_state()][p->age_class()].back();
   vPerson_[p->location()][p->host_state()][p->age_class()].pop_back();
+//  LOG_IF(p->location() == 0 && p->host_state() == 2 && p->age_class() == 14,INFO)
+//    << fmt::format("LocHostAC remove after loc {} hs {} ac {} size {}",
+//                   p->location(),static_cast<int>(p->host_state()),p->age_class(),
+//                   vPerson()[p->location()][p->host_state()][p->age_class()].size());
 }
 
 std::size_t PersonIndexByLocationStateAgeClass::size() const {
@@ -74,12 +92,18 @@ PersonIndexByLocationStateAgeClass::notify_change(Person *p, const Person::Prope
                                                   const void *newValue) {
 
   switch (property) {
-    case Person::LOCATION:change_property(p, *(int *) newValue, p->host_state(), p->age_class());
-      break;
-    case Person::HOST_STATE:change_property(p, p->location(), *(Person::HostStates *) newValue, p->age_class());
-      break;
-    case Person::AGE_CLASS:change_property(p, p->location(), p->host_state(), *(int *) newValue);
-      break;
+    case Person::LOCATION: {
+      change_property(p, *(int *) newValue, p->host_state(), p->age_class());
+    }
+          break;
+    case Person::HOST_STATE: {
+      change_property(p, p->location(), *(Person::HostStates *) newValue, p->age_class());
+    }
+          break;
+    case Person::AGE_CLASS: {
+      change_property(p, p->location(), p->host_state(), *(int *) newValue);
+    }
+          break;
     default:break;
   }
 
@@ -87,11 +111,24 @@ PersonIndexByLocationStateAgeClass::notify_change(Person *p, const Person::Prope
 
 void PersonIndexByLocationStateAgeClass::change_property(Person *p, const int &location,
                                                          const Person::HostStates &host_state, const int &age_class) {
+//  LOG_IF(p->location() == 0 && p->host_state() == 2 && p->age_class() == 14,INFO)
+//  << "Changing " << p->location() << "-" << static_cast<int>(p->host_state()) << "-" << p->age_class() << " to "
+//    << location << "-" << static_cast<int>(host_state) << "-" << age_class;
+//  LOG_IF(p->location() == 0 && p->host_state() == 2 && p->age_class() == 14,INFO)
+//    << fmt::format("LocHostAC change_property before remove-add loc {}->{} hs {}->{} ac {}->{} size {}->{}",
+//                   p->location(),location,static_cast<int>(p->host_state()),static_cast<int>(host_state),p->age_class(),age_class,
+//                   vPerson()[p->location()][p->host_state()][p->age_class()].size(),
+//                   vPerson()[location][host_state][age_class].size());
   //remove from old position
   remove_without_set_index(p); //to save 1 set and improve performance since the index of p will changed when add
 
   //add to new position
   add(p, location, host_state, age_class);
+//  LOG_IF(p->location() == 0 && p->host_state() == 2 && p->age_class() == 14,INFO)
+//    << fmt::format("LocHostAC change_property after remove-add loc {}->{} hs {}->{} ac {}->{} size {}->{}",
+//                   p->location(),location,static_cast<int>(p->host_state()),static_cast<int>(host_state),p->age_class(),age_class,
+//                   vPerson()[p->location()][p->host_state()][p->age_class()].size(),
+//                   vPerson()[location][host_state][age_class].size());
 }
 
 void PersonIndexByLocationStateAgeClass::update() {
@@ -99,6 +136,7 @@ void PersonIndexByLocationStateAgeClass::update() {
     for (int hs = 0; hs < Person::NUMBER_OF_STATE; hs++) {
       for (int ac = 0; ac < Model::CONFIG->number_of_age_classes(); ac++) {
         std::vector<Person *>(vPerson_[location][hs][ac]).swap(vPerson_[location][hs][ac]);
+        vPerson_[location][hs][ac].shrink_to_fit();
       }
     }
   }

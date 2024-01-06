@@ -16,6 +16,9 @@
 #include "Helpers/TimeHelpers.h"
 #include "Model.h"
 #include "easylogging++.h"
+#include "Gpu/Events/Population/UpdateByLocationEvent.cuh"
+#include "Gpu/Events/Population/UpdateRenderPositionEvent.cuh"
+#include "Gpu/Events/Population/UpdateRenderOGLEvent.cuh"
 
 using namespace date;
 
@@ -128,6 +131,7 @@ void Scheduler::run() {
     end_time_step();
     calendar_date += days { 1 };
   }
+  Model::MODEL->model_finished = true;
 }
 
 void Scheduler::begin_time_step() const {
@@ -148,6 +152,12 @@ void Scheduler::daily_update() {
       // std::cout << date::year_month_day{calendar_date} << std::endl;
       model_->yearly_update();
     }
+
+    if (Model::CONFIG->render_config().display_gui) {
+      UpdateRenderPositionEvent::schedule_event(Model::SCHEDULER, current_time_);
+      UpdateRenderOGLEvent::schedule_event(Model::SCHEDULER, current_time_);
+    }
+    UpdateByLocationEvent::schedule_event(Model::SCHEDULER, current_time_);
 
     // population related events
     execute_events_list(population_events_list_[current_time_]);

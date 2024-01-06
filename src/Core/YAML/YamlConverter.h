@@ -48,6 +48,61 @@ struct convert<date::year_month_day> {
   }
 };
 
+template <>
+struct convert<GPUConfig> {
+    static Node encode(const GPUConfig& gcfe) {
+        Node node;
+        node.push_back("gpu_config");
+        return node;
+    }
+    static bool decode(const Node& node, GPUConfig& gcfd) {
+        gcfd.n_threads = node["n_threads"].as<int>();
+        gcfd.people_1_batch = node["people_1_batch"].as<int>();
+        gcfd.pre_allocated_mem_ratio = node["pre_allocated_mem_ratio"].as<double>();
+        gcfd.n_parasites_per_person = node["n_parasites_per_person"].as<int>();
+        return true;
+    }
+};
+
+
+template <>
+struct convert<RenderConfig> {
+    static Node encode(const RenderConfig& rcfe) {
+        Node node;
+        node.push_back("render_config");
+        return node;
+    }
+    static bool decode(const Node& node, RenderConfig& rcfd) {
+        rcfd.display_gui = node["display_gui"].as<bool>();
+        rcfd.close_window_on_finish = node["close_window_on_finish"].as<bool>();
+        rcfd.point_coord = node["point_coord"].as<double>();
+        rcfd.window_width = node["window_width"].as<int>();
+        rcfd.window_height = node["window_height"].as<int>();
+        rcfd.fragment_shader_path = node["shaders"]["fragment"].as<std::string>();
+        rcfd.vertex_shader_path = node["shaders"]["vertex"].as<std::string>();
+        return true;
+    }
+};
+
+template <>
+struct convert<DebugConfig> {
+    static Node encode(const DebugConfig& dgbcfe) {
+        Node node;
+        node.push_back("debug_config");
+        return node;
+    }
+    static bool decode(const Node& node, DebugConfig& dgbcfd) {
+        dgbcfd.enable_debug_render = node["enable_debug_render"].as<bool>();
+        dgbcfd.enable_debug_text = node["enable_debug_text"].as<bool>();
+        dgbcfd.enable_debug_render_text = node["enable_debug_render_text"].as<bool>();
+        dgbcfd.enable_update = node["enable_update"].as<bool>();
+        dgbcfd.height = node["height"].as<int>();
+        dgbcfd.width = node["width"].as<int>();
+        dgbcfd.width = node["width"].as<int>();
+        dgbcfd.log_interval = node["log_interval"].as<int>();
+        return true;
+    }
+};
 
 template<>
 struct convert<RasterDb> {
