@@ -7,6 +7,7 @@
 #include "Therapies/DrugDatabase.h"
 #include "Parasites/GenotypeDatabase.h"
 #include "Core/MultinomialDistributionGenerator.h"
+#include "Environment/SeasonalInfo.h"
 
 namespace YAML {
 class Node;
@@ -63,29 +64,21 @@ public:
 };
 
 class seasonal_info : public IConfigItem {
- DISALLOW_COPY_AND_ASSIGN(seasonal_info)
+DISALLOW_COPY_AND_ASSIGN(seasonal_info)
+DISALLOW_MOVE(seasonal_info)
 
- DISALLOW_MOVE(seasonal_info)
+private:
+    ISeasonalInfo* value_{nullptr};
 
- public:
-  SeasonalInfo value_{};
- public:
-  //constructor
-  explicit seasonal_info(const std::string &name, SeasonalInfo default_value, Config *config = nullptr) : IConfigItem(
-      config, name),
-                                                                                                          value_{
-                                                                                                              std::move(
-                                                                                                                  default_value)
-                                                                                                          } {}
+public:
+    // Invoked via macro definition
+    explicit seasonal_info(const std::string &name, ISeasonalInfo *default_value, Config *config = nullptr) :
+            IConfigItem(config, name), value_{default_value} { }
 
-  // destructor
-  virtual ~seasonal_info() = default;
+    ~seasonal_info() override;
 
-  virtual SeasonalInfo &operator()() {
-    return value_;
-  }
-
-  void set_value(const YAML::Node &node) override;
+    ISeasonalInfo* operator()() { return value_; }
+    void set_value(const YAML::Node &node) override;
 };
 
 namespace Spatial {

@@ -441,22 +441,23 @@ void Model::add_reporter(Reporter* reporter) {
   reporter->set_model(this);
 }
 
-double Model::get_seasonal_factor(const date::sys_days& today, const int& location) const {
-  if (!Model::CONFIG->seasonal_info().enable) {
-    return 1;
-  }
-  const auto day_of_year = TimeHelpers::day_of_year(today);
-  const auto is_rainy_period =
-      Model::CONFIG->seasonal_info().phi[location] < Constants::DAYS_IN_YEAR() / 2.0
-          ? day_of_year >= Model::CONFIG->seasonal_info().phi[location]
-                && day_of_year <= Model::CONFIG->seasonal_info().phi[location] + Constants::DAYS_IN_YEAR() / 2.0
-          : day_of_year >= Model::CONFIG->seasonal_info().phi[location]
-                || day_of_year <= Model::CONFIG->seasonal_info().phi[location] - Constants::DAYS_IN_YEAR() / 2.0;
-
-  return (is_rainy_period)
-             ? (Model::CONFIG->seasonal_info().A[location] - Model::CONFIG->seasonal_info().min_value[location])
-                       * sin(Model::CONFIG->seasonal_info().B[location] * day_of_year
-                             + Model::CONFIG->seasonal_info().C[location])
-                   + Model::CONFIG->seasonal_info().min_value[location]
-             : Model::CONFIG->seasonal_info().min_value[location];
-}
+//
+//double Model::get_seasonal_factor(const date::sys_days& today, const int& location) const {
+//  if (!Model::CONFIG->seasonal_info().enable) {
+//    return 1;
+//  }
+//  const auto day_of_year = TimeHelpers::day_of_year(today);
+//  const auto is_rainy_period =
+//      Model::CONFIG->seasonal_info().phi[location] < Constants::DAYS_IN_YEAR() / 2.0
+//          ? day_of_year >= Model::CONFIG->seasonal_info().phi[location]
+//                && day_of_year <= Model::CONFIG->seasonal_info().phi[location] + Constants::DAYS_IN_YEAR() / 2.0
+//          : day_of_year >= Model::CONFIG->seasonal_info().phi[location]
+//                || day_of_year <= Model::CONFIG->seasonal_info().phi[location] - Constants::DAYS_IN_YEAR() / 2.0;
+//
+//  return (is_rainy_period)
+//             ? (Model::CONFIG->seasonal_info().A[location] - Model::CONFIG->seasonal_info().min_value[location])
+//                       * sin(Model::CONFIG->seasonal_info().B[location] * day_of_year
+//                             + Model::CONFIG->seasonal_info().C[location])
+//                   + Model::CONFIG->seasonal_info().min_value[location]
+//             : Model::CONFIG->seasonal_info().min_value[location];
+//}

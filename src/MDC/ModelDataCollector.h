@@ -283,6 +283,8 @@ public:
 private:
   void update_average_number_bitten(const int& location, const int& birthday, const int& number_of_times_bitten);
 
+  void check_nan_inf(double &value);
+
 };
 
 #endif /* MODELDATACOLLECTOR_H */

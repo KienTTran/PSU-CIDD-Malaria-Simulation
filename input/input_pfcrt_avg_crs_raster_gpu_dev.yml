@@ -74,20 +74,20 @@ initial_age_structure: [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 25, 
 artificial_rescaling_of_population_size: 1.0
 
 raster_db:
-  population_raster: "../../input/sample_1x1/population.asc"
-  district_raster: "../../input/sample_1x1/admin.asc"
-  ecoclimatic_raster: "../../input/sample_1x1/ecoclimatic.asc"
-  travel_raster: "../../input/sample_1x1/travel.asc"
+#  population_raster: "../../input/sample_1x1/population.asc"
+#  district_raster: "../../input/sample_1x1/admin.asc"
+#  ecoclimatic_raster: "../../input/sample_1x1/ecoclimatic.asc"
+#  travel_raster: "../../input/sample_1x1/travel.asc"
 
 #  population_raster: "../../input/sample_2x2/population.asc"
 #  district_raster: "../../input/sample_2x2/admin.asc"
 #  ecoclimatic_raster: "../../input/sample_2x2/ecoclimatic.asc"
 #  travel_raster: "../../input/sample_2x2/travel.asc"
 
-#  population_raster: "../../input/sample_3x3/population.asc"
-#  district_raster: "../../input/sample_3x3/admin.asc"
-#  ecoclimatic_raster: "../../input/sample_3x3/ecoclimatic.asc"
-#  travel_raster: "../../input/sample_3x3/travel.asc"
+  population_raster: "../../input/sample_3x3/population.asc"
+  district_raster: "../../input/sample_3x3/admin.asc"
+  ecoclimatic_raster: "../../input/sample_3x3/ecoclimatic.asc"
+  travel_raster: "../../input/sample_3x3/travel.asc"
 
   p_treatment_for_less_than_5_by_location: [ 0.5 ]
   p_treatment_for_more_than_5_by_location: [ 0.5 ]
@@ -95,18 +95,17 @@ raster_db:
 
   cell_size: 5
   age_distribution_by_location: [[0.0449, 0.0449, 0.0449, 0.0449, 0.0315, 0.0315, 0.0315, 0.0315, 0.0315, 0.0268, 0.0268, 0.0268, 0.0268, 0.0268, 0.1990, 0.1251, 0.0855, 0.0560, 0.0346, 0.0289, 0.0000]]
-#  p_treatment_for_less_than_5_by_location: [-1]
-#  p_treatment_for_more_than_5_by_location: [-1]
-#  beta_by_location: [-1]
-
 
 # seasonality parameters for all location
 seasonal_info:
-  enable: false
-  a: [ 1 ]
-  phi: [ 250 ]
-  min_value: [ 0.1 ]
-  period: 365
+  enable: true
+  mode: equation
+  equation:
+    raster: true
+    base: [ 0.4, 0.4, 0.4]
+    a:    [ 0.6, 0.6, 0.6]
+    b:    [ 2.5, 2.3, 1.9]
+    phi:  [ 146, 155, 155]
 
 spatial_model:
 #  name: "Wesolowski"
@@ -202,7 +201,7 @@ circulation_info:
     Gamma:
       mean: 5
       sd: 10
-  circulation_percent: 0.0 #0.00336
+  circulation_percent: 0.00336
   length_of_stay:
     mean: 5
     sd: 10

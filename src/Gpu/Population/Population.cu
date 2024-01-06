@@ -342,7 +342,7 @@ void GPU::Population::perform_circulation_event() {
      * d_num_leavers_from_to_no_zero is non-zero leavers in all locations
      * */
     int total_leavers = thrust::reduce(thrust::device,d_num_leavers_from_to_no_zero.begin(),d_num_leavers_from_to_no_zero.end());
-    LOG_IF(total_leavers == 0, INFO) << "[Population] Update population circulation GPU total_leavers = 0";
+//    LOG_IF(total_leavers == 0, DEBUG) << "[Population] Update population circulation GPU total_leavers = 0";
     if(total_leavers == 0) return;
 
     /*

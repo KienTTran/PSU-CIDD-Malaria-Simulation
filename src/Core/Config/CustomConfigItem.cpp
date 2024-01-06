@@ -19,6 +19,7 @@
 #include "Therapies/Therapy.h"
 #include "GIS/SpatialData.h"
 #include "Therapies/TherapyBuilder.h"
+#include "Environment/SeasonalInfo.h"
 
 void total_time::set_value(const YAML::Node &node) {
   value_ = (date::sys_days { config_->ending_date() } - date::sys_days(config_->starting_date())).count();
@@ -64,31 +65,40 @@ void spatial_districts::set_value(const YAML::Node &node) {
   }
 }
 
-void seasonal_info::set_value(const YAML::Node &node) {
-  auto seasonal_info_node = node[name_];
-  value_.A.clear();
-  value_.B.clear();
-  value_.C.clear();
-  value_.phi.clear();
-  value_.min_value.clear();
-  value_.enable = seasonal_info_node["enable"].as<bool>();
-
-  for (auto i = 0ul; i < config_->number_of_locations(); i++) {
-    auto input_loc = seasonal_info_node["a"].size() < config_->number_of_locations() ? 0 : i;
-    value_.A.push_back(seasonal_info_node["a"][input_loc].as<double>());
-
-    const auto period = seasonal_info_node["period"].as<double>();
-    auto B = 2 * M_PI / period;
-
-    value_.B.push_back(B);
-
-    const auto phi = seasonal_info_node["phi"][input_loc].as<float>();
-    value_.phi.push_back(phi);
-    auto C = -phi * B;
-    value_.C.push_back(C);
-
-    value_.min_value.push_back(seasonal_info_node["min_value"][input_loc].as<float>());
+seasonal_info::~seasonal_info() {
+  if (value_ != nullptr) {
+    delete value_;
+    value_ = nullptr;
   }
+}
+
+void seasonal_info::set_value(const YAML::Node &node) {
+  value_ = SeasonalInfoFactory::build(node[name_], config_);
+//
+//  auto seasonal_info_node = node[name_];
+//  value_.A.clear();
+//  value_.B.clear();
+//  value_.C.clear();
+//  value_.phi.clear();
+//  value_.min_value.clear();
+//  value_.enable = seasonal_info_node["enable"].as<bool>();
+//
+//  for (auto i = 0ul; i < config_->number_of_locations(); i++) {
+//    auto input_loc = seasonal_info_node["a"].size() < config_->number_of_locations() ? 0 : i;
+//    value_.A.push_back(seasonal_info_node["a"][input_loc].as<double>());
+//
+//    const auto period = seasonal_info_node["period"].as<double>();
+//    auto B = 2 * M_PI / period;
+//
+//    value_.B.push_back(B);
+//
+//    const auto phi = seasonal_info_node["phi"][input_loc].as<float>();
+//    value_.phi.push_back(phi);
+//    auto C = -phi * B;
+//    value_.C.push_back(C);
+//
+//    value_.min_value.push_back(seasonal_info_node["min_value"][input_loc].as<float>());
+//  }
 }
 
 spatial_model::~spatial_model() {

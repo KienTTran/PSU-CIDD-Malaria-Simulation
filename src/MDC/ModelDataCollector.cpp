@@ -401,7 +401,7 @@ void ModelDataCollector::perform_population_statistic() {
         popsize_by_location_.begin(), popsize_by_location_.end(),
         0
     );
-    mean_moi_ = sum_moi / static_cast<double>(sum_popsize_by_location);
+    mean_moi_ = sum_popsize_by_location == 0 ? 0 : sum_moi / static_cast<double>(sum_popsize_by_location);
 
     //        double number_of_assymptomatic_and_clinical = blood_slide_prevalence_by_location_[loc] + popsize_by_location_hoststate_[loc][Person::CLINICAL];
     //        number_of_positive_by_location_[loc] = popsize_by_location_hoststate_[loc][Person::ASYMPTOMATIC] + popsize_by_location_hoststate_[loc][Person::CLINICAL];
@@ -413,21 +413,22 @@ void ModelDataCollector::perform_population_statistic() {
             loc][Person::
         CLINICAL]) /
                                                                  blood_slide_prevalence_by_location_[loc];
+    check_nan_inf(fraction_of_positive_that_are_clinical_by_location_[loc]);
     const auto number_of_blood_slide_positive = blood_slide_prevalence_by_location_[loc];
-    blood_slide_prevalence_by_location_[loc] = blood_slide_prevalence_by_location_[loc] / static_cast<double>(
+    blood_slide_prevalence_by_location_[loc] = pop_sum_location == 0 ? 0 : blood_slide_prevalence_by_location_[loc] / static_cast<double>(
         pop_sum_location);
 
-    current_EIR_by_location_[loc] =
+    current_EIR_by_location_[loc] = popsize_by_location_[loc] == 0 ? 0 :
         (total_number_of_bites_by_location_[loc] - last_update_total_number_of_bites_by_location_[loc]) /
         static_cast<double>(popsize_by_location_[loc]);
     last_update_total_number_of_bites_by_location_[loc] = total_number_of_bites_by_location_[loc];
 
     last_10_blood_slide_prevalence_by_location_[loc][
         (Model::SCHEDULER->current_time() / Model::CONFIG->report_frequency()) %
-        10] = blood_slide_prevalence_by_location_[loc];
+        10] = blood_slide_prevalence_by_location_[loc] == 0 ? 0 : blood_slide_prevalence_by_location_[loc];
     last_10_fraction_positive_that_are_clinical_by_location_[loc][
         (Model::SCHEDULER->current_time() / Model::CONFIG->report_frequency()) %
-        10] = fraction_of_positive_that_are_clinical_by_location_[loc];
+        10] = fraction_of_positive_that_are_clinical_by_location_[loc] == 0  ? 0 : fraction_of_positive_that_are_clinical_by_location_[loc];
 
     for (int ac = 0; ac < Model::CONFIG->number_of_age_classes(); ac++) {
       last_10_fraction_positive_that_are_clinical_by_location_age_class_[loc][ac][
@@ -442,16 +443,16 @@ void ModelDataCollector::perform_population_statistic() {
                 ? 0
                 : number_of_clinical_by_location_age_group_by_5_[loc][ac] /
                   number_of_blood_slide_positive;
-      blood_slide_prevalence_by_location_age_group_[loc][ac] =
+      blood_slide_prevalence_by_location_age_group_[loc][ac] = popsize_by_location_age_class_[loc][ac] == 0 ? 0 :
           blood_slide_number_by_location_age_group_[loc][ac] /
           static_cast<double>(popsize_by_location_age_class_[loc][ac]);
 
-      blood_slide_prevalence_by_location_age_group_by_5_[loc][ac] =
+      blood_slide_prevalence_by_location_age_group_by_5_[loc][ac] = popsize_by_location_age_class_by_5_[loc][ac] == 0 ? 0 :
           blood_slide_number_by_location_age_group_by_5_[loc][ac] /
           static_cast<double>(popsize_by_location_age_class_by_5_[loc][ac]);
     }
     for(int age = 0; age < 80; age++){
-        blood_slide_prevalence_by_location_age_[loc][age] =
+        blood_slide_prevalence_by_location_age_[loc][age] = popsize_by_location_age_[loc][age] == 0 ? 0 :
         blood_slide_number_by_location_age_[loc][age] /
         static_cast<double>(popsize_by_location_age_[loc][age]);
     }
@@ -474,9 +475,8 @@ void ModelDataCollector::perform_yearly_update() {
     }
   } else if (Model::SCHEDULER->current_time() > Model::CONFIG->start_collect_data_day()) {
     for (auto loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
-      auto eir = (total_number_of_bites_by_location_year_[loc] /
-                  static_cast<double>(person_days_by_location_year_[loc
-                  ])) *
+      auto eir = person_days_by_location_year_[loc] == 0 ? 0.0 : (total_number_of_bites_by_location_year_[loc] /
+                  static_cast<double>(person_days_by_location_year_[loc])) *
                  Constants::DAYS_IN_YEAR();
       //only record year have positive EIR
       //            if (EIR > 0) {
@@ -516,9 +516,8 @@ void ModelDataCollector::calculate_eir() {
           (Model::SCHEDULER->current_time() - Model::CONFIG->start_collect_data_day()) /
           static_cast<double>(Constants::
           DAYS_IN_YEAR());
-      double eir = (total_number_of_bites_by_location_year_[loc] /
-                    static_cast<double>(person_days_by_location_year_[loc
-                    ])) * Constants::DAYS_IN_YEAR();
+      double eir = person_days_by_location_year_[loc] == 0 ? 0.0 : (total_number_of_bites_by_location_year_[loc] /
+                    static_cast<double>(person_days_by_location_year_[loc])) * Constants::DAYS_IN_YEAR();
       eir = eir / total_time_in_years;
       EIR_by_location_[loc] = eir;
     } else {
@@ -528,8 +527,7 @@ void ModelDataCollector::calculate_eir() {
       EIR_by_location_[loc] = ((EIR_by_location_year_[loc].size() - number_of_0) == 0.0)
                               ? 0.0
                               : sum_eir /
-                                (EIR_by_location_year_[loc].size() -
-                                 number_of_0);
+                                (EIR_by_location_year_[loc].size() - number_of_0);
     }
   }
 }
@@ -909,4 +907,13 @@ void ModelDataCollector::monthly_update() {
 
 void ModelDataCollector::record_1_migration(Person* pPerson, const int& from, const int& to) {
 
+}
+
+void ModelDataCollector::check_nan_inf(double &value){
+    if(std::isnan(value)){
+        value = 0;
+    }
+    if(std::isinf(value)){
+        value = -9999;
+    }
 }

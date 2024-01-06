@@ -54,7 +54,7 @@ void MMCReporter::monthly_report() {
   ss << Model::SCHEDULER->current_time() << sep;
   ss << std::chrono::system_clock::to_time_t(Model::SCHEDULER->calendar_date) << sep;
   ss << date::format("%Y\t%m\t%d", Model::SCHEDULER->calendar_date) << sep;
-  ss << Model::MODEL->get_seasonal_factor(Model::SCHEDULER->calendar_date, 0) << sep;
+  ss << Model::CONFIG->seasonal_info()->get_seasonal_factor(Model::SCHEDULER->calendar_date, 0) << sep;
   ss << Model::TREATMENT_COVERAGE->get_probability_to_be_treated(0, 1) << sep;
   ss << Model::TREATMENT_COVERAGE->get_probability_to_be_treated(0, 10) << sep;
   ss << Model::POPULATION->size() << sep;

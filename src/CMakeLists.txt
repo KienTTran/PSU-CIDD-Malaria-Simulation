@@ -21,6 +21,7 @@ file(GLOB SRC_FILES *.cpp
         Reporters/*.cpp 
         Spatial/*.cpp
         Spatial/*.hxx
+        Environment/*.cpp
         Strategies/*.cpp
         Therapies/*.cpp
         Mosquito/*.cpp

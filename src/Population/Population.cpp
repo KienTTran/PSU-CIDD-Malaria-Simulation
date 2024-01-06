@@ -154,7 +154,7 @@ void Population::perform_infection_event() {
     if (force_of_infection <= DBL_EPSILON) continue;
 
     const auto new_beta = Model::CONFIG->location_db()[loc].beta
-                          * Model::MODEL->get_seasonal_factor(Model::SCHEDULER->calendar_date, loc);
+                          * Model::CONFIG->seasonal_info()->get_seasonal_factor(Model::SCHEDULER->calendar_date, loc);
 
     auto poisson_means = new_beta * force_of_infection;
 
@@ -312,6 +312,7 @@ void Population::introduce_parasite(const int& location, Genotype* parasite_type
 }
 
 void Population::initial_infection(Person* person, Genotype* parasite_type) const {
+  if(person == nullptr) return;
   person->immune_system()->set_increase(true);
   person->set_host_state(Person::ASYMPTOMATIC);
 
@@ -567,14 +568,14 @@ void Population::perform_circulation_event() {
 
   for (int from_location = 0; from_location < Model::CONFIG->number_of_locations(); from_location++) {
     auto poisson_means = size(from_location) * Model::CONFIG->circulation_info().circulation_percent;
-    LOG_IF(poisson_means == 0, INFO)
-      << "[Population] Update population circulation CPU " << from_location << " "
-      << Model::DATA_COLLECTOR->popsize_residence_by_location()[from_location]  << " poisson_means = 0";
+//    LOG_IF(poisson_means == 0, DEBUG)
+//      << "[Population] Update population circulation CPU " << from_location << " "
+//      << Model::DATA_COLLECTOR->popsize_residence_by_location()[from_location]  << " poisson_means = 0";
     if (poisson_means == 0) continue;
     const auto number_of_circulating_from_this_location = Model::RANDOM->random_poisson(poisson_means);
-    LOG_IF(number_of_circulating_from_this_location == 0, INFO)
-      << "[Population] Update population circulation CPU " << from_location << " "
-      << Model::DATA_COLLECTOR->popsize_residence_by_location()[from_location]  << " number_of_circulating_from_this_location = 0";
+//    LOG_IF(number_of_circulating_from_this_location == 0, DEBUG)
+//      << "[Population] Update population circulation CPU " << from_location << " "
+//      << Model::DATA_COLLECTOR->popsize_residence_by_location()[from_location]  << " number_of_circulating_from_this_location = 0";
     if (number_of_circulating_from_this_location == 0) continue;
 
     DoubleVector v_relative_outmovement_to_destination(Model::CONFIG->number_of_locations(), 0);
@@ -600,9 +601,9 @@ void Population::perform_circulation_event() {
     }
   }
 
-  for (auto* p : today_circulations) {
-    p->randomly_choose_target_location();
-  }
+//  for (auto* p : today_circulations) {
+//    p->randomly_choose_target_location();
+//  }
 
   today_circulations.clear();
 

@@ -162,7 +162,7 @@ public:
     CONFIG_ITEM(n_people_init, int, 0)
 
     CUSTOM_CONFIG_ITEM(spatial_districts, IntVector())
-    CUSTOM_CONFIG_ITEM(seasonal_info, SeasonalInfo())
+    CUSTOM_CONFIG_ITEM(seasonal_info, nullptr)
     CONFIG_ITEM(initial_seed_number, unsigned long, 0)
 
     ThrustTVectorHost<double> h_spatial_distances;

@@ -84,17 +84,17 @@ raster_db:
 
   cell_size: 5
   age_distribution_by_location: [[0.0449, 0.0449, 0.0449, 0.0449, 0.0315, 0.0315, 0.0315, 0.0315, 0.0315, 0.0268, 0.0268, 0.0268, 0.0268, 0.0268, 0.1990, 0.1251, 0.0855, 0.0560, 0.0346, 0.0289, 0.0000]]
-#  p_treatment_for_less_than_5_by_location: [-1]
-#  p_treatment_for_more_than_5_by_location: [-1]
-#  beta_by_location: [-1]
 
 # seasonality parameters for all location
 seasonal_info:
-  enable: false
-  a: [ 1 ]
-  phi: [ 250 ]
-  min_value: [ 0.1 ]
-  period: 365
+  enable: true
+  mode: equation
+  equation:
+    raster: true
+    base: [ 0.4, 0.4, 0.4]
+    a:    [ 0.6, 0.6, 0.6]
+    b:    [ 2.5, 2.3, 1.9]
+    phi:  [ 146, 155, 155]
 
 spatial_model:
 #  name: "Wesolowski"
