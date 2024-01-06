@@ -123,7 +123,8 @@ void UpdateRenderPositionEvent::execute() {
 
         auto lapse = std::chrono::high_resolution_clock::now() - tp_start;
         if(Model::CONFIG->debug_config().enable_debug_text){
-            LOG_IF(Model::SCHEDULER->current_time() % Model::CONFIG->debug_config().log_interval == 0, INFO) << fmt::format("[Person Update Event] Update population movement time: {} ms",std::chrono::duration_cast<std::chrono::milliseconds>(lapse).count());
+            LOG_IF(Model::SCHEDULER->current_time() % Model::CONFIG->debug_config().log_interval == 0, INFO)
+            << fmt::format("[GPU Person Update Event] Update population movement time: {} ms",std::chrono::duration_cast<std::chrono::milliseconds>(lapse).count());
         }
     }
 }

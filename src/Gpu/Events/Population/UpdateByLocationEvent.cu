@@ -45,6 +45,6 @@ void UpdateByLocationEvent::execute() {
     if(Model::CONFIG->debug_config().enable_debug_text){
         auto lapse = std::chrono::high_resolution_clock::now() - tp_start;
         LOG_IF(Model::SCHEDULER->current_time() % Model::CONFIG->debug_config().log_interval == 0, INFO)
-        << fmt::format("[Person Update Event] Update population by location time: {} ms",std::chrono::duration_cast<std::chrono::milliseconds>(lapse).count());
+        << fmt::format("[GPU Person Update Event] Update population by location time: {} ms",std::chrono::duration_cast<std::chrono::milliseconds>(lapse).count());
     }
 }

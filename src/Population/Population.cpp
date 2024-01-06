@@ -144,6 +144,7 @@ std::size_t Population::size_residents_only(const int& location) {
 }
 
 void Population::perform_infection_event() {
+  auto start = std::chrono::high_resolution_clock::now();
   //    std::cout << "Infection Event" << std::endl;
 
   PersonPtrVector today_infections;
@@ -204,6 +205,12 @@ void Population::perform_infection_event() {
   }
 
   today_infections.clear();
+  auto lapse = std::chrono::high_resolution_clock::now() - start;
+  if(Model::CONFIG->debug_config().enable_debug_text){
+      LOG_IF(Model::SCHEDULER->current_time() % Model::CONFIG->debug_config().log_interval == 0, INFO)
+      << "[Population] Update population infection event time: "
+      << std::chrono::duration_cast<std::chrono::milliseconds>(lapse).count() << " ms";
+  }
 }
 
 
@@ -276,8 +283,6 @@ void Population::introduce_initial_cases() {
       num_of_infections = num_of_infections <= 0 ? 1 : num_of_infections;
 
       auto* genotype = Model::CONFIG->genotype_db.at(p_info.parasite_type_id);
-      LOG(INFO) << "Introducing genotype " << p_info.parasite_type_id << " with prevalence: " << p_info.prevalence
-                << " : " << num_of_infections << " infections at location " << p_info.location;
 //       std::cout << p_info.location << "-" << p_info.parasite_type_id << "-" << num_of_infections << std::endl;
       introduce_parasite(p_info.location, genotype, num_of_infections);
     }
@@ -307,7 +312,6 @@ void Population::introduce_parasite(const int& location, Genotype* parasite_type
 }
 
 void Population::initial_infection(Person* person, Genotype* parasite_type) const {
-  if(person == nullptr) return;
   person->immune_system()->set_increase(true);
   person->set_host_state(Person::ASYMPTOMATIC);
 
@@ -657,6 +661,7 @@ void Population::initialize_person_indices() {
 }
 
 void Population::update_all_individuals() {
+  auto start = std::chrono::high_resolution_clock::now();
   // update all individuals
   auto pi = get_person_index<PersonIndexByLocationStateAgeClass>();
   for (int loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
@@ -668,17 +673,31 @@ void Population::update_all_individuals() {
       }
     }
   }
+  auto lapse = std::chrono::high_resolution_clock::now() - start;
+    if(Model::CONFIG->debug_config().enable_debug_text){
+        LOG_IF(Model::SCHEDULER->current_time() % Model::CONFIG->debug_config().log_interval == 0, INFO)
+        << "[Population] Update population all individuals event time: "
+                << std::chrono::duration_cast<std::chrono::milliseconds>(lapse).count() << " ms";
+    }
 }
 
 void Population::persist_current_force_of_infection_to_use_N_days_later() {
+  auto start = std::chrono::high_resolution_clock::now();
   for (auto loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
     force_of_infection_for_N_days_by_location[Model::SCHEDULER->current_time()
                                               % Model::CONFIG->number_of_tracking_days()][loc] =
         current_force_of_infection_by_location[loc];
   }
+  auto lapse = std::chrono::high_resolution_clock::now() - start;
+  if(Model::CONFIG->debug_config().enable_debug_text){
+    LOG_IF(Model::SCHEDULER->current_time() % Model::CONFIG->debug_config().log_interval == 0, INFO)
+      << "[Mosquito] Update FOI event time: "
+      << std::chrono::duration_cast<std::chrono::milliseconds>(lapse).count() << " ms";
+  }
 }
 
 void Population::update_current_foi() {
+  auto start = std::chrono::high_resolution_clock::now();
   auto pi = get_person_index<PersonIndexByLocationStateAgeClass>();
   for (int loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
     // reset force of infection for each location
@@ -716,5 +735,11 @@ void Population::update_current_foi() {
         }
       }
     }
+  }
+  auto lapse = std::chrono::high_resolution_clock::now() - start;
+  if(Model::CONFIG->debug_config().enable_debug_text){
+      LOG_IF(Model::SCHEDULER->current_time() % Model::CONFIG->debug_config().log_interval == 0, INFO)
+      << "[Population] Update population current foi event time: "
+              << std::chrono::duration_cast<std::chrono::milliseconds>(lapse).count() << " ms";
   }
 }

@@ -218,23 +218,26 @@ void Model::initialize() {
   // initialize infected_cases
   population_->introduce_initial_cases();
 
+  LOG(INFO) << "Initializing GPU::Population";
   gpu_population_->init();
+
+  LOG(INFO) << "Initializing GPU::Random";
   //Random always init with max population size
-  gpu_random_->init(Model::CONFIG->n_people_init() * Model::CONFIG->gpu_config().pre_allocated_mem_ratio,initial_seed_number_);
+  gpu_random_->init(Model::CONFIG->n_people_init()*Model::CONFIG->gpu_config().pre_allocated_mem_ratio,initial_seed_number_);
+
+  LOG(INFO) << "Initializing GPU::Utils";
   gpu_utils_->init();
 
+  LOG(INFO) << "Initializing GPU::RenderEntity";
   gpu_render_entity_->init_entity();//send h_population to render
+
+  LOG(INFO) << "Initializing GPU::Renderer";
   renderer_->init(gpu_render_entity_);
 
-  LOG(INFO) << "Schedule for population event";
+  LOG(INFO) << "Schedule for population event (if configured)";
   for (auto* event : config_->preconfig_population_events()) {
     scheduler_->schedule_population_event(event);
-    //    LOG(INFO) << scheduler_->population_events_list_[event->time].size();
   }
-  //
-  // for(auto it = CONFIG->genotype_db()->begin(); it != CONFIG->genotype_db()->end(); ++it) {
-  //   std::cout << it->first << " : " << it->second->daily_fitness_multiple_infection << std::endl;
-  // }
 }
 
 void Model::initialize_object_pool(const int& size) {

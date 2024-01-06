@@ -93,7 +93,8 @@ void UpdateRenderOGLEvent::execute() {
 
     auto lapse = std::chrono::high_resolution_clock::now() - tp_start;
     if(Model::CONFIG->debug_config().enable_debug_text) {
-        LOG_IF(Model::SCHEDULER->current_time() % Model::CONFIG->debug_config().log_interval == 0, INFO) << fmt::format("[Person Update Render] Update population render ({} {}) time: {} ms",
+        LOG_IF(Model::SCHEDULER->current_time() % Model::CONFIG->debug_config().log_interval == 0, INFO)
+        << fmt::format("[GPU Person Update Render] Update population render ({} {}) time: {} ms",
                pi->h_persons().size(),pi->h_person_models().size(),
                std::chrono::duration_cast<std::chrono::milliseconds>(lapse).count());
     }

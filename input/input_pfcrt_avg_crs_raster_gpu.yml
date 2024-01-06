@@ -11,15 +11,18 @@
 gpu_config:
   n_threads: 1024
   people_1_batch: 102400000
-  pre_allocated_mem_ratio: 1.0 #1.0 will turn off displaying GUI as well
+  pre_allocated_mem_ratio: 1.1 #1.0 will turn off displaying GUI as well
   n_parasites_per_person: 1
 
 render_config:
   window_width: 1280
   window_height: 720
-  display_gui: true #in order to displaying GUI, pre_allocated_mem_ratio must be set to > 1.0
+  display_gui: false #in order to displaying GUI, pre_allocated_mem_ratio must be set to > 1.0
   close_window_on_finish: true
   point_coord: 0.075
+  shaders:
+    vertex: "../../input/shaders/shader.vert"
+    fragment: "../../input/shaders/shader.frag"
 
 debug_config:
   width: 0
@@ -28,6 +31,7 @@ debug_config:
   enable_debug_text: true
   enable_debug_render: false
   enable_debug_render_text: false
+  log_interval: 100
 
 #set <0 to randomize seed using clock
 initial_seed_number: 123456789
@@ -187,7 +191,7 @@ circulation_info:
     Gamma:
       mean: 5
       sd: 10
-  circulation_percent: 0.0
+  circulation_percent: 0.00336
   length_of_stay:
     mean: 5
     sd: 10

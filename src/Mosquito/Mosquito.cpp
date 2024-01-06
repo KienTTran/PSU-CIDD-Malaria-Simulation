@@ -38,6 +38,7 @@ void Mosquito::initialize(Config *config) {
 
 void Mosquito::infect_new_cohort_in_PRMC(Config *config, Random *random, Population *population,
                                          const int &tracking_index) {
+  auto start = std::chrono::system_clock::now();
   // for each location fill prmc at tracking_index row with sampling genotypes
   for (int loc = 0; loc < config->number_of_locations(); loc++) {
     LOG(TRACE) << "Day " << Model::SCHEDULER->current_time()
@@ -138,6 +139,12 @@ void Mosquito::infect_new_cohort_in_PRMC(Config *config, Random *random, Populat
               : Genotype::free_recombine(config, random, parent_genotypes[0], parent_genotypes[1]);
       genotypes_table[tracking_index][loc][if_index] = sampled_genotype;
     }
+  }
+  auto lapse = std::chrono::system_clock::now() - start;
+  if(Model::CONFIG->debug_config().enable_debug_text){
+    LOG_IF(Model::SCHEDULER->current_time() % Model::CONFIG->debug_config().log_interval == 0, INFO)
+      << "[Mosquito] Update mosquito event time: "
+      << std::chrono::duration_cast<std::chrono::milliseconds>(lapse).count() << " ms";
   }
 }
 

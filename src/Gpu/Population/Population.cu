@@ -520,7 +520,7 @@ void GPU::Population::perform_circulation_event() {
     if(Model::CONFIG->debug_config().enable_debug_text){
         auto lapse = std::chrono::high_resolution_clock::now() - tp_start;
         LOG_IF(Model::SCHEDULER->current_time() % Model::CONFIG->debug_config().log_interval == 0, INFO)
-        << "[Population] Update population circulation GPU (" << d_circulations_indices_no_zero.size() << " " << d_num_leavers_from_to_no_zero.size()
+        << "[GPU Population] Update population circulation GPU (" << d_circulations_indices_no_zero.size() << " " << d_num_leavers_from_to_no_zero.size()
         << " " << total_leavers << " " << total_circulations << ") event time: "
         << std::chrono::duration_cast<std::chrono::milliseconds>(lapse).count() << " ms ";
     }

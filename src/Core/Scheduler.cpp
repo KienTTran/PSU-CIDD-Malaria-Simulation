@@ -145,6 +145,7 @@ void Scheduler::daily_update() {
     model_->daily_update();
 
     if (is_today_first_day_of_month()) {
+      UpdateByLocationEvent::schedule_event(Model::SCHEDULER, current_time_);
       model_->monthly_update();
     }
 
@@ -157,7 +158,6 @@ void Scheduler::daily_update() {
       UpdateRenderPositionEvent::schedule_event(Model::SCHEDULER, current_time_);
       UpdateRenderOGLEvent::schedule_event(Model::SCHEDULER, current_time_);
     }
-    UpdateByLocationEvent::schedule_event(Model::SCHEDULER, current_time_);
 
     // population related events
     execute_events_list(population_events_list_[current_time_]);
