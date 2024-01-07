@@ -17,20 +17,29 @@ public:
     curandState *d_states;
     int n_threads;
     int n_blocks;
-    ThrustTVectorDevice<curandState> d_location_curand_states;
 public:
     Random();
     ~Random();
 
-    void init(int n, long seed);
+    void init(int n, unsigned long seed);
     void init_curand_states(ThrustTVectorDevice<curandState> &d_curand_states, int size, long seed);
     void free();
-    void random_multinomial(int n_locations, int n_draws, ThrustTVectorDevice<int> N, ThrustTVectorDevice<double> &d_p, ThrustTVectorDevice<unsigned int> &d_n);
-    void sampling_multinomial(int n_locations, int K, ThrustTVectorDevice<int> N, ThrustTVectorDevice<double> &h_p, ThrustTVectorHost<unsigned int> &h_samples);
-
-    int randomPoisson(int n, float *A, int *B, int nthreads, unsigned long long seed, unsigned long long offset);
-    int randomBinomial(int nrows, int ncols, float *A, int atype, int *C, int ctype, int *Out, unsigned long long seed, unsigned long long offset);
-    int randomGamma(int nrows, int ncols, float *A, int atype, float *B, int btype, float *Out, unsigned long long seed, unsigned long long offset);
+    void random_multinomial(int n_locations, int n_samples_each_location,
+                                         ThrustTVectorDevice<int> d_n_trials,
+                                         ThrustTVectorDevice<double> d_distributions,
+                                         ThrustTVectorDevice<unsigned int> &d_samples);
+    template <class T>
+    TVector<T*> roulette_sampling(int n_locations, int n_samples_each_location,
+                                  TVector<T*> all_objects,
+                                  ThrustTVectorDevice<double> d_distributions,
+                                  ThrustTVectorDevice<double> &d_sum_distribution,
+                                  bool is_shuffled);
+    template <class T>
+    TVector<T*> multinomial_sampling(int n_locations, int n_samples_each_location,
+                                  TVector<T*> all_objects,
+                                  ThrustTVectorDevice<double> d_distributions,
+                                  ThrustTVectorDevice<double> &d_sum_distribution,
+                                  bool is_shuffled);
 };
 
 

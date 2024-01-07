@@ -33,8 +33,8 @@ debug_config:
   enable_debug_render_text: false
   log_interval: 100
 
-#set <0 to randomize seed using clock
-initial_seed_number: 123456789
+#set 0 to randomize seed using clock
+initial_seed_number: 0 #123456789
 
 # starting time point of the simulation (in yyyy/m/d format)
 # which is day 0 in the simulation

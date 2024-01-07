@@ -352,6 +352,7 @@ void Model::daily_update() {
   population_->update_current_foi();
 
   population_->perform_infection_event();
+  gpu_population_->perform_infection_event();
 //  population_->perform_circulation_event();
   gpu_population_->perform_circulation_event();
 

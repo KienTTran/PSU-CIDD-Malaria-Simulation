@@ -126,6 +126,13 @@ typedef std::map<int, Drug *> DrugPtrMap;
 typedef std::vector<Therapy *> TherapyPtrVector;
 typedef std::vector<IStrategy *> StrategyPtrVector;
 
+template <typename T>
+using TVector = std::vector<T>;
+template <typename T>
+using TVector2 = std::vector<TVector<T>>;
+template <typename T>
+using TVector3 = std::vector<TVector2<T>>;
+
 struct GPUConfig{
     int n_threads;
     int people_1_batch;

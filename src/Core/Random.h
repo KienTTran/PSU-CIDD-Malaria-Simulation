@@ -173,6 +173,7 @@ std::vector<T *> Random::roulette_sampling(int number_of_samples, std::vector<do
   if (is_shuffled) {
     random_shuffle(&samples[0], samples.size(), sizeof(T *));
   }
+
   return samples;
 }
 
