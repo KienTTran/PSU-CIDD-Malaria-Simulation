@@ -31,15 +31,15 @@ public:
     template <class T>
     TVector<T*> roulette_sampling(int n_locations, int n_samples_each_location,
                                   TVector<T*> all_objects,
-                                  ThrustTVectorDevice<double> d_distributions,
-                                  ThrustTVectorDevice<double> &d_sum_distribution,
+                                  ThrustTVectorDevice<double> d_distribution_all_locations,
+                                  ThrustTVectorDevice<double> &d_sum_distribution_all_locations,
                                   bool is_shuffled);
     template <class T>
     TVector<T*> multinomial_sampling(int n_locations, int n_samples_each_location,
-                                  TVector<T*> all_objects,
-                                  ThrustTVectorDevice<double> d_distributions,
-                                  ThrustTVectorDevice<double> &d_sum_distribution,
-                                  bool is_shuffled);
+                                     TVector<T*> all_objects,
+                                     ThrustTVectorDevice<double> d_distribution_all_locations,
+                                     ThrustTVectorDevice<double> &d_sum_distribution_all_locations,
+                                     bool is_shuffled);
 };
 
 

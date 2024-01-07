@@ -535,8 +535,8 @@ void GPU::Population::perform_infection_event() {
      * Also get indices from and to arrays
      * */
 
-    int n_locations = 2;
-    int n_person_each_location = 100;
+    int n_locations = 5;
+    int n_person_each_location = 20;
     int n_sample_each_location = 4;
     TVector<double> distribution(n_locations*n_person_each_location,0.0);
     TVector<double> sum_distribution(n_locations);
@@ -546,34 +546,67 @@ void GPU::Population::perform_infection_event() {
         auto *p = new Person();
         p->set_id(i);
         distribution[location_index*n_person_each_location+0] = 1.0;
-        distribution[location_index*n_person_each_location+10] = 0.2;
-        distribution[location_index*n_person_each_location+20] = 0.5;
-        distribution[location_index*n_person_each_location+30] = 0.8;
+        distribution[location_index*n_person_each_location+5] = 0.2;
+        distribution[location_index*n_person_each_location+10] = 0.5;
+        distribution[location_index*n_person_each_location+15] = 0.8;
         sum_distribution[location_index] = distribution[location_index*n_person_each_location+0]
+                                            + distribution[location_index*n_person_each_location+5]
                                             + distribution[location_index*n_person_each_location+10]
-                                            + distribution[location_index*n_person_each_location+20]
-                                            + distribution[location_index*n_person_each_location+30];
+                                            + distribution[location_index*n_person_each_location+15];
         all_persons.push_back(p);
 //        printf("location %d person %d\n",location_index,p->id());
     }
-//    for(int i = 0; i < n_locations; i++){
-//        printf("location %d sum %f\n",i,sum_distribution[i]);
-//    }
+    for(int i = 0; i < n_locations; i++){
+        printf("location %d sum %f\n",i,sum_distribution[i]);
+    }
     ThrustTVectorHost<double> h_distribution(distribution);
     ThrustTVectorHost<double> h_sum_distribution(sum_distribution);
     ThrustTVectorDevice<double> d_distribution = h_distribution;
     ThrustTVectorDevice<double> d_sum_distribution = h_sum_distribution;
 
+    auto result = Model::RANDOM->multinomial_sampling(n_sample_each_location,
+                                                   distribution,
+                                                   all_persons,
+                                                   false,
+                                                   sum_distribution[0]);
+
+    for(auto s : result){
+        printf("CPU location %d, multinomial samples %d\n", 0, s->id());
+    }
+
+    result = Model::RANDOM->roulette_sampling(n_sample_each_location,
+                                                 distribution,
+                                                 all_persons,
+                                                 false,
+                                                 sum_distribution[1]);
+
+    for(auto s : result){
+        printf("CPU location %d, roulette samples %d\n", 1, s->id());
+    }
+
     auto result_gpu = Model::GPU_RANDOM->roulette_sampling(n_locations,
-                                                       n_sample_each_location,
-                                                       all_persons,
-                                                       d_distribution,
-                                                       d_sum_distribution,
-                                                       true);
+                                                           n_sample_each_location,
+                                                           all_persons,
+                                                           d_distribution,
+                                                           d_sum_distribution,
+                                                           false);
 
     for(int i = 0; i <result_gpu.size(); i++){
         int location_index = i / n_sample_each_location;
-        printf("GPU location %d result id %d\n",location_index,result_gpu[i]->id());
+        printf("GPU Roulette location %d result id %d\n",location_index,result_gpu[i]->id());
     }
+
+    result_gpu = Model::GPU_RANDOM->multinomial_sampling(n_locations,
+                                                      n_sample_each_location,
+                                                      all_persons,
+                                                      d_distribution,
+                                                      d_sum_distribution,
+                                                      false);
+
+    for(int i = 0; i <result_gpu.size(); i++){
+        int location_index = i / n_sample_each_location;
+        printf("GPU Multinomial location %d result id %d\n",location_index,result_gpu[i]->id());
+    }
+
     exit(0);
 }

@@ -179,20 +179,128 @@ void GPU::Random::random_multinomial(int n_locations, int n_samples_each_locatio
     ThrustTVectorDevice<unsigned int>().swap(d_sum_n);
 }
 
+__global__ void multinomial_sampling_kernel(int n_locations,
+                                            int n_distributions_each_location,
+                                            int n_samples_each_location,
+                                            unsigned int *d_hit_per_object,
+                                            int *d_index,
+                                            int *d_sample_index,
+                                            int *d_all_objects_index){
+    int thread_index = blockIdx.x * blockDim.x + threadIdx.x;
+    int stride = blockDim.x * gridDim.x;
+    for(int index = thread_index; index < n_locations*n_distributions_each_location; index += stride){
+        int location_index = index / n_distributions_each_location;
+        int hit_index = index % n_distributions_each_location;
+        printf("kernel multinomial index %d location_index %d d_index %d "
+               "hit_index %d d_hit_per_object %d d_sample_index[%d] %d d_all_objects_index[%d] %d\n",
+               index,location_index,d_index[location_index],
+               hit_index,d_hit_per_object[hit_index],
+               location_index*n_samples_each_location+d_index[location_index],
+               d_sample_index[location_index*n_samples_each_location+d_index[location_index]],
+               index,
+               d_all_objects_index[index]);
+        for(int j = 0;  j < d_hit_per_object[hit_index]; j++){
+            d_sample_index[location_index*n_samples_each_location+d_index[location_index]] = d_all_objects_index[index];
+            d_index[location_index]++;
+        }
+    }
+}
+
+/*
+ * This is GPU version of Random::multinomial_sampling
+ * d_n_samples size is n_locations
+ * d_distribution_all_locations size is n_locations*n_distributions_each_location
+ * all_objects size is n_locations*n_distributions_each_location
+ * d_sum_distribution size is n_locations
+ * return size is n_locations*n_samples_each_location
+ * */
+template
+TVector<Person*> GPU::Random::multinomial_sampling<Person>(int, int,TVector<Person*>,ThrustTVectorDevice<double>,
+                                                        ThrustTVectorDevice<double>&,bool);
+template <class T>
+TVector<T*> GPU::Random::multinomial_sampling(int n_locations, int n_samples_each_location,
+                                              TVector<T*> all_objects,
+                                              ThrustTVectorDevice<double> d_distribution_all_locations,
+                                              ThrustTVectorDevice<double> &d_sum_distribution_all_locations,
+                                              bool is_shuffled){
+    int n_distributions_each_location = d_distribution_all_locations.size() / n_locations;
+    TVector<T*> samples(n_locations*n_samples_each_location, nullptr);
+    double d_sum = thrust::reduce(thrust::device, d_sum_distribution_all_locations.begin(), d_sum_distribution_all_locations.end(), 0.0, thrust::plus<double>());
+    if(d_sum == 0.0){
+        return samples;
+    }else if(d_sum == n_locations*(-1)){
+        ThrustTVectorHost<double> h_sum(n_locations);
+        for(int i = 0; i < n_locations; i++){
+            int index_from = i*n_distributions_each_location;
+            int index_to = index_from + n_distributions_each_location;
+            h_sum[i] = thrust::reduce(thrust::device,
+                                      d_distribution_all_locations.begin() + index_from,
+                                      d_distribution_all_locations.begin() + index_to,
+                                      0.0, thrust::plus<double>());
+//            printf("GPU h_sum[%d] = %f\n",i,h_sum[i]);
+        }
+        d_sum_distribution_all_locations = h_sum;
+    }
+
+    ThrustTVectorDevice<unsigned int> d_hit_per_object(d_distribution_all_locations.size());
+    ThrustTVectorDevice<int> d_n_trials(n_locations, n_samples_each_location);
+    random_multinomial(n_locations, n_distributions_each_location,d_n_trials,d_distribution_all_locations,d_hit_per_object);
+
+    ThrustTVectorDevice<int> d_index(n_locations*n_samples_each_location,0);
+    ThrustTVectorDevice<int> d_sample_index(n_locations*n_samples_each_location,0);
+    ThrustTVectorDevice<int> d_all_objects_index(n_locations*n_distributions_each_location);
+    thrust::sequence(thrust::device, d_all_objects_index.begin(), d_all_objects_index.end(), 0, 1);
+
+    int n_threads = Model::CONFIG->gpu_config().n_threads;
+    int n_blocks = (n_locations + n_threads + 1) / n_threads;
+    multinomial_sampling_kernel<<<n_blocks, n_threads>>>(n_locations,
+                                                         n_distributions_each_location,
+                                                         n_samples_each_location,
+                                                         thrust::raw_pointer_cast(d_hit_per_object.data()),
+                                                         thrust::raw_pointer_cast(d_index.data()),
+                                                         thrust::raw_pointer_cast(d_sample_index.data()),
+                                                         thrust::raw_pointer_cast(d_all_objects_index.data()));
+//
+//    thrust::copy(d_sample_index.begin(), d_sample_index.end(), std::ostream_iterator<int>(std::cout, "\n"));
+//    printf("\n");
+
+    if(is_shuffled){
+        thrust::default_random_engine g;
+        for(int i = 0; i < n_locations; i++){
+            int index_from = i*n_samples_each_location;
+            int index_to = index_from + n_samples_each_location;
+            printf("Multinomial location %d shuffle from %d to %d\n",i,index_from,index_to);
+            thrust::shuffle(thrust::device,
+                            d_sample_index.begin() + index_from,
+                            d_sample_index.begin() + index_to,
+                            g);
+        }
+    }
+
+//    thrust::copy(d_sample_index.begin(), d_sample_index.end(), std::ostream_iterator<double>(std::cout, "\n"));
+//    printf("\n");
+
+    for(int i = 0; i < d_sample_index.size(); i++){
+        samples[i] = all_objects[d_sample_index[i]];
+    }
+
+    return samples;
+}
+
 /*
  * curand_uniform return (0,1]
  * gsl_rng_uniform return [0,1)
  * */
 __global__ void random_uniform_kernel(curandState *d_state,int n_locations, int n_samples_each_location,
-                                      double *d_sum_distribution,double *d_uniform_sampling){
+                                      double *d_sum_distribution_all_locations,double *d_uniform_sampling){
     int thread_index = blockIdx.x * blockDim.x + threadIdx.x;
     int stride = blockDim.x * gridDim.x;
     curandState local_state = d_state[thread_index];
     for(int index = thread_index; index < n_locations*n_samples_each_location; index += stride){
         int location_index = index / n_samples_each_location;
-//        printf("kernel index %d location_index %d, sum %f\n",
-//               index,location_index,d_sum_distribution[location_index]);
-        d_uniform_sampling[index] = curand_uniform_double(&local_state) * d_sum_distribution[location_index];
+//        printf("kernel uniform index %d location_index %d, sum %f\n",
+//               index,location_index,d_sum_distribution_all_locations[location_index]);
+        d_uniform_sampling[index] = curand_uniform_double(&local_state) * d_sum_distribution_all_locations[location_index];
     }
     d_state[thread_index] = local_state;
 }
@@ -221,14 +329,14 @@ __global__ void roulette_sampling_kernel(int n_locations,
         for (auto i = 0; i < n_distributions_each_location; i++) {
             int pi = index * n_distributions_each_location + i;
             d_sum_weight[index] += d_distribution_all_locations[pi];
-//            printf("kernel location %d, n_distributions_each_location %d, pi %d, d_distribution_all_locations %f d_uniform_sampling[%d] = %f sum_weight %f\n",
+//            printf("kernel roulette location %d, n_distributions_each_location %d, pi %d, d_distribution_all_locations %f d_uniform_sampling[%d] = %f sum_weight %f\n",
 //                   index, n_distributions_each_location, pi, d_distribution_all_locations[pi],
 //                   index*n_samples_each_location+d_uniform_sampling_index[index],
 //                   d_uniform_sampling[index*n_samples_each_location+d_uniform_sampling_index[index]],
 //                   d_sum_weight[index]);
             while (d_uniform_sampling_index[index] < n_samples_each_location
             && d_uniform_sampling[index*n_samples_each_location+d_uniform_sampling_index[index]] < d_sum_weight[index]) {
-//                printf("  while kernel location %d, n_distributions_each_location %d, pi %d, d_distribution_all_locations %f sum_weight %f "
+//                printf("  while kernel roulette location %d, n_distributions_each_location %d, pi %d, d_distribution_all_locations %f sum_weight %f "
 //                       "d_uniform_sampling_index %d d_uniform_sampling[%d] = %f d_sample_index %d d_all_objects_index %d\n",
 //                       index, n_distributions_each_location, pi, d_distribution_all_locations[pi], d_sum_weight[index],
 //                       d_uniform_sampling_index[index],
@@ -250,37 +358,37 @@ __global__ void roulette_sampling_kernel(int n_locations,
 /*
  * This is GPU version of Random::roulette_sampling
  * d_n_samples size is n_locations
- * d_distributions size is n_locations*n_samples_each_location
+ * d_distribution_all_locations size is n_locations*distribution_size_each_location
  * all_objects size is n_locations*n_samples_each_location
- * d_sum_distribution size is n_locations
+ * d_sum_distribution_all_locations size is n_locations
  * return size is n_locations*n_samples_each_location
  * */
-
 template
 TVector<Person*> GPU::Random::roulette_sampling<Person>(int, int,TVector<Person*>,ThrustTVectorDevice<double>,
                                                        ThrustTVectorDevice<double>&,bool);
 template <class T>
 TVector<T*> GPU::Random::roulette_sampling(int n_locations, int n_samples_each_location,
                                            TVector<T*> all_objects,
-                                           ThrustTVectorDevice<double> d_distribution,
-                                           ThrustTVectorDevice<double> &d_sum_distribution,
+                                           ThrustTVectorDevice<double> d_distribution_all_locations,
+                                           ThrustTVectorDevice<double> &d_sum_distribution_all_locations,
                                            bool is_shuffled){
+    int n_distributions_each_location = d_distribution_all_locations.size() / n_locations;
     TVector<T*> samples(n_locations*n_samples_each_location, nullptr);
-    double d_sum = thrust::reduce(thrust::device, d_sum_distribution.begin(), d_sum_distribution.end(), 0.0, thrust::plus<double>());
+    double d_sum = thrust::reduce(thrust::device, d_sum_distribution_all_locations.begin(), d_sum_distribution_all_locations.end(), 0.0, thrust::plus<double>());
     if(d_sum == 0.0){
         return samples;
     }else if(d_sum == n_locations*(-1)){
         ThrustTVectorHost<double> h_sum(n_locations);
         for(int i = 0; i < n_locations; i++){
-            int index_from = i*d_distribution.size();
-            int index_to = index_from + d_distribution.size();
+            int index_from = i*n_distributions_each_location;
+            int index_to = index_from + n_distributions_each_location;
             h_sum[i] = thrust::reduce(thrust::device,
-                                                d_distribution.begin() + index_from,
-                                                d_distribution.begin() + index_to,
+                                                d_distribution_all_locations.begin() + index_from,
+                                                d_distribution_all_locations.begin() + index_to,
                                                 0.0, thrust::plus<double>());
-//            printf("GPU h_sum[%d] = %f\n",i,h_sum[i]);
+//            printf("GPU Roulette h_sum[%d] = %f\n",i,h_sum[i]);
         }
-        d_sum_distribution = h_sum;
+        d_sum_distribution_all_locations = h_sum;
     }
 
     ThrustTVectorDevice<double> d_uniform_sampling(n_locations*n_samples_each_location);
@@ -289,7 +397,7 @@ TVector<T*> GPU::Random::roulette_sampling(int n_locations, int n_samples_each_l
     random_uniform_kernel<<<n_blocks, n_threads>>>(d_states,
                                                    n_locations,
                                                    n_samples_each_location,
-                                                   thrust::raw_pointer_cast(d_sum_distribution.data()),
+                                                   thrust::raw_pointer_cast(d_sum_distribution_all_locations.data()),
                                                    thrust::raw_pointer_cast(d_uniform_sampling.data()));
     cudaDeviceSynchronize();
     check_cuda_error(cudaPeekAtLastError());
@@ -300,7 +408,7 @@ TVector<T*> GPU::Random::roulette_sampling(int n_locations, int n_samples_each_l
     for(int i = 0; i < n_locations; i++){
         int index_from = i*n_samples_each_location;
         int index_to = index_from + n_samples_each_location;
-//        printf("location %d sort from %d to %d\n",i,index_from,index_to);
+//        printf("Roulette location %d sort from %d to %d\n",i,index_from,index_to);
         thrust::sort(thrust::device,
                      d_uniform_sampling.begin() + index_from,
                      d_uniform_sampling.begin() + index_to);
@@ -310,13 +418,14 @@ TVector<T*> GPU::Random::roulette_sampling(int n_locations, int n_samples_each_l
 
     ThrustTVectorDevice<int> d_sample_index(n_locations*n_samples_each_location,0);
     ThrustTVectorDevice<double> d_sum_weight(n_locations,0.0);
-    ThrustTVectorDevice<int> d_all_objects_index(n_locations*d_distribution.size(),0);
+    ThrustTVectorDevice<int> d_all_objects_index(n_locations*n_distributions_each_location,0);
     thrust::sequence(thrust::device, d_all_objects_index.begin(), d_all_objects_index.end(), 0, 1);
     ThrustTVectorDevice<int> d_uniform_sampling_index(n_locations,0);
+    n_blocks = (n_locations + n_threads + 1) / n_threads;
     roulette_sampling_kernel<<<n_blocks, n_threads>>>(n_locations,
                                                       n_samples_each_location,
-                                                      d_distribution.size()/n_locations,
-                                                      thrust::raw_pointer_cast(d_distribution.data()),
+                                                      n_distributions_each_location,
+                                                      thrust::raw_pointer_cast(d_distribution_all_locations.data()),
                                                       thrust::raw_pointer_cast(d_sum_weight.data()),
                                                       thrust::raw_pointer_cast(d_all_objects_index.data()),
                                                       thrust::raw_pointer_cast(d_uniform_sampling.data()),
@@ -333,7 +442,7 @@ TVector<T*> GPU::Random::roulette_sampling(int n_locations, int n_samples_each_l
         for(int i = 0; i < n_locations; i++){
             int index_from = i*n_samples_each_location;
             int index_to = index_from + n_samples_each_location;
-//            printf("location %d shuffle from %d to %d\n",i,index_from,index_to);
+//            printf("Roulette location %d shuffle from %d to %d\n",i,index_from,index_to);
             thrust::shuffle(thrust::device,
                             d_sample_index.begin() + index_from,
                             d_sample_index.begin() + index_to,
@@ -349,14 +458,4 @@ TVector<T*> GPU::Random::roulette_sampling(int n_locations, int n_samples_each_l
     }
     return samples;
 }
-
-template <class T>
-TVector<T*> GPU::Random::multinomial_sampling(int n_locations, int n_samples_each_location,
-                                           TVector<T*> all_objects,
-                                           ThrustTVectorDevice<double> d_distribution,
-                                           ThrustTVectorDevice<double> &d_sum_distribution,
-                                           bool is_shuffled){
-
-}
-
 
