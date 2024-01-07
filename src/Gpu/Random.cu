@@ -190,8 +190,8 @@ __global__ void random_uniform_kernel(curandState *d_state,int n_locations, int 
     curandState local_state = d_state[thread_index];
     for(int index = thread_index; index < n_locations*n_samples_each_location; index += stride){
         int location_index = index / n_samples_each_location;
-        printf("kernel index %d location_index %d, sum %f\n",
-               index,location_index,d_sum_distribution[location_index]);
+//        printf("kernel index %d location_index %d, sum %f\n",
+//               index,location_index,d_sum_distribution[location_index]);
         d_uniform_sampling[index] = curand_uniform_double(&local_state) * d_sum_distribution[location_index];
     }
     d_state[thread_index] = local_state;
@@ -221,11 +221,11 @@ __global__ void roulette_sampling_kernel(int n_locations,
         for (auto i = 0; i < n_distributions_each_location; i++) {
             int pi = index * n_distributions_each_location + i;
             d_sum_weight[index] += d_distribution_all_locations[pi];
-            printf("kernel location %d, n_distributions_each_location %d, pi %d, d_distribution_all_locations %f d_uniform_sampling[%d] = %f sum_weight %f\n",
-                   index, n_distributions_each_location, pi, d_distribution_all_locations[pi],
-                   index*n_samples_each_location+d_uniform_sampling_index[index],
-                   d_uniform_sampling[index*n_samples_each_location+d_uniform_sampling_index[index]],
-                   d_sum_weight[index]);
+//            printf("kernel location %d, n_distributions_each_location %d, pi %d, d_distribution_all_locations %f d_uniform_sampling[%d] = %f sum_weight %f\n",
+//                   index, n_distributions_each_location, pi, d_distribution_all_locations[pi],
+//                   index*n_samples_each_location+d_uniform_sampling_index[index],
+//                   d_uniform_sampling[index*n_samples_each_location+d_uniform_sampling_index[index]],
+//                   d_sum_weight[index]);
             while (d_uniform_sampling_index[index] < n_samples_each_location
             && d_uniform_sampling[index*n_samples_each_location+d_uniform_sampling_index[index]] < d_sum_weight[index]) {
 //                printf("  while kernel location %d, n_distributions_each_location %d, pi %d, d_distribution_all_locations %f sum_weight %f "
@@ -278,7 +278,7 @@ TVector<T*> GPU::Random::roulette_sampling(int n_locations, int n_samples_each_l
                                                 d_distribution.begin() + index_from,
                                                 d_distribution.begin() + index_to,
                                                 0.0, thrust::plus<double>());
-            printf("GPU h_sum[%d] = %f\n",i,h_sum[i]);
+//            printf("GPU h_sum[%d] = %f\n",i,h_sum[i]);
         }
         d_sum_distribution = h_sum;
     }
@@ -294,19 +294,19 @@ TVector<T*> GPU::Random::roulette_sampling(int n_locations, int n_samples_each_l
     cudaDeviceSynchronize();
     check_cuda_error(cudaPeekAtLastError());
 
-    thrust::copy(d_uniform_sampling.begin(), d_uniform_sampling.end(), std::ostream_iterator<double>(std::cout, "\n"));
-    printf("\n");
+//    thrust::copy(d_uniform_sampling.begin(), d_uniform_sampling.end(), std::ostream_iterator<double>(std::cout, "\n"));
+//    printf("\n");
 
     for(int i = 0; i < n_locations; i++){
         int index_from = i*n_samples_each_location;
         int index_to = index_from + n_samples_each_location;
-        printf("location %d sort from %d to %d\n",i,index_from,index_to);
+//        printf("location %d sort from %d to %d\n",i,index_from,index_to);
         thrust::sort(thrust::device,
                      d_uniform_sampling.begin() + index_from,
                      d_uniform_sampling.begin() + index_to);
     }
-    thrust::copy(d_uniform_sampling.begin(), d_uniform_sampling.end(), std::ostream_iterator<double>(std::cout, "\n"));
-    printf("\n");
+//    thrust::copy(d_uniform_sampling.begin(), d_uniform_sampling.end(), std::ostream_iterator<double>(std::cout, "\n"));
+//    printf("\n");
 
     ThrustTVectorDevice<int> d_sample_index(n_locations*n_samples_each_location,0);
     ThrustTVectorDevice<double> d_sum_weight(n_locations,0.0);
@@ -325,15 +325,15 @@ TVector<T*> GPU::Random::roulette_sampling(int n_locations, int n_samples_each_l
     cudaDeviceSynchronize();
     check_cuda_error(cudaPeekAtLastError());
 
-    thrust::copy(d_sample_index.begin(), d_sample_index.end(), std::ostream_iterator<int>(std::cout, "\n"));
-    printf("\n");
+//    thrust::copy(d_sample_index.begin(), d_sample_index.end(), std::ostream_iterator<int>(std::cout, "\n"));
+//    printf("\n");
 
     if(is_shuffled){
         thrust::default_random_engine g;
         for(int i = 0; i < n_locations; i++){
             int index_from = i*n_samples_each_location;
             int index_to = index_from + n_samples_each_location;
-            printf("location %d shuffle from %d to %d\n",i,index_from,index_to);
+//            printf("location %d shuffle from %d to %d\n",i,index_from,index_to);
             thrust::shuffle(thrust::device,
                             d_sample_index.begin() + index_from,
                             d_sample_index.begin() + index_to,
@@ -341,12 +341,12 @@ TVector<T*> GPU::Random::roulette_sampling(int n_locations, int n_samples_each_l
         }
     }
 
-    thrust::copy(d_sample_index.begin(), d_sample_index.end(), std::ostream_iterator<double>(std::cout, "\n"));
-    printf("\n");
+//    thrust::copy(d_sample_index.begin(), d_sample_index.end(), std::ostream_iterator<double>(std::cout, "\n"));
+//    printf("\n");
 
-//    for(int i = 0; i < d_sample_index.size(); i++){
-//        samples[i] = all_objects[d_sample_index[i]];
-//    }
+    for(int i = 0; i < d_sample_index.size(); i++){
+        samples[i] = all_objects[d_sample_index[i]];
+    }
     return samples;
 }
 
