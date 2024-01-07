@@ -535,7 +535,7 @@ void GPU::Population::perform_infection_event() {
      * Also get indices from and to arrays
      * */
 
-    int n_locations = 1;
+    int n_locations = 2;
     int n_person_each_location = 100;
     int n_sample_each_location = 4;
     TVector<double> distribution(n_locations*n_person_each_location,0.0);
@@ -563,16 +563,16 @@ void GPU::Population::perform_infection_event() {
     ThrustTVectorHost<double> h_sum_distribution(sum_distribution);
     ThrustTVectorDevice<double> d_distribution = h_distribution;
     ThrustTVectorDevice<double> d_sum_distribution = h_sum_distribution;
-
-    auto result = Model::RANDOM->roulette_sampling(n_sample_each_location,
-                                                   distribution,
-                                                   all_persons,
-                                                   false,
-                                                   sum_distribution[0]);
-
-    for(auto s : result){
-        printf("CPU shuffled location %d, samples %d\n", 0, s->id());
-    }
+//
+//    auto result = Model::RANDOM->roulette_sampling(n_sample_each_location,
+//                                                   distribution,
+//                                                   all_persons,
+//                                                   false,
+//                                                   sum_distribution[0]);
+//
+//    for(auto s : result){
+//        printf("CPU location %d, samples %d\n", 0, s->id());
+//    }
 
     auto result_gpu = Model::GPU_RANDOM->roulette_sampling(n_locations,
                                                        n_sample_each_location,
@@ -584,7 +584,7 @@ void GPU::Population::perform_infection_event() {
 //    for(int i = 0; i < n_locations*result.size(); i++){
 //        int location_index = i / result.size();
 //        int j = i % result.size();
-//        printf("location %d result id %d\n",i,result[j]->id());
+//        printf("GPU location %d result id %d\n",location_index,result[j]->id());
 //    }
 
 

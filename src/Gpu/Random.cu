@@ -190,35 +190,16 @@ __global__ void random_uniform_kernel(curandState *d_state,int n_locations, int 
     curandState local_state = d_state[thread_index];
     for(int index = thread_index; index < n_locations*n_samples_each_location; index += stride){
         int location_index = index / n_samples_each_location;
-        int uniform_index = index % n_samples_each_location;
-        d_uniform_sampling[uniform_index] = curand_uniform_double(&local_state) * d_sum_distribution[location_index];
+        printf("kernel index %d location_index %d, sum %f\n",
+               index,location_index,d_sum_distribution[location_index]);
+        d_uniform_sampling[index] = curand_uniform_double(&local_state) * d_sum_distribution[location_index];
     }
     d_state[thread_index] = local_state;
 }
 
-///*
-// * To be removed later
-// * uniform_real_distribution return [0,1)
-// * gsl_rng_uniform return [0,1)
-// * */
-//struct random_uniform
-//{
-//    double sum_;
-//    random_uniform(double sum){
-//        sum_ = sum;
-//    }
-//    __device__
-//    double operator()(unsigned int x){
-//        thrust::default_random_engine g;
-//        thrust::uniform_real_distribution<double> uniform_dist(0.0,sum_);
-//        g.discard(x);
-//        return uniform_dist(g);
-//    }
-//};
-
 /*
  * d_n_samples size is n_locations
- * d_distribution size is n_locations*n_samples_each_location
+ * d_distribution_all_locations size is n_locations*n_distributions_each_location
  * d_sum_weight size is n_locations
  * d_all_objects_index size is n_locations*n_samples_each_location
  * d_uniform_sampling size is n_locations*n_samples_each_location
@@ -227,8 +208,8 @@ __global__ void random_uniform_kernel(curandState *d_state,int n_locations, int 
  * */
 __global__ void roulette_sampling_kernel(int n_locations,
                                          int n_samples_each_location,
-                                         int d_distributions_size,
-                                         double *d_distribution,
+                                         int n_distributions_each_location,
+                                         double *d_distribution_all_locations,
                                          double *d_sum_weight,
                                          int *d_all_objects_index,
                                          double *d_uniform_sampling,
@@ -237,25 +218,25 @@ __global__ void roulette_sampling_kernel(int n_locations,
     int thread_index = blockIdx.x * blockDim.x + threadIdx.x;
     int stride = blockDim.x * gridDim.x;
     for(int index = thread_index; index < n_locations; index += stride){
-        for (auto i = 0; i < d_distributions_size; i++) {
-            int pi = index * d_distributions_size + i;
-            d_sum_weight[index] += d_distribution[pi];
-//            printf("kernel location %d, d_distributions_size %d, pi %d, d_distribution %f d_uniform_sampling[%d] = %f sum_weight %f\n",
-//                   index, d_distributions_size, pi, d_distribution[pi],
-//                   index*d_distributions_size+d_uniform_sampling_index[index],
-//                   d_uniform_sampling[index*d_distributions_size+d_uniform_sampling_index[index]],
-//                   d_sum_weight[index]);
+        for (auto i = 0; i < n_distributions_each_location; i++) {
+            int pi = index * n_distributions_each_location + i;
+            d_sum_weight[index] += d_distribution_all_locations[pi];
+            printf("kernel location %d, n_distributions_each_location %d, pi %d, d_distribution_all_locations %f d_uniform_sampling[%d] = %f sum_weight %f\n",
+                   index, n_distributions_each_location, pi, d_distribution_all_locations[pi],
+                   index*n_samples_each_location+d_uniform_sampling_index[index],
+                   d_uniform_sampling[index*n_samples_each_location+d_uniform_sampling_index[index]],
+                   d_sum_weight[index]);
             while (d_uniform_sampling_index[index] < n_samples_each_location
-            && d_uniform_sampling[index*d_distributions_size+d_uniform_sampling_index[index]] < d_sum_weight[index]) {
-//                printf("  while kernel location %d, d_distributions_size %d, pi %d, d_distribution %f sum_weight %f "
+            && d_uniform_sampling[index*n_samples_each_location+d_uniform_sampling_index[index]] < d_sum_weight[index]) {
+//                printf("  while kernel location %d, n_distributions_each_location %d, pi %d, d_distribution_all_locations %f sum_weight %f "
 //                       "d_uniform_sampling_index %d d_uniform_sampling[%d] = %f d_sample_index %d d_all_objects_index %d\n",
-//                       index, d_distributions_size, pi, d_distribution[pi], d_sum_weight[index],
+//                       index, n_distributions_each_location, pi, d_distribution_all_locations[pi], d_sum_weight[index],
 //                       d_uniform_sampling_index[index],
-//                       index*d_distributions_size+d_uniform_sampling_index[index],
-//                       d_uniform_sampling[index*d_distributions_size+d_uniform_sampling_index[index]],
-//                       d_sample_index[d_uniform_sampling_index[index]],
+//                       index*n_samples_each_location+d_uniform_sampling_index[index],
+//                       d_uniform_sampling[index*n_samples_each_location+d_uniform_sampling_index[index]],
+//                       d_sample_index[index*n_samples_each_location+d_uniform_sampling_index[index]],
 //                       d_all_objects_index[pi]);
-                d_sample_index[d_uniform_sampling_index[index]] = d_all_objects_index[pi];
+                d_sample_index[index*n_samples_each_location+d_uniform_sampling_index[index]] = d_all_objects_index[pi];
                 d_uniform_sampling_index[index]++;
             }
             if (d_uniform_sampling_index[index] == n_samples_each_location) {
@@ -297,10 +278,10 @@ TVector<T*> GPU::Random::roulette_sampling(int n_locations, int n_samples_each_l
                                                 d_distribution.begin() + index_from,
                                                 d_distribution.begin() + index_to,
                                                 0.0, thrust::plus<double>());
+            printf("GPU h_sum[%d] = %f\n",i,h_sum[i]);
         }
         d_sum_distribution = h_sum;
     }
-    printf("GPU d_sum_distribution: %f\n",d_sum);
 
     ThrustTVectorDevice<double> d_uniform_sampling(n_locations*n_samples_each_location);
     int n_threads = Model::CONFIG->gpu_config().n_threads;
@@ -312,20 +293,6 @@ TVector<T*> GPU::Random::roulette_sampling(int n_locations, int n_samples_each_l
                                                    thrust::raw_pointer_cast(d_uniform_sampling.data()));
     cudaDeviceSynchronize();
     check_cuda_error(cudaPeekAtLastError());
-
-    /* removed later */
-//    for(int i = 0; i < n_locations; i++){
-//        int index_from = i*n_samples_each_location;
-//        int index_to = index_from + n_samples_each_location;
-//        printf("location %d random from %d to %d\n",i,index_from,index_to);
-//        thrust::counting_iterator<unsigned int> index_sequence_begin(0);
-//        double sum = d_sum_distribution[i];
-//        thrust::transform(thrust::device,
-//                          index_sequence_begin,
-//                          index_sequence_begin + n_samples_each_location,
-//                          d_uniform_sampling.begin() + index_from,
-//                          random_uniform(sum));
-//    }
 
     thrust::copy(d_uniform_sampling.begin(), d_uniform_sampling.end(), std::ostream_iterator<double>(std::cout, "\n"));
     printf("\n");
@@ -348,7 +315,7 @@ TVector<T*> GPU::Random::roulette_sampling(int n_locations, int n_samples_each_l
     ThrustTVectorDevice<int> d_uniform_sampling_index(n_locations,0);
     roulette_sampling_kernel<<<n_blocks, n_threads>>>(n_locations,
                                                       n_samples_each_location,
-                                                      d_distribution.size(),
+                                                      d_distribution.size()/n_locations,
                                                       thrust::raw_pointer_cast(d_distribution.data()),
                                                       thrust::raw_pointer_cast(d_sum_weight.data()),
                                                       thrust::raw_pointer_cast(d_all_objects_index.data()),
