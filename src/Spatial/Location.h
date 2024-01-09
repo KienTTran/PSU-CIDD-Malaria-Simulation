@@ -30,7 +30,7 @@ class Location {
   float p_treatment_more_than_5;
   std::unique_ptr<Coordinate> coordinate;
   std::vector<double> age_distribution;
-  ThrustTuple4T<int> asc_cell_data;
+  ThrustTuple4<int,int,int,int> asc_cell_data;
   int location_cols;
   int location_rows;
  public:

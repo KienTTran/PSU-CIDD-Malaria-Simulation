@@ -74,6 +74,8 @@ class SeasonalInfoFactory {
         return new SeasonalDisabled();
       }
 
+      LOG(INFO) << node["mode"];
+
       // Check to make sure the mode node exists
       try {
         if (node["mode"].IsNull()) {

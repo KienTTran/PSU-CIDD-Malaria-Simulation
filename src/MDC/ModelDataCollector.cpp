@@ -20,7 +20,7 @@
 #include "Population/ClonalParasitePopulation.h"
 #include "Constants.h"
 #include "Gpu/Population/Properties/PersonIndexGPU.h"
-#include "Gpu/Utils.cuh"
+#include "Gpu/Utils/Utils.cuh"
 
 ModelDataCollector::ModelDataCollector(Model* model) : model_(model), current_utl_duration_(0),
                                                        AMU_per_parasite_pop_(0),
@@ -44,7 +44,7 @@ void ModelDataCollector::initialize() {
   if (model_ != nullptr) {
     popsize_by_location_ = IntVector(Model::CONFIG->number_of_locations(), 0);
     popsize_residence_by_location_ = IntVector(Model::CONFIG->number_of_locations(), 0);
-    popsize_residence_by_location_gpu_ = ThrustTVectorHost<int>(Model::CONFIG->number_of_locations(), 0);
+    popsize_residence_by_location_gpu_ = IntVector(Model::CONFIG->number_of_locations(), 0);
 
     blood_slide_prevalence_by_location_ = DoubleVector(Model::CONFIG->number_of_locations(), 0.0);
     blood_slide_prevalence_by_location_age_group_ = DoubleVector2(

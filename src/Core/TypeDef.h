@@ -38,51 +38,48 @@ class Therapy;
 
 
 template <typename T>
-using ThrustTuple4T = thrust::tuple<T,T,T,T> ;
-
+using ThrustTuple = thrust::tuple<T>;
 template <typename T>
-using ThrustTTuple = thrust::tuple<T>;
+using ThrustTupleVectorDevice = thrust::device_vector<ThrustTuple<T>>;
 template <typename T>
-using ThrustTTupleVectorDevice = thrust::device_vector<ThrustTTuple<T>>;
-template <typename T>
-using ThrustTTupleVectorHost = thrust::host_vector<ThrustTTuple<T>>;
+using ThrustTupleVector = std::vector<ThrustTuple<T>>;
 
 template <typename T, typename T2>
-using ThrustT2Tuple = thrust::tuple<T, T2>;
+using ThrustTuple2 = thrust::tuple<T, T2>;
 template <typename T, typename T2>
-using ThrustT2TupleVectorDevice = thrust::device_vector<ThrustT2Tuple<T,T2>>;
+using ThrustTuple2Vector = std::vector<ThrustTuple2<T,T2>>;
 template <typename T, typename T2>
-using ThrustT2TupleVectorHost = thrust::host_vector<ThrustT2Tuple<T,T2>>;
+using ThrustTuple2VectorDevice = thrust::device_vector<ThrustTuple2<T,T2>>;
 
 template <typename T, typename T2, typename T3>
-using ThrustT3Tuple = thrust::tuple<T, T2, T3>;
+using ThrustTuple3 = thrust::tuple<T, T2, T3>;
 template <typename T, typename T2, typename T3>
-using ThrustT3TupleVectorDevice = thrust::device_vector<ThrustT3Tuple<T,T2,T3>>;
+using ThrustTuple3Vector=  std::vector<ThrustTuple3<T,T2,T3>>;
 template <typename T, typename T2, typename T3>
-using ThrustT3TupleVectorHost = thrust::host_vector<ThrustT3Tuple<T,T2,T3>>;
+using ThrustTuple3VectorDevice = thrust::device_vector<ThrustTuple3<T,T2,T3>>;
 
 template <typename T, typename T2, typename T3, typename T4>
-using ThrustT4Tuple = thrust::tuple<T, T2, T3, T4>;
+using ThrustTuple4 = thrust::tuple<T, T2, T3, T4>;
 template <typename T, typename T2, typename T3, typename T4>
-using ThrustT4TupleVectorDevice = thrust::device_vector<ThrustT4Tuple<T,T2,T3,T4>>;
+using ThrustTuple4Vector = std::vector<ThrustTuple4<T,T2,T3,T4>>;
 template <typename T, typename T2, typename T3, typename T4>
-using ThrustT4TupleVectorHost = thrust::host_vector<ThrustT4Tuple<T,T2,T3,T4>>;
+using ThrustTuple4VectorDevice = thrust::device_vector<ThrustTuple4<T,T2,T3,T4>>;
 
 template <typename T, typename T2, typename T3, typename T4, typename T5>
-using ThrustT5Tuple = thrust::tuple<T, T2, T3, T4, T5>;
+using ThrustTuple5 = thrust::tuple<T, T2, T3, T4, T5>;
 template <typename T, typename T2, typename T3, typename T4, typename T5>
-using ThrustT5TupleVectorDevice = thrust::device_vector<ThrustT5Tuple<T,T2,T3,T4,T5>>;
+using ThrustTuple5VectorHost = thrust::host_vector<ThrustTuple5<T,T2,T3,T4,T5>>;
 template <typename T, typename T2, typename T3, typename T4, typename T5>
-using ThrustT5TupleVectorHost = thrust::host_vector<ThrustT5Tuple<T,T2,T3,T4,T5>>;
+using ThrustTuple5VectorDevice = thrust::device_vector<ThrustTuple5<T,T2,T3,T4,T5>>;
 
 template <typename T>
-using ThrustTVectorHost = thrust::host_vector<T>;
+using TVector = std::vector<T>;
 template <typename T>
-using ThrustTVectorHost2 = thrust::host_vector<ThrustTVectorHost<T>>;
+using TVector2 = std::vector<TVector<T>>;
 template <typename T>
-using ThrustTVectorHost3 = thrust::host_vector<ThrustTVectorHost2<T>>;
+using TVector3 = std::vector<TVector2<T>>;
 template <typename T>
-using ThrustTVectorHost4 = thrust::host_vector<ThrustTVectorHost3<T>>;
+using TVector4 = std::vector<TVector3<T>>;
 template <typename T>
 using ThrustTVectorDevice = thrust::device_vector<T>;
 

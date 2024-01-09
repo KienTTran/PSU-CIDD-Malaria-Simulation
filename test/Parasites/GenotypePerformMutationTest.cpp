@@ -71,7 +71,7 @@ TEST(GenotypePerformMutationTest, MutationNormalAAMask1) {
 
     MockRandom random;
     EXPECT_CALL(random, random_uniform(_)).WillOnce(Return(res_aa_id)).WillRepeatedly(Return(random_aa_id));
-    auto mutant_genotype = origial_genotype->perform_mutation_by_drug(&c, &random, c.drug_db()->at(drug_id));
+    auto mutant_genotype = origial_genotype->perform_mutation_by_drug(&c, &random, c.drug_db()->at(drug_id),c.mutation_probability_by_locus());
     EXPECT_EQ(mutant_genotype->aa_sequence, mutant_str);
   }
 }
@@ -102,7 +102,7 @@ TEST(GenotypePerformMutationTest, MutationCopyNumberVariation) {
 
     MockRandom random;
     EXPECT_CALL(random, random_uniform(_)).WillOnce(Return(res_aa_id)).WillRepeatedly(Return(random_aa_id));
-    auto mutant_genotype = origial_genotype->perform_mutation_by_drug(&c, &random, c.drug_db()->at(drug_id));
+    auto mutant_genotype = origial_genotype->perform_mutation_by_drug(&c, &random, c.drug_db()->at(drug_id),c.mutation_probability_by_locus());
     EXPECT_EQ(mutant_genotype->aa_sequence, mutant_str);
   }
 }
@@ -126,7 +126,7 @@ TEST(GenotypePerformMutationTest, MutationNormalAAMask0) {
 
     MockRandom random;
     EXPECT_CALL(random, random_uniform(_)).WillOnce(Return(res_aa_id)).WillRepeatedly(Return(random_aa_id));
-    auto mutant_genotype = origial_genotype->perform_mutation_by_drug(&c, &random, c.drug_db()->at(drug_id));
+    auto mutant_genotype = origial_genotype->perform_mutation_by_drug(&c, &random, c.drug_db()->at(drug_id),c.mutation_probability_by_locus());
     EXPECT_EQ(mutant_genotype->aa_sequence, mutant_str);
   }
 }

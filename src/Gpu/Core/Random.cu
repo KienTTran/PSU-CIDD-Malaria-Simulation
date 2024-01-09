@@ -8,7 +8,7 @@
 #include <thrust/count.h>
 #include <thrust/sort.h>
 #include "Random.cuh"
-#include "Utils.cuh"
+#include "Gpu/Utils/Utils.cuh"
 #include "Model.h"
 #include "Core/Config/Config.h"
 
@@ -51,7 +51,7 @@ void GPU::Random::init(int n, unsigned long seed) {
     cudaMalloc((void **) &d_states, sizeof(curandState) * n);
     n_blocks = (n + n_threads + 1) / n_threads;
     setup<<<n_blocks,n_threads>>>(n,d_states, seed);
-    check_cuda_error(cudaDeviceSynchronize());
+    cudaDeviceSynchronize();
     check_cuda_error(cudaPeekAtLastError());
 }
 
@@ -155,7 +155,7 @@ void GPU::Random::random_multinomial(int n_locations, int n_samples_each_locatio
                                      ThrustTVectorDevice<int> d_n_trials,
                                      ThrustTVectorDevice<double> d_distributions,
                                      ThrustTVectorDevice<unsigned int> &d_samples){
-    int n_threads = Model::CONFIG->gpu_config().n_threads;
+    int n_threads = Model::CONFIG == nullptr ? 1024 : Model::CONFIG->gpu_config().n_threads;
     int n_blocks = (n_locations + n_threads + 1) / n_threads;
     ThrustTVectorDevice<double> d_norm(n_locations,0.0);
     ThrustTVectorDevice<double> d_sum_p(n_locations,0.0);
@@ -169,7 +169,7 @@ void GPU::Random::random_multinomial(int n_locations, int n_samples_each_locatio
                                                 thrust::raw_pointer_cast(d_norm.data()),
                                                 thrust::raw_pointer_cast(d_sum_p.data()),
                                                 thrust::raw_pointer_cast(d_sum_n.data()));
-    check_cuda_error(cudaDeviceSynchronize());
+    cudaDeviceSynchronize();
     check_cuda_error(cudaPeekAtLastError());
     d_norm.clear();
     d_sum_p.clear();
@@ -188,20 +188,13 @@ __global__ void multinomial_sampling_kernel(int n_locations,
                                             int *d_all_objects_index){
     int thread_index = blockIdx.x * blockDim.x + threadIdx.x;
     int stride = blockDim.x * gridDim.x;
-    for(int index = thread_index; index < n_locations*n_distributions_each_location; index += stride){
-        int location_index = index / n_distributions_each_location;
-        int hit_index = index % n_distributions_each_location;
-        printf("kernel multinomial index %d location_index %d d_index %d "
-               "hit_index %d d_hit_per_object %d d_sample_index[%d] %d d_all_objects_index[%d] %d\n",
-               index,location_index,d_index[location_index],
-               hit_index,d_hit_per_object[hit_index],
-               location_index*n_samples_each_location+d_index[location_index],
-               d_sample_index[location_index*n_samples_each_location+d_index[location_index]],
-               index,
-               d_all_objects_index[index]);
-        for(int j = 0;  j < d_hit_per_object[hit_index]; j++){
-            d_sample_index[location_index*n_samples_each_location+d_index[location_index]] = d_all_objects_index[index];
-            d_index[location_index]++;
+    for(int index = thread_index; index < n_locations; index += stride){
+        int hit_index_from = index * n_distributions_each_location;
+        for (auto i = 0; i < n_distributions_each_location; i++) {
+            for(int j = 0;  j < d_hit_per_object[hit_index_from+i]; j++){
+                d_sample_index[index*n_samples_each_location+d_index[index]] = d_all_objects_index[i];
+                d_index[index]++;
+            }
         }
     }
 }
@@ -215,12 +208,13 @@ __global__ void multinomial_sampling_kernel(int n_locations,
  * return size is n_locations*n_samples_each_location
  * */
 template
-TVector<Person*> GPU::Random::multinomial_sampling<Person>(int, int,TVector<Person*>,ThrustTVectorDevice<double>,
-                                                        ThrustTVectorDevice<double>&,bool);
+TVector<Person*> GPU::Random::multinomial_sampling<Person>(int, int,
+                                                           ThrustTVectorDevice<double>,TVector<Person*>,
+                                                           ThrustTVectorDevice<double>&,bool);
 template <class T>
 TVector<T*> GPU::Random::multinomial_sampling(int n_locations, int n_samples_each_location,
-                                              TVector<T*> all_objects,
                                               ThrustTVectorDevice<double> d_distribution_all_locations,
+                                              TVector<T*> all_objects,
                                               ThrustTVectorDevice<double> &d_sum_distribution_all_locations,
                                               bool is_shuffled){
     int n_distributions_each_location = d_distribution_all_locations.size() / n_locations;
@@ -229,7 +223,7 @@ TVector<T*> GPU::Random::multinomial_sampling(int n_locations, int n_samples_eac
     if(d_sum == 0.0){
         return samples;
     }else if(d_sum == n_locations*(-1)){
-        ThrustTVectorHost<double> h_sum(n_locations);
+        TVector<double> h_sum(n_locations);
         for(int i = 0; i < n_locations; i++){
             int index_from = i*n_distributions_each_location;
             int index_to = index_from + n_distributions_each_location;
@@ -242,7 +236,7 @@ TVector<T*> GPU::Random::multinomial_sampling(int n_locations, int n_samples_eac
         d_sum_distribution_all_locations = h_sum;
     }
 
-    ThrustTVectorDevice<unsigned int> d_hit_per_object(d_distribution_all_locations.size());
+    ThrustTVectorDevice<unsigned int> d_hit_per_object(n_locations*n_distributions_each_location);
     ThrustTVectorDevice<int> d_n_trials(n_locations, n_samples_each_location);
     random_multinomial(n_locations, n_distributions_each_location,d_n_trials,d_distribution_all_locations,d_hit_per_object);
 
@@ -251,7 +245,7 @@ TVector<T*> GPU::Random::multinomial_sampling(int n_locations, int n_samples_eac
     ThrustTVectorDevice<int> d_all_objects_index(n_locations*n_distributions_each_location);
     thrust::sequence(thrust::device, d_all_objects_index.begin(), d_all_objects_index.end(), 0, 1);
 
-    int n_threads = Model::CONFIG->gpu_config().n_threads;
+    int n_threads = Model::CONFIG == nullptr ? 1024 : Model::CONFIG->gpu_config().n_threads;
     int n_blocks = (n_locations + n_threads + 1) / n_threads;
     multinomial_sampling_kernel<<<n_blocks, n_threads>>>(n_locations,
                                                          n_distributions_each_location,
@@ -269,7 +263,7 @@ TVector<T*> GPU::Random::multinomial_sampling(int n_locations, int n_samples_eac
         for(int i = 0; i < n_locations; i++){
             int index_from = i*n_samples_each_location;
             int index_to = index_from + n_samples_each_location;
-            printf("Multinomial location %d shuffle from %d to %d\n",i,index_from,index_to);
+//            printf("Multinomial location %d shuffle from %d to %d\n",i,index_from,index_to);
             thrust::shuffle(thrust::device,
                             d_sample_index.begin() + index_from,
                             d_sample_index.begin() + index_to,
@@ -364,12 +358,13 @@ __global__ void roulette_sampling_kernel(int n_locations,
  * return size is n_locations*n_samples_each_location
  * */
 template
-TVector<Person*> GPU::Random::roulette_sampling<Person>(int, int,TVector<Person*>,ThrustTVectorDevice<double>,
-                                                       ThrustTVectorDevice<double>&,bool);
+TVector<Person*> GPU::Random::roulette_sampling<Person>(int, int,
+                                                        ThrustTVectorDevice<double>,TVector<Person*>,
+                                                        ThrustTVectorDevice<double>&,bool);
 template <class T>
 TVector<T*> GPU::Random::roulette_sampling(int n_locations, int n_samples_each_location,
-                                           TVector<T*> all_objects,
                                            ThrustTVectorDevice<double> d_distribution_all_locations,
+                                           TVector<T*> all_objects,
                                            ThrustTVectorDevice<double> &d_sum_distribution_all_locations,
                                            bool is_shuffled){
     int n_distributions_each_location = d_distribution_all_locations.size() / n_locations;
@@ -377,8 +372,8 @@ TVector<T*> GPU::Random::roulette_sampling(int n_locations, int n_samples_each_l
     double d_sum = thrust::reduce(thrust::device, d_sum_distribution_all_locations.begin(), d_sum_distribution_all_locations.end(), 0.0, thrust::plus<double>());
     if(d_sum == 0.0){
         return samples;
-    }else if(d_sum == n_locations*(-1)){
-        ThrustTVectorHost<double> h_sum(n_locations);
+    }else if(d_sum == n_locations*(-1.0)){
+        TVector<double> h_sum(n_locations);
         for(int i = 0; i < n_locations; i++){
             int index_from = i*n_distributions_each_location;
             int index_to = index_from + n_distributions_each_location;
@@ -392,7 +387,7 @@ TVector<T*> GPU::Random::roulette_sampling(int n_locations, int n_samples_each_l
     }
 
     ThrustTVectorDevice<double> d_uniform_sampling(n_locations*n_samples_each_location);
-    int n_threads = Model::CONFIG->gpu_config().n_threads;
+    int n_threads = Model::CONFIG == nullptr ? 1024 : Model::CONFIG->gpu_config().n_threads;
     int n_blocks = (d_uniform_sampling.size() + n_threads + 1) / n_threads;
     random_uniform_kernel<<<n_blocks, n_threads>>>(d_states,
                                                    n_locations,

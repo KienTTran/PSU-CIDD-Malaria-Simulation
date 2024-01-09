@@ -10,7 +10,7 @@
 #include "Core/Config/Config.h"
 #include "Population/Population.h"
 #include "Gpu/Population/Properties/PersonIndexGPU.h"
-#include "Utils.cuh"
+#include "Gpu/Utils/Utils.cuh"
 
 GPU::RenderEntity::RenderEntity(Model* model) : model_(model) {
 }

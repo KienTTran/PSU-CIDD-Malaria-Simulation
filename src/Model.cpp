@@ -40,9 +40,9 @@
 #include "easylogging++.h"
 #include "Spatial/SpatialModel.hxx"
 #include "Gpu/Renderer/Renderer.h"
-#include "Gpu/RenderEntity.cuh"
-#include "Gpu/Utils.cuh"
-#include "Gpu/Random.cuh"
+#include "Gpu/Renderer/RenderEntity.cuh"
+#include "Gpu/Utils/Utils.cuh"
+#include "Gpu/Core/Random.cuh"
 #include "Gpu/Population/Population.cuh"
 
 Model* Model::MODEL = nullptr;

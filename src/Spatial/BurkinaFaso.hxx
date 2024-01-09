@@ -104,17 +104,11 @@ namespace Spatial {
               prepare_travel(SpatialData::SpatialFileType::Travel);
             }
 
-            ThrustTVectorHost<double> getSpatialModelParameters() override {
-                ThrustTVectorHost<double> params(5);
-                params[0] = tau_;
-                params[1] = alpha_;
-                params[2] = rho_;
-                params[3] = capital_;
-                params[4] = penalty_;
-                return params;
+            DoubleVector getSpatialModelParameters() override {
+                return {tau_,alpha_,rho_,capital_,penalty_};
             }
 
-            ThrustTVectorHost<double> getSpatialModelTravels() {
+            DoubleVector getSpatialModelTravels() {
                 return {travel,travel+Model::CONFIG->number_of_locations()};
             }
 

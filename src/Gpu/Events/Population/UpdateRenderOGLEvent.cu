@@ -11,9 +11,9 @@
 #include "Core/Config/Config.h"
 #include "Gpu/Population/Properties/PersonIndexGPU.h"
 
-#include "Gpu/Random.cuh"
-#include "Gpu/RenderEntity.cuh"
-#include "Gpu/Utils.cuh"
+#include "Gpu/Core/Random.cuh"
+#include "Gpu/Renderer/RenderEntity.cuh"
+#include "Gpu/Utils/Utils.cuh"
 #include "Population/Population.h"
 
 #include "UpdateRenderOGLEvent.cuh"
@@ -83,7 +83,7 @@ void UpdateRenderOGLEvent::execute() {
                                                                                    thrust::raw_pointer_cast(pi->buffer_person_colors().data()),
                                                                                    Model::GPU_RENDER_ENTITY->d_ogl_buffer_model_ptr,
                                                                                    Model::GPU_RENDER_ENTITY->d_ogl_buffer_color_ptr);
-        check_cuda_error(cudaDeviceSynchronize());
+        cudaDeviceSynchronize();
         check_cuda_error(cudaGetLastError());
     }
     pi->buffer_person_models().clear();

@@ -7,7 +7,7 @@
 
 #include "Core/Scheduler.h"
 #include "Model.h"
-#include "Gpu/Utils.cuh"
+#include "Gpu/Utils/Utils.cuh"
 #include "Core/Config/Config.h"
 #include "MDC/ModelDataCollector.h"
 #include "Gpu/Population/Properties/PersonIndexGPU.h"

@@ -1,6 +1,14 @@
 find_package(CLI11 CONFIG REQUIRED)
 set(EfficacyEstimator_SRC_FILES main.cpp PkPdReporter.cpp PkPdReporter.h)
 
+if (MSVC)
+    if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+        add_definitions(-D_ITERATOR_DEBUG_LEVEL=2)
+    else()
+        add_definitions(-D_ITERATOR_DEBUG_LEVEL=0)
+    endif()
+endif ()
+
 add_executable(EfficacyEstimator ${EfficacyEstimator_SRC_FILES})
 add_dependencies(EfficacyEstimator MaSimCore)
 target_link_libraries(EfficacyEstimator PRIVATE MaSimCore CLI11::CLI11)

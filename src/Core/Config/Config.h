@@ -165,12 +165,11 @@ public:
     CUSTOM_CONFIG_ITEM(seasonal_info, nullptr)
     CONFIG_ITEM(initial_seed_number, unsigned long, 0)
 
-    ThrustTVectorHost<double> h_spatial_distances;
-    ThrustTVectorHost<int> h_spatial_districts;
-    ThrustTVectorHost<int> h_location_indices;
-    ThrustTVectorHost<glm::vec4> h_location_colors;
-
-    ThrustTVectorHost<int> h_popsize_by_moving_level;
+    DoubleVector h_spatial_distances;
+    IntVector h_spatial_districts;
+    IntVector h_location_indices;
+    TVector<glm::vec4> h_location_colors;
+    IntVector h_popsize_by_moving_level;
 
 public:
   GenotypeDatabase genotype_db {};

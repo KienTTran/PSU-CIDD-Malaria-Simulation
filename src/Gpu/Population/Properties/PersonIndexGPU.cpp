@@ -9,8 +9,8 @@
 PersonIndexGPU::PersonIndexGPU() {
     //Allocate memory to render from beginning to end of simulation because OGL need to be pre-allocated in order to avoid init data everytime
     if(Model::CONFIG->render_config().display_gui){
-        h_person_models_ = ThrustTVectorHost<glm::mat4>(Model::CONFIG->n_people_init()*Model::CONFIG->gpu_config().pre_allocated_mem_ratio);
-        h_person_colors_ = ThrustTVectorHost<glm::vec4>(Model::CONFIG->n_people_init()*Model::CONFIG->gpu_config().pre_allocated_mem_ratio);
+        h_person_models_ = TVector<glm::mat4>(Model::CONFIG->n_people_init()*Model::CONFIG->gpu_config().pre_allocated_mem_ratio);
+        h_person_colors_ = TVector<glm::vec4>(Model::CONFIG->n_people_init()*Model::CONFIG->gpu_config().pre_allocated_mem_ratio);
     }
 }
 
