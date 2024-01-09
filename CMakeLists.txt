@@ -17,6 +17,17 @@ elseif(UNIX)
   endif()
 endif()
 
+if (MSVC)
+  add_definitions(-Dgtest_force_shared_crt=ON)
+  if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+    MESSAGE(STATUS "Test Build in Windows Debug")
+    add_definitions(-D_ITERATOR_DEBUG_LEVEL=2)
+  else()
+    MESSAGE(STATUS "Test Build in Windows Release")
+    add_definitions(-D_ITERATOR_DEBUG_LEVEL=0)
+  endif()
+endif ()
+
 project(POMS LANGUAGES CXX CUDA)
 
 set(CMAKE_CXX_STANDARD 17)
