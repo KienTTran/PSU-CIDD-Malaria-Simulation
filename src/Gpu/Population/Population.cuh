@@ -13,7 +13,7 @@ namespace GPU{
 }
 
 class GPU::Population {
-private:
+public:
     /*
      * Variables for circulations
      * */
@@ -32,16 +32,33 @@ private:
     /*
      * Variables for infection
      * */
-    ThrustTVectorDevice<int> d_infection_popsize_by_location;
+    TVector<double> h_ie_foi_N_days_all_locations;/* index is loc_index*n_tracking_day+track_day_index */
+    ThrustTVectorDevice<int> d_ie_foi_N_days_all_locations;
 public:
     Population();
     ~Population() = default;
 public:
     void init();
-    void calculate_circulate_locations(int n_locations,ThrustTVectorDevice<int> &d_n_circulations_by_location,ThrustTVectorDevice<double> &d_relative_outmovement_from_to,
-                            ThrustTVectorDevice<int> &d_all_location_from_indices,ThrustTVectorDevice<int> &d_all_location_to_indices);
-    void calculate_moving_level_density(ThrustT2TupleVectorDevice<int,int> d_circulation_indices,ThrustTVectorDevice<double> &d_moving_level_density);
+
+    void update_current_foi();
+    /*
+     * for circulations
+     * */
+    void calculate_circulate_locations(int n_locations,
+                                       ThrustTVectorDevice<int> &d_n_circulations_by_location,
+                                       ThrustTVectorDevice<double> &d_relative_outmovement_from_to,
+                                       ThrustTVectorDevice<int> &d_all_location_from_indices,
+                                       ThrustTVectorDevice<int> &d_all_location_to_indices);
+    void calculate_moving_level_density(ThrustTuple2VectorDevice<int,int> d_circulation_indices,
+                                        ThrustTVectorDevice<double> &d_moving_level_density);
     void perform_circulation_event();
+
+    /*
+     * for infection
+     * */
+    void calculate_n_person_bitten_today(int n_locations,
+                                          ThrustTVectorDevice<double> &d_foi_all_locations,
+                                          ThrustTVectorDevice<int> &d_n_person_bitten_today_all_locations);
     void perform_infection_event();
 };
 

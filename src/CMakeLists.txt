@@ -28,7 +28,11 @@ file(GLOB SRC_FILES *.cpp
         GIS/*.cpp
         Gpu/*.cu
         Gpu/*.cuh
+        Gpu/Core/*.cu
+        Gpu/Core/*.cuh
         Gpu/Renderer/*.cpp
+        Gpu/Renderer/*.cu
+        Gpu/Renderer/*.cuh
         Gpu/Population/*.cu
         Gpu/Population/*.cuh
         Gpu/Population/Properties/*.cpp
@@ -37,6 +41,8 @@ file(GLOB SRC_FILES *.cpp
         Gpu/Events/*.cuh
         Gpu/Events/Population/*.cu
         Gpu/Events/Population/*.cuh
+        Gpu/Utils/*.cu
+        Gpu/Utils/*.cuh
 )
 
 set(SRC_FILES ${SRC_FILES}
@@ -125,6 +131,7 @@ add_dependencies(MaSim MaSimCore)
 
 target_link_libraries(MaSim PRIVATE MaSimCore)
 target_compile_features(MaSim PRIVATE cxx_range_for)
+set_target_properties(MaSim PROPERTIES CUDA_ARCHITECTURES "86")
 
 install(TARGETS MaSim DESTINATION ${PROJECT_SOURCE_DIR}/bin)
 install(FILES ${PROJECT_SOURCE_DIR}/input/input.yml DESTINATION ${PROJECT_SOURCE_DIR}/bin)

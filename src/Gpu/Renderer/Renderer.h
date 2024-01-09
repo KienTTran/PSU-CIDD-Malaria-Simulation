@@ -10,7 +10,7 @@
 #include "imgui_impl_opengl3.h"
 #include <iostream>
 #include <stdlib.h>
-#include "Gpu/RenderEntity.cuh"
+#include "RenderEntity.cuh"
 #include "Population/Population.h"
 #include <GLFW/glfw3.h>
 #include <chrono>

@@ -1,6 +1,14 @@
 find_package(CLI11 CONFIG REQUIRED)
 file(GLOB DXG_SRC_FILES *.cpp *.h)
 
+if (MSVC)
+    if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+        add_definitions(-D_ITERATOR_DEBUG_LEVEL=2)
+    else()
+        add_definitions(-D_ITERATOR_DEBUG_LEVEL=0)
+    endif()
+endif ()
+
 add_executable(DxGGenerator ${DXG_SRC_FILES})
 add_dependencies(DxGGenerator  MaSimCore)
 target_link_libraries(DxGGenerator PRIVATE MaSimCore CLI11::CLI11)

@@ -67,15 +67,15 @@ struct IsValueZeroT2
  * output = [(0,7), (1,6), (2,3), (3,5)]
 */
 template //https://stackoverflow.com/a/51606460/9187675 - to call template functions from other files
-ThrustT2TupleVectorHost<int,int> GPU::Utils::sum_value_by_1key<int,int>(ThrustTVectorHost<int>, ThrustTVectorHost<int>, int);
+ThrustTuple2Vector<int,int> GPU::Utils::sum_value_by_1key<int,int>(TVector<int>, TVector<int>, int);
 template
-ThrustT2TupleVectorHost<double,double> GPU::Utils::sum_value_by_1key<double,double>(ThrustTVectorHost<double>, ThrustTVectorHost<double>, int);
+ThrustTuple2Vector<double,double> GPU::Utils::sum_value_by_1key<double,double>(TVector<double>, TVector<double>, int);
 template
-ThrustT2TupleVectorHost<int,double> GPU::Utils::sum_value_by_1key<int,double>(ThrustTVectorHost<int>, ThrustTVectorHost<double>, int);
+ThrustTuple2Vector<int,double> GPU::Utils::sum_value_by_1key<int,double>(TVector<int>, TVector<double>, int);
 template
-ThrustT2TupleVectorHost<double,int> GPU::Utils::sum_value_by_1key<double,int>(ThrustTVectorHost<double>, ThrustTVectorHost<int>, int);
+ThrustTuple2Vector<double,int> GPU::Utils::sum_value_by_1key<double,int>(TVector<double>, TVector<int>, int);
 template<typename T,typename T2>
-ThrustT2TupleVectorHost<T,T2> GPU::Utils::sum_value_by_1key(ThrustTVectorHost<T> input_keys, ThrustTVectorHost<T2> input_values, int size){
+ThrustTuple2Vector<T,T2> GPU::Utils::sum_value_by_1key(TVector<T> input_keys, TVector<T2> input_values, int size){
 
     ThrustTVectorDevice<T> device_keys = input_keys;
     ThrustTVectorDevice<T2> device_values = input_values;
@@ -85,7 +85,7 @@ ThrustT2TupleVectorHost<T,T2> GPU::Utils::sum_value_by_1key(ThrustTVectorHost<T>
     auto begin = thrust::make_zip_iterator(thrust::make_tuple(device_keys.begin(), device_values.begin()));
     auto end = thrust::make_zip_iterator(thrust::make_tuple(device_keys.end(), device_values.end()));
 
-    ThrustT2TupleVectorDevice<T,T2> device_output_values(device_values.size());
+    ThrustTuple2VectorDevice<T,T2> device_output_values(device_values.size());
 
     auto result = thrust::reduce_by_key(thrust::device,
                                         begin,
@@ -96,7 +96,7 @@ ThrustT2TupleVectorHost<T,T2> GPU::Utils::sum_value_by_1key(ThrustTVectorHost<T>
                                         CheckKeyT2(),
                                         SumValueT2());
     int output_length = result.second - device_output_values.begin();
-    ThrustT2TupleVectorHost<T,T2> host_output_values(output_length);
+    ThrustTuple2Vector<T,T2> host_output_values(output_length);
     thrust::copy(device_output_values.begin(), device_output_values.begin() + output_length, host_output_values.begin());
     thrust::remove_if(host_output_values.begin(), host_output_values.end(), IsValueZeroT2());
     return host_output_values;
@@ -121,15 +121,15 @@ __global__ void fill_missing_indices(thrust::tuple<T,int>* device_output_values,
  * Index which is not in the key array will be count as 0
 */
 template
-ThrustTVectorHost<int> GPU::Utils::count_by_1key<int>(ThrustTVectorHost<int>, int);
+TVector<int> GPU::Utils::count_by_1key<int>(TVector<int>, int);
 template<typename T>
-ThrustTVectorHost<T> GPU::Utils::count_by_1key(ThrustTVectorHost<T> input_keys, int size){
+TVector<T> GPU::Utils::count_by_1key(TVector<T> input_keys, int size){
     ThrustTVectorDevice<T> device_keys = input_keys;
     thrust::sort(thrust::device, device_keys.begin(), device_keys.end(), thrust::less<T>());
     auto begin = thrust::make_zip_iterator(thrust::make_tuple(device_keys.begin(), device_keys.begin()));
     auto end = thrust::make_zip_iterator(thrust::make_tuple(device_keys.end(), device_keys.end()));
 
-    ThrustT2TupleVectorDevice<T,int> device_output_temp(input_keys.size());
+    ThrustTuple2VectorDevice<T,int> device_output_temp(input_keys.size());
 
     auto result = thrust::reduce_by_key(thrust::device,
                                         begin,
@@ -140,7 +140,7 @@ ThrustTVectorHost<T> GPU::Utils::count_by_1key(ThrustTVectorHost<T> input_keys, 
                                         CheckKeyT2(),
                                         SumValueT2());
     ThrustTVectorDevice<T> device_output_values(size,0);
-    ThrustTVectorHost<T> host_output_values(size,0);
+    TVector<T> host_output_values(size,0);
     int n_threads = Model::CONFIG->gpu_config().n_threads;
     int n_blocks = (size + n_threads - 1) / n_threads;
     fill_missing_indices<T><<<n_blocks,n_threads>>>(thrust::raw_pointer_cast(device_output_temp.data()),

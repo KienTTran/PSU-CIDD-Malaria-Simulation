@@ -15,14 +15,16 @@
 #include "MDC/ModelDataCollector.h"
 #include "Spatial/SpatialModel.hxx"
 #include "Core/Random.h"
-#include "Gpu/Utils.cuh"
-#include "Gpu/Random.cuh"
+#include "Gpu/Utils/Utils.cuh"
+#include "Gpu/Core/Random.cuh"
 #include "Population/Properties/PersonIndexByLocationMovingLevel.h"
 
 GPU::Population::Population() {
 }
 
 void GPU::Population::init() {
+    h_ie_foi_N_days_all_locations = TVector<double>(Model::CONFIG->number_of_locations()
+            *Model::CONFIG->number_of_tracking_days());
 }
 /*
  * Calculate number of circulations from each location
@@ -143,7 +145,7 @@ __global__ void calculate_moving_level_density_kernel(int n_locations,
     }
 }
 
-void GPU::Population::calculate_moving_level_density(ThrustT2TupleVectorDevice<int,int> d_circulation_indices,ThrustTVectorDevice<double> &d_moving_level_density) {
+void GPU::Population::calculate_moving_level_density(ThrustTuple2VectorDevice<int,int> d_circulation_indices,ThrustTVectorDevice<double> &d_moving_level_density) {
     if(d_circulation_indices.size() == 0){
         return;
     }
@@ -319,7 +321,7 @@ void GPU::Population::perform_circulation_event() {
      * thrust::get<0>(d_circulations_indices_no_zero[i]) is from location index
      * thrust::get<1>(d_circulations_indices_no_zero[i]) is to location index
      * */
-    ThrustT2TupleVectorDevice<int,int> d_circulations_indices_no_zero(no_zero_size);
+    ThrustTuple2VectorDevice<int,int> d_circulations_indices_no_zero(no_zero_size);
 
     /*
      * Remove zero values in d_num_leavers_from_target_ and d_n_circulations_from_locations
@@ -361,8 +363,8 @@ void GPU::Population::perform_circulation_event() {
     /*
      * d_circulations_indices_no_zero and d_n_circulations_all_loc_ml not the same size
      */
-//    ThrustTVectorHost<unsigned int> h_n_circulations_all_loc_ml = d_n_circulations_all_loc_ml;
-//    ThrustT2TupleVectorHost<int,int> h_circulations_indices_no_zero = d_circulations_indices_no_zero;
+//    TVector<unsigned int> h_n_circulations_all_loc_ml = d_n_circulations_all_loc_ml;
+//    ThrustT2TupleVector<int,int> h_circulations_indices_no_zero = d_circulations_indices_no_zero;
 //    for(int i = 0; i < h_n_circulations_all_loc_ml.size(); i++){
 //        int circulate_loc_index = i / Model::CONFIG->circulation_info().number_of_moving_levels;
 //        int from_location = thrust::get<0>(h_circulations_indices_no_zero[circulate_loc_index]);
@@ -393,9 +395,9 @@ void GPU::Population::perform_circulation_event() {
                                                       thrust::raw_pointer_cast(d_ce_all_moving_levels.data()));
     cudaDeviceSynchronize();
     check_cuda_error(cudaGetLastError());
-//    ThrustTVectorHost<int> h_all_location_from_indices = d_all_location_from_indices;
-//    ThrustTVectorHost<int> h_all_location_target_indices = d_all_location_target_indices;
-//    ThrustTVectorHost<int> h_all_moving_levels = d_all_moving_levels;
+//    TVector<int> h_all_location_from_indices = d_all_location_from_indices;
+//    TVector<int> h_all_location_target_indices = d_all_location_target_indices;
+//    TVector<int> h_all_moving_levels = d_all_moving_levels;
 //    for(int i = 0; i < h_n_circulations_all_loc_ml.size(); i++){
 //        int circulate_loc_index = i / Model::CONFIG->circulation_info().number_of_moving_levels;
 //        int from_location = thrust::get<0>(h_circulations_indices_no_zero[circulate_loc_index]);
@@ -421,7 +423,7 @@ void GPU::Population::perform_circulation_event() {
     auto loc_index_end_2 = thrust::make_zip_iterator(thrust::make_tuple(d_ce_all_location_from_indices.end(),
                                                                         d_ce_all_location_target_indices.end(),
                                                                         d_ce_all_moving_levels.end()));
-    ThrustT3TupleVectorDevice<int,int,int> d_circulations_all_loc_ml_indices_no_zero(no_zero_size);
+    ThrustTuple3VectorDevice<int,int,int> d_circulations_all_loc_ml_indices_no_zero(no_zero_size);
     thrust::copy_if(thrust::device,
                     loc_index_begin_2,
                     loc_index_end_2,
@@ -439,7 +441,7 @@ void GPU::Population::perform_circulation_event() {
      * d_circulate_all_loc_ml_today is tuple of from_location, target_location, moving_level, person_index
      * */
     int total_circulations = thrust::reduce(thrust::device,d_n_circulations_all_loc_ml_no_zero.begin(),d_n_circulations_all_loc_ml_no_zero.end());
-    ThrustT4TupleVectorDevice<int,int,int,unsigned int> d_circulate_all_loc_ml_today(d_circulations_all_loc_ml_indices_no_zero.size(),thrust::make_tuple(-1,-1,-1,0));
+    ThrustTuple4VectorDevice<int,int,int,unsigned int> d_circulate_all_loc_ml_today(d_circulations_all_loc_ml_indices_no_zero.size(),thrust::make_tuple(-1,-1,-1,0));
     block_size = (d_circulate_all_loc_ml_today.size() + n_threads - 1)/n_threads;
     zip_location_indices_and_n_circulations<<<block_size,n_threads>>>(d_circulate_all_loc_ml_today.size(),
                                                                       thrust::raw_pointer_cast(d_circulations_all_loc_ml_indices_no_zero.data()),
@@ -450,7 +452,7 @@ void GPU::Population::perform_circulation_event() {
 
     thrust::sort(thrust::device,d_circulate_all_loc_ml_today.begin(),d_circulate_all_loc_ml_today.end(),circulateLess());
 
-//    ThrustT4TupleVectorHost<int,int,int,unsigned int> h_circulate_all_loc_ml_today = d_circulate_all_loc_ml_today;
+//    ThrustT4TupleVector<int,int,int,unsigned int> h_circulate_all_loc_ml_today = d_circulate_all_loc_ml_today;
 //    for(int i = 0; i < h_circulate_all_loc_ml_today.size(); i++){
 //        int from_location = thrust::get<0>(h_circulate_all_loc_ml_today[i]);
 //        int target_location = thrust::get<1>(h_circulate_all_loc_ml_today[i]);
@@ -467,7 +469,7 @@ void GPU::Population::perform_circulation_event() {
      * In this is the first pass, fill all index in d_circulate_person_indices_today
      * with 1 person first
      * */
-    ThrustT5TupleVectorDevice<int,int,int,unsigned int,int> d_circulate_person_indices_today(total_circulations,thrust::make_tuple(-1,-1,-1,-1,-1));
+    ThrustTuple5VectorDevice<int,int,int,unsigned int,int> d_circulate_person_indices_today(total_circulations,thrust::make_tuple(-1,-1,-1,-1,-1));
     block_size = (d_n_circulations_all_loc_ml_no_zero.size() + n_threads - 1)/n_threads;
     fill_circulate_person_indices<<<block_size,n_threads>>>(d_circulate_all_loc_ml_today.size(),
                                                            Model::CONFIG->circulation_info().number_of_moving_levels,
@@ -482,7 +484,7 @@ void GPU::Population::perform_circulation_event() {
      * Check if there is any index with n_persons > 1 and random on CPU
      * otherwise schedule person events
      * */
-    ThrustT5TupleVectorHost<int,int,int,unsigned int,int> h_circulate_person_indices_today = d_circulate_person_indices_today;
+    ThrustTuple5VectorHost<int,int,int,unsigned int,int> h_circulate_person_indices_today = d_circulate_person_indices_today;
     auto *pi = Model::POPULATION->get_person_index<PersonIndexByLocationMovingLevel>();
     for(int i = 0; i < d_circulate_all_loc_ml_today.size();i++){
         int from_location = h_circulate_person_indices_today[i].get<0>();
@@ -526,6 +528,13 @@ void GPU::Population::perform_circulation_event() {
     }
 }
 
+void GPU::Population::calculate_n_person_bitten_today(int n_locations,
+                                                      ThrustTVectorDevice<double> &d_foi_all_locations,
+                                                      ThrustTVectorDevice<int> &d_n_person_bitten_today_all_locations){
+
+
+}
+
 void GPU::Population::perform_infection_event() {
     auto tp_start = std::chrono::high_resolution_clock::now();
     auto tracking_index = Model::SCHEDULER->current_time() % Model::CONFIG->number_of_tracking_days();
@@ -535,78 +544,12 @@ void GPU::Population::perform_infection_event() {
      * Also get indices from and to arrays
      * */
 
-    int n_locations = 5;
-    int n_person_each_location = 20;
-    int n_sample_each_location = 4;
-    TVector<double> distribution(n_locations*n_person_each_location,0.0);
-    TVector<double> sum_distribution(n_locations);
-    std::vector<Person*> all_persons;
-    for (int i = 0; i < n_locations*n_person_each_location; ++i) {
-        int location_index = i / n_person_each_location;
-        auto *p = new Person();
-        p->set_id(i);
-        distribution[location_index*n_person_each_location+0] = 1.0;
-        distribution[location_index*n_person_each_location+5] = 0.2;
-        distribution[location_index*n_person_each_location+10] = 0.5;
-        distribution[location_index*n_person_each_location+15] = 0.8;
-        sum_distribution[location_index] = distribution[location_index*n_person_each_location+0]
-                                            + distribution[location_index*n_person_each_location+5]
-                                            + distribution[location_index*n_person_each_location+10]
-                                            + distribution[location_index*n_person_each_location+15];
-        all_persons.push_back(p);
-//        printf("location %d person %d\n",location_index,p->id());
-    }
-    for(int i = 0; i < n_locations; i++){
-        printf("location %d sum %f\n",i,sum_distribution[i]);
-    }
-    ThrustTVectorHost<double> h_distribution(distribution);
-    ThrustTVectorHost<double> h_sum_distribution(sum_distribution);
-    ThrustTVectorDevice<double> d_distribution = h_distribution;
-    ThrustTVectorDevice<double> d_sum_distribution = h_sum_distribution;
+    ThrustTVectorDevice<double> d_foi_all_locations;
+    ThrustTVectorDevice<int> d_n_person_bitten_today_all_locations;
+    calculate_n_person_bitten_today(Model::CONFIG->number_of_locations(),
+                                    d_foi_all_locations,d_n_person_bitten_today_all_locations);
+}
 
-    auto result = Model::RANDOM->multinomial_sampling(n_sample_each_location,
-                                                   distribution,
-                                                   all_persons,
-                                                   false,
-                                                   sum_distribution[0]);
+void GPU::Population::update_current_foi(){
 
-    for(auto s : result){
-        printf("CPU location %d, multinomial samples %d\n", 0, s->id());
-    }
-
-    result = Model::RANDOM->roulette_sampling(n_sample_each_location,
-                                                 distribution,
-                                                 all_persons,
-                                                 false,
-                                                 sum_distribution[1]);
-
-    for(auto s : result){
-        printf("CPU location %d, roulette samples %d\n", 1, s->id());
-    }
-
-    auto result_gpu = Model::GPU_RANDOM->roulette_sampling(n_locations,
-                                                           n_sample_each_location,
-                                                           all_persons,
-                                                           d_distribution,
-                                                           d_sum_distribution,
-                                                           false);
-
-    for(int i = 0; i <result_gpu.size(); i++){
-        int location_index = i / n_sample_each_location;
-        printf("GPU Roulette location %d result id %d\n",location_index,result_gpu[i]->id());
-    }
-
-    result_gpu = Model::GPU_RANDOM->multinomial_sampling(n_locations,
-                                                      n_sample_each_location,
-                                                      all_persons,
-                                                      d_distribution,
-                                                      d_sum_distribution,
-                                                      false);
-
-    for(int i = 0; i <result_gpu.size(); i++){
-        int location_index = i / n_sample_each_location;
-        printf("GPU Multinomial location %d result id %d\n",location_index,result_gpu[i]->id());
-    }
-
-    exit(0);
 }

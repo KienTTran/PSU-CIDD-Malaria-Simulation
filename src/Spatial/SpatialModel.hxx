@@ -21,8 +21,8 @@ namespace Spatial {
     // Allow the spatial model to perform any preparation it must do.
     virtual void prepare() { }
 
-    virtual ThrustTVectorHost<double> getSpatialModelParameters() {return {};}
-    virtual ThrustTVectorHost<double> getSpatialModelTravels() {return {};}
+    virtual DoubleVector getSpatialModelParameters() {return {};}
+    virtual DoubleVector getSpatialModelTravels() {return {};}
 
     [[nodiscard]] virtual DoubleVector
     get_v_relative_out_movement_to_destination(const int &from_location, const int &number_of_locations,

@@ -27,7 +27,7 @@ void PersonIndexByLocationMovingLevel::Initialize(const int &no_location, const 
 
   vPerson_.assign(no_location, ppv2);
 
-  Model::CONFIG->h_popsize_by_moving_level = ThrustTVectorHost<int>(no_location*no_level,0);
+  Model::CONFIG->h_popsize_by_moving_level = IntVector(no_location*no_level,0);
 }
 
 void PersonIndexByLocationMovingLevel::add(Person *p) {

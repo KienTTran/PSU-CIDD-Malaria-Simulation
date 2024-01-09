@@ -14,9 +14,9 @@
 #include "Core/Config/Config.h"
 #include "Gpu/Population/Properties/PersonIndexGPU.h"
 
-#include "Gpu/Random.cuh"
-#include "Gpu/RenderEntity.cuh"
-#include "Gpu/Utils.cuh"
+#include "Gpu/Core/Random.cuh"
+#include "Gpu/Renderer/RenderEntity.cuh"
+#include "Gpu/Utils/Utils.cuh"
 #include "Population/Population.h"
 
 #include "UpdateRenderPositionEvent.cuh"
@@ -109,7 +109,7 @@ void UpdateRenderPositionEvent::execute() {
                     thrust::raw_pointer_cast(pi->buffer_person_models().data()),
                     thrust::raw_pointer_cast(pi->buffer_person_colors().data()),
                     Model::GPU_RANDOM->d_states);
-            check_cuda_error(cudaDeviceSynchronize());
+            cudaDeviceSynchronize();
             check_cuda_error(cudaGetLastError());
             /* D2H */
             thrust::copy(pi->buffer_person_models().begin(), pi->buffer_person_models().end(), pi->h_person_models().begin() + batch_from);

@@ -332,7 +332,7 @@ void SpatialData::load_raster(SpatialFileType type) {
     // Log the updates
 //    VLOG(1) << "Loaded values from raster file, type id: " << type;
     printf("Loaded values from raster file, type id: %d\n", type);
-    Model::CONFIG->h_location_colors = ThrustTVectorHost<glm::vec4>(Model::CONFIG->location_db().size());
+    Model::CONFIG->h_location_colors = TVector<glm::vec4>(Model::CONFIG->location_db().size());
     //Generate pop colors
     for(int loc_index = 0; loc_index < Model::CONFIG->location_db().size(); loc_index++){
         //Assign cell color by population in each cell

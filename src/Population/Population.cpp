@@ -31,6 +31,7 @@
 #include "Helpers/UniqueId.hxx"
 #include "easylogging++.h"
 #include "Gpu/Population/Properties/PersonIndexGPU.h"
+#include "Gpu/Population/Population.cuh"
 
 
 Population::Population(Model* model) : model_(model) {

@@ -8,6 +8,33 @@
 #
 # ---------------------------------------------------------------
 
+gpu_config:
+  n_threads: 1024
+  people_1_batch: 102400000
+  pre_allocated_mem_ratio: 1.1 #1.0 will turn off displaying GUI as well
+  n_parasites_per_person: 1
+
+render_config:
+  window_width: 1280
+  window_height: 720
+  display_gui: false #in order to displaying GUI, pre_allocated_mem_ratio must be set to > 1.0
+  close_window_on_finish: true
+  point_coord: 0.075
+  shaders:
+    vertex: "../../input/shaders/shader.vert"
+    fragment: "../../input/shaders/shader.frag"
+
+debug_config:
+  width: 0
+  height: 0
+  enable_update: true
+  enable_debug_text: true
+  enable_debug_render: false
+  enable_debug_render_text: false
+  log_interval: 100
+
+#set 0 to randomize seed using clock
+initial_seed_number: 0 #123456789
 
 # starting time point of the simulation (in yyyy/m/d format) 
 # which is day 0 in the simulation
@@ -88,10 +115,13 @@ location_db:
 # seasonality parameters for all location
 seasonal_info:
   enable: true
-  a: [1]
-  phi: [250]
-  min_value: [0.1]
-  period: 365
+  mode: equation
+  equation:
+    raster: false
+    base: [0.0]
+    a: [1.0]
+    b: [0.0]
+    phi: [250]
 
 spatial_model:
   name: "Wesolowski"
@@ -188,7 +218,7 @@ circulation_info:
     mean: 5
     sd: 10
 
-
+mutation_probability_by_locus: 0.001
 
 genotype_info:
   loci:

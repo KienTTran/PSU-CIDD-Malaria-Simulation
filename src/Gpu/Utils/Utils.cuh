@@ -28,9 +28,9 @@ public:
     void init();
 public:
     template<typename T,typename T2>
-    ThrustT2TupleVectorHost<T,T2> sum_value_by_1key(ThrustTVectorHost<T> input_keys, ThrustTVectorHost<T2> input_values, int size);
+    ThrustTuple2Vector<T,T2> sum_value_by_1key(TVector<T> input_keys, TVector<T2> input_values, int size);
     template<typename T>
-    ThrustTVectorHost<T> count_by_1key(ThrustTVectorHost<T> input_keys, int size);
+    TVector<T> count_by_1key(TVector<T> input_keys, int size);
 public:
 };
 //

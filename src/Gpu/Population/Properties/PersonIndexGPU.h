@@ -14,18 +14,18 @@ class PersonIndexGPU : public PersonIndex {
 DISALLOW_COPY_AND_ASSIGN(PersonIndexGPU)
 
 public:
-    PROPERTY_REF(ThrustTVectorHost<Person*>, h_persons);
-    PROPERTY_REF(ThrustTVectorHost<glm::mat4>, h_person_models);
-    PROPERTY_REF(ThrustTVectorHost<glm::vec4>, h_person_colors);
-    PROPERTY_REF(ThrustTVectorHost<long>, h_person_ids);
-    PROPERTY_REF(ThrustTVectorHost<int>, h_person_host_states);
-    PROPERTY_REF(ThrustTVectorHost<int>, h_person_ages);
-    PROPERTY_REF(ThrustTVectorHost<int>, h_person_age_classes);
-    PROPERTY_REF(ThrustTVectorHost<int>, h_person_locations);
-    PROPERTY_REF(ThrustTVectorHost<int>, h_person_residence_locations);
+    PROPERTY_REF(TVector<Person*>, h_persons);
+    PROPERTY_REF(TVector<glm::mat4>, h_person_models);
+    PROPERTY_REF(TVector<glm::vec4>, h_person_colors);
+    PROPERTY_REF(TVector<long>, h_person_ids);
+    PROPERTY_REF(TVector<int>, h_person_host_states);
+    PROPERTY_REF(TVector<int>, h_person_ages);
+    PROPERTY_REF(TVector<int>, h_person_age_classes);
+    PROPERTY_REF(TVector<int>, h_person_locations);
+    PROPERTY_REF(TVector<int>, h_person_residence_locations);
 
-    PROPERTY_REF(ThrustTVectorHost<double>, h_person_innate_relative_biting_rates);
-    PROPERTY_REF(ThrustTVectorHost<double>, h_person_current_relative_biting_rates);
+    PROPERTY_REF(TVector<double>, h_person_innate_relative_biting_rates);
+    PROPERTY_REF(TVector<double>, h_person_current_relative_biting_rates);
 
     //on DEVICE CUDA
     PROPERTY_REF(ThrustTVectorDevice<glm::mat4>,buffer_person_models);
