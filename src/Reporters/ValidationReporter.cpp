@@ -32,6 +32,7 @@ void ValidationReporter::initialize() {
     prmc_freq_file.open(fmt::format("{}/validation_prmc_freq_{}.txt", Model::MODEL->output_path(), Model::MODEL->cluster_job_number()));
     prmc_db_file.open(fmt::format("{}/validation_prmc_db_{}.txt", Model::MODEL->output_path(), Model::MODEL->cluster_job_number()));
     monthly_mutation_file.open(fmt::format("{}/validation_monthly_mutation_{}.txt", Model::MODEL->output_path(), Model::MODEL->cluster_job_number()));
+    mosquito_res_count_file.open(fmt::format("{}/validation_mosquito_res_count_{}.txt", Model::MODEL->output_path(), Model::MODEL->cluster_job_number()));
 }
 
 void ValidationReporter::before_run() {}
@@ -253,6 +254,28 @@ void ValidationReporter::monthly_report() {
             Model::DATA_COLLECTOR->mutation_tracker[loc].clear();
         }
     }
+
+    ss.str("");
+    sum = 0;
+    for (auto loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
+        sum += Model::DATA_COLLECTOR->mosquito_recombined_resistant_genotype_tracker[loc].size();
+        for (int i = 0; i < Model::DATA_COLLECTOR->mosquito_recombined_resistant_genotype_tracker[loc].size(); i++) {
+            ss << std::get<0>(Model::DATA_COLLECTOR->mosquito_recombined_resistant_genotype_tracker[loc][i]) << sep;
+            ss << std::get<1>(Model::DATA_COLLECTOR->mosquito_recombined_resistant_genotype_tracker[loc][i]) << sep;
+            ss << std::get<2>(Model::DATA_COLLECTOR->mosquito_recombined_resistant_genotype_tracker[loc][i]) << sep;
+            ss << std::get<3>(Model::DATA_COLLECTOR->mosquito_recombined_resistant_genotype_tracker[loc][i]) << sep;
+            ss << std::get<4>(Model::DATA_COLLECTOR->mosquito_recombined_resistant_genotype_tracker[loc][i]) << sep;
+            ss << std::get<5>(Model::DATA_COLLECTOR->mosquito_recombined_resistant_genotype_tracker[loc][i]) << sep;
+            ss << std::get<6>(Model::DATA_COLLECTOR->mosquito_recombined_resistant_genotype_tracker[loc][i]) << sep;
+            ss << std::get<7>(Model::DATA_COLLECTOR->mosquito_recombined_resistant_genotype_tracker[loc][i]) << '\n';
+        }
+    }
+    if(sum > 0){
+        mosquito_res_count_file << ss.str() << std::endl;
+        for (auto loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
+            Model::DATA_COLLECTOR->mosquito_recombined_resistant_genotype_tracker[loc].clear();
+        }
+    }
 }
 
 void ValidationReporter::after_run() {
@@ -376,6 +399,7 @@ void ValidationReporter::after_run() {
     monthly_data_file.close();
     summary_data_file.close();
     monthly_mutation_file.close();
+    mosquito_res_count_file.close();
 }
 
 void ValidationReporter::print_EIR_PfPR_by_location(std::stringstream& ss) {

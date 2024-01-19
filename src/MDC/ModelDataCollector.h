@@ -223,10 +223,14 @@ PROPERTY_REF(LongVector3, mosquito_recombined_resistant_genotype_count)
 
 PROPERTY_REF(LongVector3, monthly_mosquito_recombined_resistant_genotype_count)
 
+
 static const int number_of_reported_MOI = 10;
 
-typedef std::tuple<int, int, int, int, int> mutation_tracker_info;
+typedef std::tuple<int, int, int, int, int, int> mutation_tracker_info;
 std::vector<std::vector<mutation_tracker_info>> mutation_tracker;
+
+typedef std::tuple<int, int, int, int, std::string, int, int, int> recombined_resistant_genotype_info;
+std::vector<std::vector<recombined_resistant_genotype_info>> mosquito_recombined_resistant_genotype_tracker;
 
 public:
   explicit ModelDataCollector(Model* model = nullptr);

@@ -37,6 +37,7 @@
 #include "Therapies//SCTherapy.h"
 #include "Therapies/Therapy.h"
 #include "Parasites/Genotype.h"
+#include "Mosquito/Mosquito.h"
 #include "easylogging++.h"
 
 INITIALIZE_EASYLOGGINGPP
@@ -238,18 +239,20 @@ int main(int argc, char** argv) {
         }
         for(auto p_genotype : genotype_inputs){
             std::stringstream ss;
-            ss << p_genotype->genotype_id << "\t" << p_genotype->get_aa_sequence() << "\t";
+            ss << p_genotype->genotype_id << "\t" << Model::MOSQUITO->get_old_genotype_string(p_genotype->get_aa_sequence()) << "\t";
 
             if(input.therapy_list.empty()){
               for (auto therapy_id = min_therapy_id; therapy_id <= max_therapy_id; therapy_id++) {
                 double efficacy = getEfficacyForTherapy(p_genotype, p_model, input, therapy_id);
-                ss << efficacy << (therapy_id == max_therapy_id ? "" : "\t");
+//                ss << efficacy << (therapy_id == max_therapy_id ? "" : "\t");
+                  ss << efficacy << "\t";
               }
             }
             else{
               for (int t_index = 0; t_index < input.therapy_list.size(); t_index++) {
                 double efficacy = getEfficacyForTherapy(p_genotype, p_model, input, input.therapy_list[t_index]);
-                ss << efficacy << (input.therapy_list[t_index] == input.therapy_list.size() - 1 ? "" : "\t");
+//                ss << efficacy << (input.therapy_list[t_index] == input.therapy_list.size() - 1 ? "" : "\t");
+                  ss << efficacy << "\t";
               }
             }
             std::cout << ss.str() << std::endl;
@@ -261,7 +264,8 @@ int main(int argc, char** argv) {
 
 void create_cli_option(CLI::App& app, AppInput& input) {
     app.add_option("-i", input.input_file, "Input filename for DxG");
-    app.add_option("-g", input.genotypes, "Genotype patterns for population (3 only) ex: [WT KEL1 KEL1/PLA1]");
+    app.add_option("-g", input.genotypes, "Genotype patterns for population (3 only) ex: [WT KEL1 KEL1/PLA1]\n"
+                                          "Or genotype list without -cc flags");
     app.add_option("-t", input.therapies, "Get efficacy for range therapies [from to]");
     app.add_option("--of", input.output_file, "Output density to file");
     app.add_option("--iov", input.as_iov, "AS inter-occasion-variability");
@@ -355,7 +359,7 @@ double getEfficacyForTherapyCRT(Model* p_model, AppInput& input, int therapy_id)
         //Run these 3 genotypes in population with and without F145I,T93S,H97Y and I218F
         //to get ec50 of WT and mutant genotypes
         std::string g_str = "";
-        int infect_prob = Model::RANDOM->random_uniform_int(1, 101);
+        int infect_prob = Model::RANDOM->random_uniform_int(1, 104);
         if(infect_prob < 74) {//KEL1/PLA1
             g_str = input.genotypes[2];
         }

@@ -24,6 +24,7 @@ public:
     std::ofstream prmc_db_file;
     std::ofstream prmc_freq_file;
     std::ofstream monthly_mutation_file;
+    std::ofstream mosquito_res_count_file;
 
 public:
     ValidationReporter();

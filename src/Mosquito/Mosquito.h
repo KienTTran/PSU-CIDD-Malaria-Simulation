@@ -59,6 +59,8 @@ public:
                                                   std::vector<int> drugs, int resistant_drug_pair_id, int resistant_type_id, bool verbose = false);
 
   std::vector<std::string> split_string(std::string str, char delimiter);
+
+  std::string get_old_genotype_string(std::string new_genotype);
 };
 
 #endif  // POMS_SRC_MOSQUITO_MOSQUITO_H

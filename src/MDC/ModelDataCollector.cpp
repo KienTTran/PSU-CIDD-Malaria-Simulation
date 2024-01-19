@@ -270,6 +270,8 @@ void ModelDataCollector::initialize() {
     current_number_of_mutation_events_in_this_year_ = 0;
     mutation_tracker = std::vector<std::vector<mutation_tracker_info>>(Model::CONFIG->number_of_locations());
 
+    mosquito_recombined_resistant_genotype_tracker = std::vector<std::vector<recombined_resistant_genotype_info>>(Model::CONFIG->number_of_locations());
+
     number_of_mutation_events_by_year_ = LongVector();
 
   }
@@ -770,7 +772,7 @@ void ModelDataCollector::record_1_mutation(const int& location, Genotype* from, 
 }
 
 void ModelDataCollector::record_1_mutation_by_drug(const int& location, Genotype* from, Genotype* to, int drug_id) {
-  auto mutation_tracker_info = std::make_tuple(Model::SCHEDULER->current_time(),Model::SCHEDULER->current_month_in_year(), drug_id, from->genotype_id, to->genotype_id);
+  auto mutation_tracker_info = std::make_tuple(location,Model::SCHEDULER->current_time(),Model::SCHEDULER->current_month_in_year(), drug_id, from->genotype_id, to->genotype_id);
   mutation_tracker[location].push_back(mutation_tracker_info);
 }
 

@@ -239,15 +239,29 @@ Mosquito::resistant_result_info Mosquito::count_resistant_genotypes(Config* conf
             std::string resistant_strength = "";
             switch(resistant_drug_pair_id){
                 case(0):{
-                    //DHA-PPQ:2-2
-                    res_points = 2;
-                    mut_points = 2;
-                    if(resistant_type_id == 0) is_double_resistant = (pattern_chromosome[12].substr(10, 1) == "Y" && pattern_chromosome[13].substr(0, 1) == "2");//580Y-2
+                    //DHA-PPQ:2-2 - updated with PfCRT mutations that are resistant to PPQ
+                    if(pattern_chromosome[12].substr(10, 1) == "Y"){//580Y
+                        res_points++;
+                        mut_points++;
+                    }
+                    if(pattern_chromosome[13].substr(0, 1) == "2"//Plasmepsin2/3  2 copies
+                     || pattern_chromosome[6].substr(1, 1) == "S"//PfCRT T93S
+                     || pattern_chromosome[6].substr(2, 1) == "Y"//PfCRT H97Y
+                     || pattern_chromosome[6].substr(3, 1) == "F"//PfCRT F145I
+                     || pattern_chromosome[6].substr(4, 1) == "I"){//PfCRT F281I
+                        mut_points++;
+                    }
+                    if(mut_points > 1){
+                        res_points++;
+                    }
+                    if(resistant_type_id == 0) {
+                        is_double_resistant = (res_points == 2 && mut_points >= 2);//580Y-2 or 580Y-[SYIF] or 580Y-[SYIF]-2     ;
+                    }
                     resistant_strength = std::to_string(res_points) + "-" + std::to_string(mut_points);
                     break;
                 }
                 case(1):{
-                    //DHA-PPQ:2-2
+                    //ASAQ:2-2
                     if(pattern_chromosome[12].substr(10, 1) == "Y"){
                         res_points++;
                         mut_points++;
@@ -311,6 +325,10 @@ Mosquito::resistant_result_info Mosquito::count_resistant_genotypes(Config* conf
                 MosquitoRecombinedGenotypeInfo resistant_info = std::make_pair(parent_info,std::make_pair(resistant_drug_pair_id,resistant_type_id));
                 genotype->resistant_recombinations_in_mosquito.push_back(resistant_info);
                 parent_info.clear();
+                auto resistant_tracker_info = std::make_tuple(loc,Model::SCHEDULER->current_time(),Model::SCHEDULER->current_month_in_year(),2,
+                                                              resistant_drug_list[resistant_drug_pair_id].first[resistant_type_id],
+                                                              parent_genotypes[0]->genotype_id, parent_genotypes[1]->genotype_id, genotype->genotype_id);
+                Model::DATA_COLLECTOR->mosquito_recombined_resistant_genotype_tracker[loc].push_back(resistant_tracker_info);
             }
             if(verbose && is_double_resistant){
                 VLOG(1) << fmt::format("Count two condition {} resistant_drug_pair_id: {}\n"
@@ -359,7 +377,11 @@ Mosquito::resistant_result_info Mosquito::count_resistant_genotypes(Config* conf
                         res_points++;
                         mut_points++;
                     }
-                    if(pattern_chromosome[13].substr(0, 1) == "2"){
+                    if(pattern_chromosome[13].substr(0, 1) == "2"//Plasmepsin2/3  2 copies
+                       || pattern_chromosome[6].substr(1, 1) == "S"//PfCRT T93S
+                       || pattern_chromosome[6].substr(2, 1) == "Y"//PfCRT H97Y
+                       || pattern_chromosome[6].substr(3, 1) == "F"//PfCRT F145I
+                       || pattern_chromosome[6].substr(4, 1) == "I"){//PfCRT F281I
                         res_points++;
                         mut_points++;
                     }
@@ -390,7 +412,11 @@ Mosquito::resistant_result_info Mosquito::count_resistant_genotypes(Config* conf
                         res_points++;
                         mut_points++;
                     }
-                    if(pattern_chromosome[13].substr(0, 1) == "2"){
+                    if(pattern_chromosome[13].substr(0, 1) == "2"//Plasmepsin2/3  2 copies
+                       || pattern_chromosome[6].substr(1, 1) == "S"//PfCRT T93S
+                       || pattern_chromosome[6].substr(2, 1) == "Y"//PfCRT H97Y
+                       || pattern_chromosome[6].substr(3, 1) == "F"//PfCRT F145I
+                       || pattern_chromosome[6].substr(4, 1) == "I"){//PfCRT F281I
                         res_points++;
                         mut_points++;
                     }
@@ -424,6 +450,10 @@ Mosquito::resistant_result_info Mosquito::count_resistant_genotypes(Config* conf
                 MosquitoRecombinedGenotypeInfo resistant_info = std::make_pair(parent_info,std::make_pair(resistant_drug_pair_id,resistant_type_id));
                 genotype->resistant_recombinations_in_mosquito.push_back(resistant_info);
                 parent_info.clear();
+                auto resistant_tracker_info = std::make_tuple(loc,Model::SCHEDULER->current_time(),Model::SCHEDULER->current_month_in_year(),3,
+                                                              resistant_drug_list[resistant_drug_pair_id].first[resistant_type_id],
+                                                              parent_genotypes[0]->genotype_id, parent_genotypes[1]->genotype_id, genotype->genotype_id);
+                Model::DATA_COLLECTOR->mosquito_recombined_resistant_genotype_tracker[loc].push_back(resistant_tracker_info);
             }
             if(verbose && is_triple_resistant){
                 VLOG(1) << fmt::format("Count {} resistant_drug_pair_id: {} \n"
@@ -463,5 +493,20 @@ Mosquito::resistant_result_info Mosquito::count_resistant_genotypes(Config* conf
         return std::make_tuple(false,resistant_drug_pair_id,resistant_type_id,"0-0");
     }
     return std::make_tuple(false,resistant_drug_pair_id,resistant_type_id,"0-0");
+}
+
+
+std::string Mosquito::get_old_genotype_string(std::string new_genotype){
+    std::vector<std::string> pattern_chr = split_string(new_genotype,'|');
+    std::string old_chr_5 = pattern_chr[6].substr(0, 1);
+    std::string old_chr_7 = "";
+    if(pattern_chr[4].substr(2, 1) == "2")
+        old_chr_7 = pattern_chr[4].substr(0, 2)+pattern_chr[4].substr(0, 2);
+    else
+        old_chr_7 = pattern_chr[4].substr(0, 2)+"--";
+    std::string old_chr_13 = pattern_chr[12].substr(10, 1);
+    std::string old_chr_14 = pattern_chr[13].substr(0, 1);
+    std::string old_chr_x = pattern_chr[6].substr(6, 1);
+    return old_chr_5+old_chr_7+old_chr_13+old_chr_14;
 }
 
