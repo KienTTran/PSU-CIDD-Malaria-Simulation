@@ -263,11 +263,7 @@ void ValidationReporter::monthly_report() {
             ss << std::get<0>(Model::DATA_COLLECTOR->mosquito_recombined_resistant_genotype_tracker[loc][i]) << sep;
             ss << std::get<1>(Model::DATA_COLLECTOR->mosquito_recombined_resistant_genotype_tracker[loc][i]) << sep;
             ss << std::get<2>(Model::DATA_COLLECTOR->mosquito_recombined_resistant_genotype_tracker[loc][i]) << sep;
-            ss << std::get<3>(Model::DATA_COLLECTOR->mosquito_recombined_resistant_genotype_tracker[loc][i]) << sep;
-            ss << std::get<4>(Model::DATA_COLLECTOR->mosquito_recombined_resistant_genotype_tracker[loc][i]) << sep;
-            ss << std::get<5>(Model::DATA_COLLECTOR->mosquito_recombined_resistant_genotype_tracker[loc][i]) << sep;
-            ss << std::get<6>(Model::DATA_COLLECTOR->mosquito_recombined_resistant_genotype_tracker[loc][i]) << sep;
-            ss << std::get<7>(Model::DATA_COLLECTOR->mosquito_recombined_resistant_genotype_tracker[loc][i]) << '\n';
+            ss << std::get<3>(Model::DATA_COLLECTOR->mosquito_recombined_resistant_genotype_tracker[loc][i]) << '\n';
         }
     }
     if(sum > 0){

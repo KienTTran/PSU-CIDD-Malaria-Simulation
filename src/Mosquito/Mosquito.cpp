@@ -12,6 +12,7 @@
 #include "Population/Population.h"
 #include "Population/SingleHostClonalParasitePopulations.h"
 #include "Therapies/SCTherapy.h"
+#include <algorithm>
 #include "easylogging++.h"
 
 Mosquito::Mosquito(Model *model) : model { model } {}
@@ -159,8 +160,9 @@ void Mosquito::infect_new_cohort_in_PRMC(Config *config, Random *random, Populat
 
       genotypes_table[tracking_index][loc][if_index] = sampled_genotype;
 
+
       //Count DHA-PPQ(8) ASAQ(7) AL(6)
-      //Count if male genotype resists to one drug and female genotype resists to another drug only, right now work on double resistant only
+      //Count if male genotype resists to one drug and female genotype resists to another drug only, right now work on double and triple resistant only
       //when genotype ec50_power_n == min_ec50, it is sensitive to that drug
         if (Model::SCHEDULER->current_time() >= Model::CONFIG->start_of_comparison_period())
         {
@@ -176,6 +178,18 @@ void Mosquito::infect_new_cohort_in_PRMC(Config *config, Random *random, Populat
                         Model::DATA_COLLECTOR->monthly_mosquito_recombined_resistant_genotype_count()[loc][resistant_drug_pair_id][resistant_type_id]++;
                     }
                 }
+            }
+            /*
+             * mosquito_recombined_resistant_genotype_count and monthly_mosquito_recombined_resistant_genotype_count
+             * will have different results with mosquito_recombined_resistant_genotype_tracker.
+             * mosquito_recombined_resistant_genotype_count counts all duplicated genotypes
+             * while mosquito_recombined_resistant_genotype_tracker counts unique genotypes
+             * */
+            auto resistant_tracker_info = std::make_tuple(Model::SCHEDULER->current_time(),parent_genotypes[0]->genotype_id, parent_genotypes[1]->genotype_id, sampled_genotype->genotype_id);
+            if (std::find(Model::DATA_COLLECTOR->mosquito_recombined_resistant_genotype_tracker[loc].begin(),
+                          Model::DATA_COLLECTOR->mosquito_recombined_resistant_genotype_tracker[loc].end(), resistant_tracker_info)
+                == Model::DATA_COLLECTOR->mosquito_recombined_resistant_genotype_tracker[loc].end()){
+                Model::DATA_COLLECTOR->mosquito_recombined_resistant_genotype_tracker[loc].push_back(resistant_tracker_info);
             }
         }
       //Count number of bites
@@ -225,6 +239,10 @@ std::vector<std::string> Mosquito::split_string(std::string str, char delimiter)
 
 Mosquito::resistant_result_info Mosquito::count_resistant_genotypes(Config* config, int loc, std::vector<Genotype*> parent_genotypes, Genotype *genotype,
                                                                     std::vector<int> drugs, int resistant_drug_pair_id, int resistant_type_id, bool verbose){
+    /*
+     * Count if one genotype is resistant to drug 1 and sentive to drug 2 and another genotype is resistant to drug 2 and sensitive to drug 1
+     * and vice-versa and produce a genotype that is resistant to both drugs
+     * */
     //Double resistant
     if(drugs.size() == 2){
         if((parent_genotypes[0]->resist_to(config->drug_db()->at(drugs[0]))  && !parent_genotypes[0]->resist_to(config->drug_db()->at(drugs[1])) //g0 - g1
@@ -245,10 +263,10 @@ Mosquito::resistant_result_info Mosquito::count_resistant_genotypes(Config* conf
                         mut_points++;
                     }
                     if(pattern_chromosome[13].substr(0, 1) == "2"//Plasmepsin2/3  2 copies
-                     || pattern_chromosome[6].substr(1, 1) == "S"//PfCRT T93S
-                     || pattern_chromosome[6].substr(2, 1) == "Y"//PfCRT H97Y
-                     || pattern_chromosome[6].substr(3, 1) == "F"//PfCRT F145I
-                     || pattern_chromosome[6].substr(4, 1) == "I"){//PfCRT F281I
+                       || pattern_chromosome[6].substr(1, 1) == "S"//PfCRT T93S
+                       || pattern_chromosome[6].substr(2, 1) == "Y"//PfCRT H97Y
+                       || pattern_chromosome[6].substr(3, 1) == "I"//PfCRT F145I
+                       || pattern_chromosome[6].substr(4, 1) == "F"){//PfCRT I281F
                         mut_points++;
                     }
                     if(mut_points > 1){
@@ -307,6 +325,9 @@ Mosquito::resistant_result_info Mosquito::count_resistant_genotypes(Config* conf
                     if(mut_points > 1){
                         res_points++;
                     }
+                    /*
+                     * Note that :2 = :2-2 + :2-3 + :2-4
+                     * */
                     if(resistant_type_id == 0) is_double_resistant = (res_points == 2 && mut_points == 2);//AL:2-2
                     if(resistant_type_id == 1) is_double_resistant = (res_points == 2 && mut_points == 3);//AL:2-3
                     if(resistant_type_id == 2) is_double_resistant = (res_points == 2 && mut_points == 4);//AL:2-4
@@ -325,25 +346,21 @@ Mosquito::resistant_result_info Mosquito::count_resistant_genotypes(Config* conf
                 MosquitoRecombinedGenotypeInfo resistant_info = std::make_pair(parent_info,std::make_pair(resistant_drug_pair_id,resistant_type_id));
                 genotype->resistant_recombinations_in_mosquito.push_back(resistant_info);
                 parent_info.clear();
-                auto resistant_tracker_info = std::make_tuple(loc,Model::SCHEDULER->current_time(),Model::SCHEDULER->current_month_in_year(),2,
-                                                              resistant_drug_list[resistant_drug_pair_id].first[resistant_type_id],
-                                                              parent_genotypes[0]->genotype_id, parent_genotypes[1]->genotype_id, genotype->genotype_id);
-                Model::DATA_COLLECTOR->mosquito_recombined_resistant_genotype_tracker[loc].push_back(resistant_tracker_info);
             }
             if(verbose && is_double_resistant){
                 VLOG(1) << fmt::format("Count two condition {} resistant_drug_pair_id: {}\n"
-                                       "genotype_m = \"{}\";\n"
-                                       "genotype_f = \"{}\";\n"
-                                       "genotype_c = \"{}\";\n"
+                                       "genotype_m {} = \"{}\";\n"
+                                       "genotype_f {} = \"{}\";\n"
+                                       "genotype_c {} = \"{}\";\n"
                                        "m_ec50-d0: {:.10f}\tm_ec50-d1: {:.10f}\n"
                                        "f_ec50-d0: {:.10f}\tf_ec50-d1: {:.10f}\n"
                                        "min_ec50-d0: {:.10f}\tmin_ec50-d1: {:.10f}\n"
                                        "resistant_type: {} {} {}",
                                        Model::SCHEDULER->current_time(),
                                        resistant_drug_pair_id,
-                                       parent_genotypes[0]->get_aa_sequence().c_str(),
-                                       parent_genotypes[1]->get_aa_sequence().c_str(),
-                                       genotype->aa_sequence.c_str(),
+                                       parent_genotypes[0]->genotype_id,parent_genotypes[0]->get_aa_sequence().c_str(),
+                                       parent_genotypes[1]->genotype_id,parent_genotypes[1]->get_aa_sequence().c_str(),
+                                       genotype->genotype_id,genotype->aa_sequence.c_str(),
                                        parent_genotypes[0]->get_EC50_power_n(config->drug_db()->at(drugs[0])),
                                        parent_genotypes[0]->get_EC50_power_n(config->drug_db()->at(drugs[1])),
                                        parent_genotypes[1]->get_EC50_power_n(config->drug_db()->at(drugs[0])),
@@ -362,9 +379,12 @@ Mosquito::resistant_result_info Mosquito::count_resistant_genotypes(Config* conf
         }
     }
     //Triple resistant
+    // Count when both are not triple resistant and produce triple resistant genotype
     else if(drugs.size() == 3){
-        if(!(parent_genotypes[0]->resist_to(config->drug_db()->at(drugs[0]))  && parent_genotypes[0]->resist_to(config->drug_db()->at(drugs[1]))  && parent_genotypes[0]->resist_to(config->drug_db()->at(drugs[2])))//g0 - g1
-        && !(parent_genotypes[1]->resist_to(config->drug_db()->at(drugs[0]))  && !parent_genotypes[1]->resist_to(config->drug_db()->at(drugs[1]))  && !parent_genotypes[1]->resist_to(config->drug_db()->at(drugs[2]))) //SSS-SSS
+        if((!(parent_genotypes[0]->resist_to(config->drug_db()->at(drugs[0]))  && parent_genotypes[0]->resist_to(config->drug_db()->at(drugs[1]))  && parent_genotypes[0]->resist_to(config->drug_db()->at(drugs[2])))//g0 - g1
+        && !(parent_genotypes[1]->resist_to(config->drug_db()->at(drugs[0]))  && parent_genotypes[1]->resist_to(config->drug_db()->at(drugs[1]))  && parent_genotypes[1]->resist_to(config->drug_db()->at(drugs[2]))))//SSS-SSS
+        ||(!(parent_genotypes[1]->resist_to(config->drug_db()->at(drugs[0]))  && parent_genotypes[1]->resist_to(config->drug_db()->at(drugs[1]))  && parent_genotypes[1]->resist_to(config->drug_db()->at(drugs[2])))//g1 - g0
+        && !(parent_genotypes[0]->resist_to(config->drug_db()->at(drugs[0]))  && parent_genotypes[0]->resist_to(config->drug_db()->at(drugs[1]))  && parent_genotypes[0]->resist_to(config->drug_db()->at(drugs[2]))))//SSS-SSS
         ){
             std::vector<std::string> pattern_chromosome = split_string(genotype->aa_sequence, '|');
             bool is_triple_resistant = false;
@@ -380,8 +400,8 @@ Mosquito::resistant_result_info Mosquito::count_resistant_genotypes(Config* conf
                     if(pattern_chromosome[13].substr(0, 1) == "2"//Plasmepsin2/3  2 copies
                        || pattern_chromosome[6].substr(1, 1) == "S"//PfCRT T93S
                        || pattern_chromosome[6].substr(2, 1) == "Y"//PfCRT H97Y
-                       || pattern_chromosome[6].substr(3, 1) == "F"//PfCRT F145I
-                       || pattern_chromosome[6].substr(4, 1) == "I"){//PfCRT F281I
+                       || pattern_chromosome[6].substr(3, 1) == "I"//PfCRT F145I
+                       || pattern_chromosome[6].substr(4, 1) == "F"){//PfCRT I281F
                         res_points++;
                         mut_points++;
                     }
@@ -397,6 +417,9 @@ Mosquito::resistant_result_info Mosquito::count_resistant_genotypes(Config* conf
                     if(mut_points > 2){
                         res_points++;
                     }
+                    /*
+                     * Note that :3 = :3-3 + :3-4 + :3-5
+                     * */
                     if(resistant_type_id == 0) is_triple_resistant = (res_points == 3 && mut_points == 3);//DHA-PPQ-AQ:3-3
                     if(resistant_type_id == 1) is_triple_resistant = (res_points == 3 && mut_points == 4);//DHA-PPQ-AQ:3-4
                     if(resistant_type_id == 2) is_triple_resistant = (res_points == 3 && mut_points == 5);//DHA-PPQ-AQ:3-5
@@ -415,8 +438,8 @@ Mosquito::resistant_result_info Mosquito::count_resistant_genotypes(Config* conf
                     if(pattern_chromosome[13].substr(0, 1) == "2"//Plasmepsin2/3  2 copies
                        || pattern_chromosome[6].substr(1, 1) == "S"//PfCRT T93S
                        || pattern_chromosome[6].substr(2, 1) == "Y"//PfCRT H97Y
-                       || pattern_chromosome[6].substr(3, 1) == "F"//PfCRT F145I
-                       || pattern_chromosome[6].substr(4, 1) == "I"){//PfCRT F281I
+                       || pattern_chromosome[6].substr(3, 1) == "I"//PfCRT F145I
+                       || pattern_chromosome[6].substr(4, 1) == "F"){//PfCRT I281F
                         res_points++;
                         mut_points++;
                     }
@@ -450,25 +473,21 @@ Mosquito::resistant_result_info Mosquito::count_resistant_genotypes(Config* conf
                 MosquitoRecombinedGenotypeInfo resistant_info = std::make_pair(parent_info,std::make_pair(resistant_drug_pair_id,resistant_type_id));
                 genotype->resistant_recombinations_in_mosquito.push_back(resistant_info);
                 parent_info.clear();
-                auto resistant_tracker_info = std::make_tuple(loc,Model::SCHEDULER->current_time(),Model::SCHEDULER->current_month_in_year(),3,
-                                                              resistant_drug_list[resistant_drug_pair_id].first[resistant_type_id],
-                                                              parent_genotypes[0]->genotype_id, parent_genotypes[1]->genotype_id, genotype->genotype_id);
-                Model::DATA_COLLECTOR->mosquito_recombined_resistant_genotype_tracker[loc].push_back(resistant_tracker_info);
             }
             if(verbose && is_triple_resistant){
                 VLOG(1) << fmt::format("Count {} resistant_drug_pair_id: {} \n"
-                                       "genotype_m = \"{}\";\n"
-                                       "genotype_f = \"{}\";\n"
-                                       "genotype_c = \"{}\";\n"
+                                       "genotype_m {} = \"{}\";\n"
+                                       "genotype_f {} = \"{}\";\n"
+                                       "genotype_c {} = \"{}\";\n"
                                        "m_ec50-d0: {:.10f}\tm_ec50-d1: {:.10f}\tm_ec50-d2: {:.10f}\n"
                                        "f_ec50-d0: {:.10f}\tf_ec50-d1: {:.10f}\tf_ec50-d2: {:.10f}\n"
                                        "min_ec50-d0: {:.10f}\tmin_ec50-d1: {:.10f}\tmin_ec50-d2: {:.10f}\n"
                                        "resistant_type: {} {} {}",
                                        Model::SCHEDULER->current_time(),
                                        resistant_drug_pair_id,
-                                       parent_genotypes[0]->get_aa_sequence().c_str(),
-                                       parent_genotypes[1]->get_aa_sequence().c_str(),
-                                       genotype->aa_sequence.c_str(),
+                                       parent_genotypes[0]->genotype_id,parent_genotypes[0]->get_aa_sequence().c_str(),
+                                       parent_genotypes[1]->genotype_id,parent_genotypes[1]->get_aa_sequence().c_str(),
+                                       genotype->genotype_id,genotype->aa_sequence.c_str(),
                                        parent_genotypes[0]->get_EC50_power_n(config->drug_db()->at(drugs[0])),
                                        parent_genotypes[0]->get_EC50_power_n(config->drug_db()->at(drugs[1])),
                                        parent_genotypes[0]->get_EC50_power_n(config->drug_db()->at(drugs[2])),
