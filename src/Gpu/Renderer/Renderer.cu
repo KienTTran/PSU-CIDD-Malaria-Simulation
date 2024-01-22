@@ -3,13 +3,13 @@
 //
 
 #include <random>
-#include "Renderer.h"
 #include "Core/Config/Config.h"
 #include "Model.h"
-#include "Population/Population.h"
-#include "Gpu/Population/Properties/PersonIndexGPU.h"
+#include "Gpu/Population/Population.cuh"
+#include "Gpu/Population/Properties/PersonIndexGPU.cuh"
+#include "Renderer.cuh"
 
-Renderer::Renderer(Model* model){
+GPU::Renderer::Renderer(Model* model){
     model_ = model;
     window_width = 0;
     window_height = 0;
@@ -29,11 +29,11 @@ Renderer::Renderer(Model* model){
     camera_center_y = 0.0;
 }
 
-Renderer::~Renderer() {
+GPU::Renderer::~Renderer() {
     glfwTerminate();
 }
 
-void Renderer::init(GPU::RenderEntity* gpu_entity) {
+void GPU::Renderer::init(GPU::RenderEntity* gpu_entity) {
     window_width = Model::CONFIG->render_config().window_width;
     window_height = Model::CONFIG->render_config().window_height;
     width_scaled = Model::CONFIG->render_config().window_width;
@@ -49,7 +49,7 @@ void Renderer::init(GPU::RenderEntity* gpu_entity) {
     gpu_render_entity_ = gpu_entity;
 }
 
-void Renderer::start() {
+void GPU::Renderer::start() {
     printf("[Renderer] Started\n");
 
     if (!glfwInit()) exit(EXIT_FAILURE);
@@ -148,7 +148,7 @@ void Renderer::start() {
         glBindBuffer(GL_ARRAY_BUFFER, gpu_render_entity_->VBO[1]);
         glBindBuffer(GL_ARRAY_BUFFER, gpu_render_entity_->EBO);
         glBindBuffer(GL_DRAW_INDIRECT_BUFFER, gpu_render_entity_->CMD);
-        auto *pi = Model::POPULATION->get_person_index<PersonIndexGPU>();
+        auto *pi = Model::GPU_POPULATION->get_person_index<PersonIndexGPU>();
         glBindBuffer(GL_SHADER_STORAGE_BUFFER, gpu_render_entity_->SSBO[0]);
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, gpu_render_entity_->SSBO[0]);//bind to binding point 2 in shader.vert
         glBindBuffer(GL_SHADER_STORAGE_BUFFER, gpu_render_entity_->SSBO[1]);
@@ -181,7 +181,7 @@ void Renderer::start() {
     return;
 }
 
-void Renderer::render_gui() {
+void GPU::Renderer::render_gui() {
     // Start the Dear ImGui frame
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
@@ -192,7 +192,7 @@ void Renderer::render_gui() {
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
 
-void Renderer::framebufferSizeCallbackImpl(GLFWwindow* window, int width, int height)
+void GPU::Renderer::framebufferSizeCallbackImpl(GLFWwindow* window, int width, int height)
 {
     glViewport(0, 0, width, height);
     window_width = width;
@@ -201,7 +201,7 @@ void Renderer::framebufferSizeCallbackImpl(GLFWwindow* window, int width, int he
     height_scaled = height;
 }
 
-void Renderer::mouseCursorCallbackImpl(GLFWwindow* window, double x_pos_in, double y_pos_in)
+void GPU::Renderer::mouseCursorCallbackImpl(GLFWwindow* window, double x_pos_in, double y_pos_in)
 {
     mouse_input_x = x_pos_in;
     mouse_input_y = y_pos_in;
@@ -215,7 +215,7 @@ void Renderer::mouseCursorCallbackImpl(GLFWwindow* window, double x_pos_in, doub
     }
 }
 
-void Renderer::mouseButtonCallbackImpl(GLFWwindow* window, int button, int action, int mods)
+void GPU::Renderer::mouseButtonCallbackImpl(GLFWwindow* window, int button, int action, int mods)
 {
     if (button != GLFW_MOUSE_BUTTON_LEFT){
         is_drag_mode = false;
@@ -236,7 +236,7 @@ void Renderer::mouseButtonCallbackImpl(GLFWwindow* window, int button, int actio
     }
 }
 
-void Renderer::mouseScrollCallbackImpl(GLFWwindow* window, double x_offset, double y_offset)
+void GPU::Renderer::mouseScrollCallbackImpl(GLFWwindow* window, double x_offset, double y_offset)
 {
     mouse_position = glm::ivec2( mouse_input_x, mouse_input_y );
     double x = mouse_input_x/window_width - 0.5f;
@@ -267,7 +267,7 @@ void Renderer::mouseScrollCallbackImpl(GLFWwindow* window, double x_offset, doub
 
 }
 
-void Renderer::keyCallbackImpl(GLFWwindow *window, int key, int scancode, int action, int mods)
+void GPU::Renderer::keyCallbackImpl(GLFWwindow *window, int key, int scancode, int action, int mods)
 {
     if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE){
         glfwSetWindowShouldClose(renderer_window, true);
@@ -275,7 +275,7 @@ void Renderer::keyCallbackImpl(GLFWwindow *window, int key, int scancode, int ac
     }
 }
 
-glm::dvec3 Renderer::un_project( const glm::dvec3& win )
+glm::dvec3 GPU::Renderer::un_project( const glm::dvec3& win )
 {
     glm::ivec4 view;
     glm::dmat4 proj, model;
@@ -286,7 +286,7 @@ glm::dvec3 Renderer::un_project( const glm::dvec3& win )
     return world;
 }
 
-glm::dvec2 Renderer::un_project_plane( const glm::dvec2& win )
+glm::dvec2 GPU::Renderer::un_project_plane( const glm::dvec2& win )
 {
     glm::dvec3 world1 = un_project( glm::dvec3( win, 0.01 ) );
     glm::dvec3 world2 = un_project( glm::dvec3( win, 0.99 ) );

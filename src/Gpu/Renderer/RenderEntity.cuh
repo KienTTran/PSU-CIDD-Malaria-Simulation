@@ -2,8 +2,8 @@
 // Created by kient on 6/16/2023.
 //
 
-#ifndef MASS_RENDERENTITY_CUH
-#define MASS_RENDERENTITY_CUH
+#ifndef RENDERENTITY_CUH
+#define RENDERENTITY_CUH
 
 #include "GL/glew.h"
 #include "Helpers/Shader.h"
@@ -56,4 +56,4 @@ public:
     glm::vec4 *d_ogl_buffer_color_ptr;
 };
 
-#endif //MASS_RENDERENTITY_CUH
+#endif //RENDERENTITY_CUH

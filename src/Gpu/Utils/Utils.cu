@@ -3,7 +3,7 @@
 //
 
 #include "Utils.cuh"
-#include "Population/Person.h"
+#include "Gpu/Population/Person.cuh"
 
 #include <cuda_runtime.h>
 #include <thrust/sort.h>

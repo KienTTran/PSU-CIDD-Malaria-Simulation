@@ -6,11 +6,17 @@
  */
 
 #ifndef DRUG_H
-#define    DRUG_H
+#define DRUG_H
 
 #include "Core/PropertyMacro.h"
 #include "Core/ObjectPool.h"
-#include "Population/DrugsInBlood.h"
+#include "Therapies/DrugType.h"
+
+namespace GPU {
+  class DrugsInBlood;
+}
+
+class DrugsInBlood;
 
 class Drug {
  OBJECTPOOL(Drug)
@@ -32,6 +38,8 @@ class Drug {
  POINTER_PROPERTY(DrugType, drug_type)
 
  POINTER_PROPERTY(DrugsInBlood, person_drugs)
+
+ POINTER_PROPERTY(GPU::DrugsInBlood, gpu_person_drugs)
 
  public:
   explicit Drug(DrugType *drug_type = nullptr);

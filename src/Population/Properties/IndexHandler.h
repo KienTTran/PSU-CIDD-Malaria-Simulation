@@ -10,6 +10,7 @@
 
 #include "Core/PropertyMacro.h"
 
+
 class IndexHandler {
  DISALLOW_COPY_AND_ASSIGN(IndexHandler)
 

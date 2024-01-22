@@ -9,8 +9,7 @@
 #define    MULTINOMIALDISTRIBUTIONGENERATOR_H
 
 #include "Core/TypeDef.h"
-
-class Random;
+#include "Core/Random.h"
 
 class MultinomialDistributionGenerator {
   // DISALLOW_COPY_AND_ASSIGN(MultinomialDistributionGenerator)

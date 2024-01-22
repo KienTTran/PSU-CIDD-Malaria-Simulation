@@ -8,6 +8,7 @@
 #include "Parasites/GenotypeDatabase.h"
 #include "Core/MultinomialDistributionGenerator.h"
 #include "Environment/SeasonalInfo.h"
+#include "Gpu/Parasites/GenotypeDatabase.cuh"
 
 namespace YAML {
 class Node;
@@ -153,6 +154,29 @@ class genotype_db : public IConfigItem {
   }
 
   void set_value(const YAML::Node &node) override;
+};
+
+class gpu_genotype_db : public IConfigItem {
+DISALLOW_COPY_AND_ASSIGN(gpu_genotype_db)
+
+DISALLOW_MOVE(gpu_genotype_db)
+
+public:
+    GPU::GenotypeDatabase *value_;
+public:
+    //constructor
+    explicit gpu_genotype_db(const std::string &name, GPU::GenotypeDatabase *default_value, Config *config = nullptr)
+            : IConfigItem(config, name),
+              value_{default_value} {}
+
+    // destructor
+    virtual ~gpu_genotype_db();
+
+    virtual GPU::GenotypeDatabase *operator()() {
+      return value_;
+    }
+
+    void set_value(const YAML::Node &node) override;
 };
 
 class drug_db : public IConfigItem {
@@ -302,6 +326,31 @@ class strategy_db : public IConfigItem {
   void set_value(const YAML::Node &node) override;
 };
 
+class gpu_strategy_db : public IConfigItem {
+DISALLOW_COPY_AND_ASSIGN(gpu_strategy_db)
+
+DISALLOW_MOVE(gpu_strategy_db)
+
+public:
+    GPUStrategyPtrVector value_;
+public:
+    //constructor
+    explicit gpu_strategy_db(const std::string &name, GPUStrategyPtrVector default_value, Config *config = nullptr)
+            : IConfigItem(config, name),
+              value_{
+                      std::move(default_value)
+              } {}
+
+    // destructor
+    virtual ~gpu_strategy_db();
+
+    virtual GPUStrategyPtrVector &operator()() {
+      return value_;
+    }
+
+    void set_value(const YAML::Node &node) override;
+};
+
 class initial_parasite_info : public IConfigItem {
  DISALLOW_COPY_AND_ASSIGN(initial_parasite_info)
 
@@ -355,17 +404,17 @@ class preconfig_population_events : public IConfigItem {
  DISALLOW_MOVE(preconfig_population_events)
 
  public:
-  std::vector<Event *> value_;
+  std::vector<GPU::Event *> value_;
  public:
   //constructor
-  explicit preconfig_population_events(const std::string &name, std::vector<Event *> default_value,
+  explicit preconfig_population_events(const std::string &name, std::vector<GPU::Event *> default_value,
                                        Config *config = nullptr) : IConfigItem(config, name),
                                                                    value_{std::move(default_value)} {}
 
   // destructor
   virtual ~preconfig_population_events() = default;
 
-  virtual std::vector<Event *> &operator()() {
+  virtual std::vector<GPU::Event *> &operator()() {
     return value_;
   }
 

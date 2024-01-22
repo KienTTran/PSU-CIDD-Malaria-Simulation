@@ -19,6 +19,7 @@
 #include "Core/TypeDef.h"
 #include "CustomConfigItem.h"
 #include "Spatial/Location.h"
+#include "Gpu/Parasites/GenotypeDatabase.cuh"
 
 class Model;
 
@@ -137,9 +138,11 @@ public:
 
   CUSTOM_CONFIG_ITEM(strategy_db, StrategyPtrVector())
 
+  CUSTOM_CONFIG_ITEM(gpu_strategy_db, GPUStrategyPtrVector())
+
   CUSTOM_CONFIG_ITEM(initial_parasite_info, std::vector<InitialParasiteInfo>())
 
-  CUSTOM_CONFIG_ITEM(preconfig_population_events, std::vector<Event *>())
+  CUSTOM_CONFIG_ITEM(preconfig_population_events, std::vector<GPU::Event *>())
 
   CUSTOM_CONFIG_ITEM(moving_level_generator, MultinomialDistributionGenerator())
 
@@ -172,7 +175,8 @@ public:
     IntVector h_popsize_by_moving_level;
 
 public:
-  GenotypeDatabase genotype_db {};
+    GenotypeDatabase genotype_db {};
+    GPU::GenotypeDatabase gpu_genotype_db {};
 
 public:
   explicit Config(Model *model = nullptr);

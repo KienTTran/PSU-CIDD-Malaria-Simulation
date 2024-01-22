@@ -7,18 +7,18 @@ file(GLOB SRC_FILES *.cpp
         Core/*.cpp 
         Core/Config/*.cpp 
         Core/Index/*.cpp 
-        Events/*.cpp 
-        Events/Population/*.cpp 
+        Events/*.cpp
+        Events/Population/*.cpp
         Helpers/*.cpp
         Helpers/*.h
         Helpers/*.hxx
         Malaria/*.cpp
-        MDC/*.cpp 
+        MDC/*.cpp
         Parasites/*.cpp GeneInfo.h
         Population/*.cpp
         Population/Properties/*.cpp
         Population/Properties/*.hxx
-        Reporters/*.cpp 
+        Reporters/*.cpp
         Spatial/*.cpp
         Spatial/*.hxx
         Environment/*.cpp
@@ -35,12 +35,23 @@ file(GLOB SRC_FILES *.cpp
         Gpu/Renderer/*.cuh
         Gpu/Population/*.cu
         Gpu/Population/*.cuh
-        Gpu/Population/Properties/*.cpp
+        Gpu/Population/Properties/*.cu
+        Gpu/Population/Properties/*.cuh
         Gpu/Population/Properties/*.hxx
+        Gpu/Parasites/*.cu
+        Gpu/Parasites/*.cuh
+        Gpu/Mosquito/*.cu
+        Gpu/Mosquito/*.cuh
         Gpu/Events/*.cu
         Gpu/Events/*.cuh
+        Gpu/MDC/*.cu
+        Gpu/MDC/*.cuh
         Gpu/Events/Population/*.cu
         Gpu/Events/Population/*.cuh
+        Gpu/Strategies/*.cu
+        Gpu/Strategies/*.cuh
+        Gpu/Reporters/*.cu
+        Gpu/Reporters/*.cuh
         Gpu/Utils/*.cu
         Gpu/Utils/*.cuh
 )

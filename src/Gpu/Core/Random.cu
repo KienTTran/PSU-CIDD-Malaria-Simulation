@@ -208,8 +208,8 @@ __global__ void multinomial_sampling_kernel(int n_locations,
  * return size is n_locations*n_samples_each_location
  * */
 template
-TVector<Person*> GPU::Random::multinomial_sampling<Person>(int, int,
-                                                           ThrustTVectorDevice<double>,TVector<Person*>,
+TVector<GPU::Person*> GPU::Random::multinomial_sampling<GPU::Person>(int, int,
+                                                           ThrustTVectorDevice<double>,TVector<GPU::Person*>,
                                                            ThrustTVectorDevice<double>&,bool);
 template <class T>
 TVector<T*> GPU::Random::multinomial_sampling(int n_locations, int n_samples_each_location,
@@ -358,8 +358,8 @@ __global__ void roulette_sampling_kernel(int n_locations,
  * return size is n_locations*n_samples_each_location
  * */
 template
-TVector<Person*> GPU::Random::roulette_sampling<Person>(int, int,
-                                                        ThrustTVectorDevice<double>,TVector<Person*>,
+TVector<GPU::Person*> GPU::Random::roulette_sampling<GPU::Person>(int, int,
+                                                        ThrustTVectorDevice<double>,TVector<GPU::Person*>,
                                                         ThrustTVectorDevice<double>&,bool);
 template <class T>
 TVector<T*> GPU::Random::roulette_sampling(int n_locations, int n_samples_each_location,
@@ -454,3 +454,43 @@ TVector<T*> GPU::Random::roulette_sampling(int n_locations, int n_samples_each_l
     return samples;
 }
 
+/*
+ * https://stackoverflow.com/questions/16663281/generating-random-numbers-from-various-distributions-in-cuda
+ * */
+__device__ double curand_gamma (curandState localState, const double a, const double b){
+    /* assume a > 0 */
+    if (a < 1){
+        double u = curand_uniform_double(&localState);
+        return curand_gamma (localState, 1.0 + a, b) * pow (u, 1.0 / a);
+    }
+    {
+        double x, v, u;
+        double d = a - 1.0 / 3.0;
+        double c = (1.0 / 3.0) / sqrt (d);
+
+        while (1){
+            do{
+                x = curand_normal_double(&localState);
+                v = 1.0 + c * x;
+            } while (v <= 0);
+
+            v = v * v * v;
+            u = curand_uniform_double(&localState);
+
+            if (u < 1 - 0.0331 * x * x * x * x)
+                break;
+
+            if (log (u) < 0.5 * x * x + d * (1 - v + log (v)))
+                break;
+        }
+        return b * d * v;
+    }
+}
+
+
+/*
+ * https://stackoverflow.com/questions/16663281/generating-random-numbers-from-various-distributions-in-cuda
+ * */
+__device__ double curand_beta (curandState localState, const double a, const double b){
+
+}

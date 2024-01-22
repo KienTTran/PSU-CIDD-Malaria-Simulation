@@ -3,12 +3,12 @@
 //
 
 #include "Mosquito.h"
-
 #include "Core/Config/Config.h"
 #include "Core/Random.h"
-#include "Model.h"
 #include "Population/Population.h"
+#include "Population/Person.h"
 #include "Population/SingleHostClonalParasitePopulations.h"
+#include "Model.h"
 #include "easylogging++.h"
 
 Mosquito::Mosquito(Model *model) : model { model } {}
@@ -36,7 +36,7 @@ void Mosquito::initialize(Config *config) {
   }
 }
 
-void Mosquito::infect_new_cohort_in_PRMC(Config *config, Random *random, Population *population,
+void Mosquito::infect_new_cohort_in_PRMC(Config *config, ::Random *random, ::Population *population,
                                          const int &tracking_index) {
   auto start = std::chrono::system_clock::now();
   // for each location fill prmc at tracking_index row with sampling genotypes
@@ -51,7 +51,7 @@ void Mosquito::infect_new_cohort_in_PRMC(Config *config, Random *random, Populat
       return;
     }
     // multinomial sampling based on relative infectivity
-    auto first_sampling = random->roulette_sampling<Person>(
+    auto first_sampling = random->roulette_sampling<::Person>(
         config->mosquito_config().prmc_size, population->individual_foi_by_location[loc],
         population->all_alive_persons_by_location[loc], false, population->current_force_of_infection_by_location[loc]);
 
@@ -59,7 +59,7 @@ void Mosquito::infect_new_cohort_in_PRMC(Config *config, Random *random, Populat
         random, config->mosquito_config().interrupted_feeding_rate[loc], config->mosquito_config().prmc_size);
 
     // uniform sampling in all person
-    auto second_sampling = random->roulette_sampling<Person>(config->mosquito_config().prmc_size,
+    auto second_sampling = random->roulette_sampling<::Person>(config->mosquito_config().prmc_size,
                                                              population->individual_relative_biting_by_location[loc],
                                                              population->all_alive_persons_by_location[loc], true);
 

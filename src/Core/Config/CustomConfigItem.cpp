@@ -10,7 +10,6 @@
 #include <cmath>
 
 #include "Config.h"
-#include "Events/Population/PopulationEventBuilder.h"
 #include "Helpers/NumberHelpers.h"
 #include "Helpers/ObjectHelpers.h"
 #include "Spatial/SpatialModelBuilder.hxx"
@@ -20,6 +19,9 @@
 #include "GIS/SpatialData.h"
 #include "Therapies/TherapyBuilder.h"
 #include "Environment/SeasonalInfo.h"
+#include "Gpu/Strategies/IStrategy.cuh"
+#include "Gpu/Strategies/StrategyBuilder.cuh"
+#include "Gpu/Events/Population/PopulationEventBuilder.cuh"
 
 void total_time::set_value(const YAML::Node &node) {
   value_ = (date::sys_days { config_->ending_date() } - date::sys_days(config_->starting_date())).count();
@@ -152,8 +154,14 @@ void immune_system_information::set_value(const YAML::Node &node) {
 
   // implement inlation rate
   double acR = value_.acquire_rate;
-  value_.acquire_rate_by_age.clear();
-  for (int age = 0; age <= 80; age++) {
+  /*
+   * Use array instead of vector to use in GPU
+   * Check void immune_system_information::set_value(const YAML::Node &node)
+   * when size is different from 81
+   *
+   * */
+//  value_.acquire_rate_by_age.clear();
+  for (int age = 0; age <= 80; age++) {/* double acquire_rate_by_age[81] in TypeDef.h = 80 + 1*/
     double factor = 1;
     if (age < value_.age_mature_immunity) {
       factor = (age == 0) ? 0.5 : age;
@@ -162,12 +170,13 @@ void immune_system_information::set_value(const YAML::Node &node) {
       factor = pow(factor, value_.factor_effect_age_mature_immunity);
     }
 
-    value_.acquire_rate_by_age.push_back(factor * acR);
+//    value_.acquire_rate_by_age.push_back(factor * acR);
+    value_.acquire_rate_by_age[age] = factor * acR;
 
     acR *= (1 + value_.immune_inflation_rate);
     //        std::cout << acR << std::endl;
   }
-  assert(value_.acquire_rate_by_age.size() == 81);
+//  assert(value_.acquire_rate_by_age.size() == 81);
 
   value_.c_min = pow(10, -(config_->parasite_density_level().log_parasite_density_asymptomatic
                            - config_->parasite_density_level().log_parasite_density_cured)
@@ -370,6 +379,13 @@ strategy_db::~strategy_db() {
   value_.clear();
 }
 
+gpu_strategy_db::~gpu_strategy_db() {
+  for (auto &i : value_) {
+    delete i;
+  }
+  value_.clear();
+}
+
 IStrategy *read_strategy(const YAML::Node &n, const int &strategy_id, Config *config) {
   const auto s_id = NumberHelpers::number_to_string<int>(strategy_id);
   auto *result = StrategyBuilder::build(n[s_id], strategy_id, config);
@@ -380,6 +396,20 @@ IStrategy *read_strategy(const YAML::Node &n, const int &strategy_id, Config *co
 void strategy_db::set_value(const YAML::Node &node) {
   for (std::size_t i = 0; i < node[name_].size(); i++) {
     auto *s = read_strategy(node[name_], (int)i, config_);
+    value_.push_back(s);
+  }
+}
+
+GPU::IStrategy *read_strategy_gpu(const YAML::Node &n, const int &strategy_id, Config *config) {
+  const auto s_id = NumberHelpers::number_to_string<int>(strategy_id);
+  auto *result = GPU::StrategyBuilder::build(n[s_id], strategy_id, config);
+  LOG(INFO) << result->to_string();
+  return result;
+}
+
+void gpu_strategy_db::set_value(const YAML::Node &node) {
+  for (std::size_t i = 0; i < node[name_].size(); i++) {
+    auto *s = read_strategy_gpu(node[name_], (int)i, config_);
     value_.push_back(s);
   }
 }
@@ -397,7 +427,7 @@ void initial_parasite_info::set_value(const YAML::Node &node) {
     for (auto loc = location_from; loc < location_to; ++loc) {
       for (const auto &parasite_node : location_node["parasite_info"]) {
         auto aa_sequence = parasite_node["aa_sequence"].as<std::string>();
-        auto parasite_type_id = config_->genotype_db.get_id(aa_sequence, config_);
+        auto parasite_type_id = config_->gpu_genotype_db.get_id(aa_sequence, config_);
         auto prevalence = parasite_node["prevalence"].as<double>();
         value_.emplace_back(loc, parasite_type_id, prevalence);
       }
@@ -411,7 +441,7 @@ void moving_level_generator::set_value(const YAML::Node &node) {
 
 void preconfig_population_events::set_value(const YAML::Node &node) {
   for (std::size_t i = 0; i < node["events"].size(); ++i) {
-    auto events = PopulationEventBuilder::build(node["events"][i], config_);
+    auto events = GPU::PopulationEventBuilder::build(node["events"][i], config_);
     value_.insert(value_.end(), events.begin(), events.end());
   }
 }

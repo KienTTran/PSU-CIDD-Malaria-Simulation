@@ -22,6 +22,13 @@
 #include <glm/vec4.hpp>
 #include <GL/glew.h>
 
+namespace GPU{
+    class Person;
+    class PersonIndex;
+    class IStrategy;
+    class Event;
+};
+
 class Person;
 
 class PersonIndex;
@@ -106,22 +113,33 @@ typedef std::map<int, int> IntIntMap;
 
 typedef std::vector<Person *> PersonPtrVector;
 typedef PersonPtrVector::iterator PersonPtrVectorIterator;
-
 typedef std::vector<PersonPtrVector> PersonPtrVector2;
 typedef std::vector<PersonPtrVector2> PersonPtrVector3;
 typedef std::vector<PersonPtrVector3> PersonPtrVector4;
 
+
+typedef std::vector<GPU::Person *> GPUPersonPtrVector;
+typedef GPUPersonPtrVector::iterator GPUPersonPtrVectorIterator;
+typedef std::vector<GPUPersonPtrVector> GPUPersonPtrVector2;
+typedef std::vector<GPUPersonPtrVector2> GPUPersonPtrVector3;
+typedef std::vector<GPUPersonPtrVector3> GPUPersonPtrVector4;
+
 typedef std::vector<Event *> EventPtrVector;
 typedef std::vector<EventPtrVector> EventPtrVector2;
+
+typedef std::vector<GPU::Event *> GPUEventPtrVector;
+typedef std::vector<GPUEventPtrVector> GPUEventPtrVector2;
 
 typedef std::vector<Reporter *> ReporterPtrVector;
 
 typedef std::list<PersonIndex *> PersonIndexPtrList;
+typedef std::list<GPU::PersonIndex *> GPUPersonIndexPtrList;
 
 typedef std::map<int, Drug *> DrugPtrMap;
 
 typedef std::vector<Therapy *> TherapyPtrVector;
 typedef std::vector<IStrategy *> StrategyPtrVector;
+typedef std::vector<GPU::IStrategy *> GPUStrategyPtrVector;
 
 template <typename T>
 using TVector = std::vector<T>;
@@ -129,6 +147,8 @@ template <typename T>
 using TVector2 = std::vector<TVector<T>>;
 template <typename T>
 using TVector3 = std::vector<TVector2<T>>;
+
+typedef double (*GPUClonalParasiteUpdateFunction) (const int &duration);
 
 struct GPUConfig{
     int n_threads;
@@ -194,7 +214,14 @@ inline std::ostream &operator<<(std::ostream &os, const SeasonalInfo &seasonal_i
 
 struct ImmuneSystemInformation {
   double acquire_rate { -1 };
-  std::vector<double> acquire_rate_by_age;
+  /*
+   * Use array instead of vector to use in GPU
+   * Check void immune_system_information::set_value(const YAML::Node &node)
+   * when size is different from 81
+   *
+   * */
+  double acquire_rate_by_age[81];
+//  std::vector<double> acquire_rate_by_age;
   double decay_rate { -1 };
 
   double duration_for_fully_immune { -1 };
@@ -220,6 +247,10 @@ struct ImmuneSystemInformation {
   double factor_effect_age_mature_immunity { -1 };
 };
 
+/*
+ * If there is a vector or array in this struct,
+ * please allocate it to GPU device before using in population.cu
+ * */
 struct ParasiteDensityLevel {
   double log_parasite_density_cured;
   double log_parasite_density_from_liver;

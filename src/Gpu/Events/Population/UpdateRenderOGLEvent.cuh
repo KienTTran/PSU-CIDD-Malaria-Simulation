@@ -2,13 +2,16 @@
 // Created by kient on 8/4/2023.
 //
 
-#ifndef MASS_PERSONUPDATERENDEROGLEVENT_CUH
-#define MASS_PERSONUPDATERENDEROGLEVENT_CUH
+#ifndef PERSONUPDATERENDEROGLEVENT_CUH
+#define PERSONUPDATERENDEROGLEVENT_CUH
 
+#include "Gpu/Events/Event.cuh"
 
-#include "Events/Event.h"
+namespace GPU {
+    class UpdateRenderOGLEvent;
+}
 
-class UpdateRenderOGLEvent: public Event {
+class GPU::UpdateRenderOGLEvent: public GPU::Event {
 
 DISALLOW_COPY_AND_ASSIGN(UpdateRenderOGLEvent)
 
@@ -17,7 +20,7 @@ public:
 
     virtual ~UpdateRenderOGLEvent();
 
-    static void schedule_event(Scheduler *scheduler, const int &time);
+    static void schedule_event(GPU::Scheduler *scheduler, const int &time);
 
     std::string name() override;
 
@@ -27,4 +30,4 @@ private:
 };
 
 
-#endif //MASS_PERSONUPDATERENDEROGLEVENT_CUH
+#endif //PERSONUPDATERENDEROGLEVENT_CUH

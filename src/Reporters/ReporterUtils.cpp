@@ -13,6 +13,7 @@
 #include "Population/Properties/PersonIndexByLocationStateAgeClass.h"
 #include "Population/SingleHostClonalParasitePopulations.h"
 #include "Mosquito/Mosquito.h"
+#include "Population/Person.h"
 
 const std::string group_sep = "-1111\t";
 const std::string sep = "\t";

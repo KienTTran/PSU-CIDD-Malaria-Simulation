@@ -5,13 +5,10 @@
  * Created on March 17, 2014, 2:33 PM
  */
 #include "Genotype.h"
-
 #include <algorithm>
-
 #include "Core/Config/Config.h"
 #include "Core/Random.h"
 #include "Helpers/NumberHelpers.h"
-#include "Model.h"
 #include "Therapies/DrugDatabase.h"
 #include "Therapies/SCTherapy.h"
 
@@ -211,7 +208,7 @@ Genotype *Genotype::perform_mutation_by_drug(Config *pConfig, Random *pRandom, D
     // get aa position info (aa index in aa string, is copy number)
     auto aa_pos = pDrugType->resistant_aa_locations[aa_pos_id];
     if(pConfig->mutation_mask()[aa_pos.aa_index_in_aa_string] == '1'){
-        const auto p = Model::RANDOM->random_flat(0.0, 1.0);
+        const auto p = pRandom->random_flat(0.0, 1.0);
         if (p < mutation_probability_by_locus){
           if (aa_pos.is_copy_number) {
                 // increase or decrease by 1 step

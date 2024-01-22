@@ -10,7 +10,8 @@
 #include "ChangeInterruptedFeedingRateEvent.h"
 #include "ChangeStrategyEvent.h"
 #include "ChangeTreatmentCoverageEvent.h"
-#include "ChangeWithinHostInducedRecombinationEvent.h"
+#include "ChangeWithinHostInducedFreeRecombinationEvent.h"
+#include "ChangeMutationProbabilityByLocusEvent.h"
 #include "Core/Config/Config.h"
 #include "ImportationEvent.h"
 #include "ImportationPeriodicallyEvent.h"
@@ -319,13 +320,25 @@ std::vector<Event*> PopulationEventBuilder::build_change_interrupted_feeding_rat
   return events;
 }
 
-std::vector<Event*> PopulationEventBuilder::build_change_within_host_induced_recombination(const YAML::Node event_node,
+std::vector<Event*> PopulationEventBuilder::build_change_within_host_induced_free_recombination_events(const YAML::Node event_node,
                                                                                            Config* config) {
   std::vector<Event*> events;
   const auto starting_date = event_node["day"].as<date::year_month_day>();
   auto time = (date::sys_days { starting_date } - date::sys_days { config->starting_date() }).count();
   auto value = event_node["value"].as<bool>();
-  auto* event = new ChangeWithinHostInducedRecombinationEvent(value, time);
+  auto* event = new ChangeWithinHostInducedFreeRecombinationEvent(value, time);
+  events.push_back(event);
+
+  return events;
+}
+
+std::vector<Event*> PopulationEventBuilder::build_change_mutation_probability_by_locus_events(const YAML::Node event_node,
+                                                                                       Config* config) {
+  std::vector<Event*> events;
+  const auto starting_date = event_node["day"].as<date::year_month_day>();
+  auto time = (date::sys_days { starting_date } - date::sys_days { config->starting_date() }).count();
+  auto value = event_node["value"].as<double>();
+  auto* event = new ChangeMutationProbabilityByLocusEvent(value, time);
   events.push_back(event);
 
   return events;
@@ -388,8 +401,11 @@ std::vector<Event*> PopulationEventBuilder::build(const YAML::Node& node, Config
   if (name == "change_interrupted_feeding_rate") {
     events = build_change_interrupted_feeding_rate_event(node["info"], config);
   }
-  if (name == "change_within_host_induced_recombination") {
-    events = build_change_within_host_induced_recombination(node["info"], config);
+  if (name == "change_within_host_induced_free_recombination") {
+    events = build_change_within_host_induced_free_recombination_events(node["info"], config);
+  }
+  if (name == "change_mutation_probability_by_locus") {
+    events = build_change_mutation_probability_by_locus_events(node["info"], config);
   }
   return events;
 }

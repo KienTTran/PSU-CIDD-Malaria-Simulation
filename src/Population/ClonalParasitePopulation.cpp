@@ -14,7 +14,7 @@
 #include "Helpers/NumberHelpers.h"
 #include "Model.h"
 #include "Person.h"
-#include "SingleHostClonalParasitePopulations.h"
+#include "Population/SingleHostClonalParasitePopulations.h"
 #include "Therapies/Therapy.h"
 
 OBJECTPOOL_IMPL(ClonalParasitePopulation)

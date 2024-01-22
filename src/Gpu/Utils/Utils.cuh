@@ -2,8 +2,8 @@
 // Created by kient on 6/17/2023.
 //
 
-#ifndef MASS_UTILS_CUH
-#define MASS_UTILS_CUH
+#ifndef UTILS_CUH
+#define UTILS_CUH
 
 #include <iostream>
 #include <curand_kernel.h>
@@ -100,4 +100,4 @@ public:
 //};
 
 
-#endif //MASS_UTILS_CUH
+#endif //UTILS_CUH

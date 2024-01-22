@@ -2,8 +2,8 @@
 // Created by kient on 6/17/2023.
 //
 
-#ifndef MASS_RANDOM_CUH
-#define MASS_RANDOM_CUH
+#ifndef RANDOM_CUH
+#define RANDOM_CUH
 
 #include <curand_kernel.h>
 #include "Core/TypeDef.h"
@@ -43,4 +43,4 @@ public:
 };
 
 
-#endif //MASS_RANDOM_CUH
+#endif //RANDOM_CUH

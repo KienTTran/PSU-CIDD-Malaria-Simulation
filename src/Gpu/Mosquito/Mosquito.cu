@@ -1,0 +1,182 @@
+//
+// Created by nguyentd on 3/11/2022.
+//
+
+#include "Mosquito.cuh"
+
+#include "Gpu/Population/Person.cuh"
+#include "Gpu/Population/SingleHostClonalParasitePopulations.cuh"
+#include "Model.h"
+#include "Core/Config/Config.h"
+#include "Core/Random.h"
+#include "Gpu/Population/Population.cuh"
+#include "easylogging++.h"
+
+GPU::Mosquito::Mosquito(Model *model) : model { model } {}
+
+void GPU::Mosquito::initialize(Config *config) {
+  genotypes_table.clear();
+
+  genotypes_table = std::vector<std::vector<std::vector<GPU::Genotype *>>>(
+      config->number_of_tracking_days(),
+      std::vector<std::vector<GPU::Genotype *>>(config->number_of_locations(),
+                                           std::vector<GPU::Genotype *>(config->mosquito_config().prmc_size, nullptr)));
+  VLOG(0) << "[Mosquito] Size: " << config->mosquito_config().prmc_size;
+  if (!config->mosquito_config().interrupted_feeding_rate_raster.empty()) {
+    // read from raster
+    //    MosquitoData::get_instance().load_raster_from_path(Model::CONFIG->mosquito_config().interrupted_feeding_rate_raster,
+    //    MosquitoData::InteruptedFeedingRate);
+    LOG(FATAL) << "Raster is not supported in version 3.x!!!";
+  } else {
+    if (config->mosquito_config().interrupted_feeding_rate.size() == 1) {
+      double if_rate = config->mosquito_config().interrupted_feeding_rate[0];
+      config->mosquito_config().interrupted_feeding_rate = std::vector<double>(config->number_of_locations(), if_rate);
+    } else if (config->mosquito_config().interrupted_feeding_rate.size() != config->number_of_locations()) {
+      LOG(FATAL) << "Number of element of interrupted feeding rate should be 1 or equal to number of locations!!!!";
+    }
+  }
+}
+
+void GPU::Mosquito::infect_new_cohort_in_PRMC(Config *config, ::Random *random, GPU::Population *population,
+                                         const int &tracking_index) {
+  auto start = std::chrono::system_clock::now();
+  // for each location fill prmc at tracking_index row with sampling genotypes
+  for (int loc = 0; loc < config->number_of_locations(); loc++) {
+    LOG(TRACE) << "Day " << Model::GPU_SCHEDULER->current_time()
+               << " ifr = " << Model::CONFIG->mosquito_config().interrupted_feeding_rate[loc];
+    // if there is no parasites in location
+    if (population->current_force_of_infection_by_location[loc] <= 0) {
+      for (int i = 0; i < config->mosquito_config().prmc_size; ++i) {
+        genotypes_table[tracking_index][loc][i] = nullptr;
+      }
+      return;
+    }
+    // multinomial sampling based on relative infectivity
+    auto first_sampling = random->roulette_sampling<GPU::Person>(
+        config->mosquito_config().prmc_size, population->individual_foi_by_location[loc],
+        population->all_alive_persons_by_location[loc], false, population->current_force_of_infection_by_location[loc]);
+
+    std::vector<unsigned int> interrupted_feeding_indices = build_interrupted_feeding_indices(
+        random, config->mosquito_config().interrupted_feeding_rate[loc], config->mosquito_config().prmc_size);
+
+    // uniform sampling in all person
+    auto second_sampling = random->roulette_sampling<GPU::Person>(config->mosquito_config().prmc_size,
+                                                             population->individual_relative_biting_by_location[loc],
+                                                             population->all_alive_persons_by_location[loc], true);
+
+    // recombination
+    // *p1 , *p2, bool is_interrupted  ===> *genotype
+    std::vector<GPU::Genotype *> sampling_genotypes;
+    std::vector<double> relative_infectivity_each_pp;
+
+    for (int if_index = 0; if_index < interrupted_feeding_indices.size(); ++if_index) {
+      // clear() is used to avoid memory reallocation
+      sampling_genotypes.clear();
+      relative_infectivity_each_pp.clear();
+
+      if (config->within_host_induced_free_recombination()) {
+        // get all infectious parasites from first person
+        get_genotypes_profile_from_person(first_sampling[if_index], sampling_genotypes, relative_infectivity_each_pp);
+
+        if (sampling_genotypes.empty()) {
+          LOG(FATAL) << "first person has no infectious parasites, log10_total_infectious_denstiy = "
+                     << first_sampling[if_index]->all_clonal_parasite_populations()->log10_total_infectious_denstiy;
+        }
+
+        if (interrupted_feeding_indices[if_index]) {
+          auto temp_if = if_index;
+          while (second_sampling[temp_if] == first_sampling[if_index]) {
+            temp_if = random->random_uniform(second_sampling.size());
+          }
+          // interrupted feeding occurs
+          get_genotypes_profile_from_person(second_sampling[temp_if], sampling_genotypes, relative_infectivity_each_pp);
+        }
+
+        if (sampling_genotypes.empty()) {
+          LOG(FATAL) << "sampling_genotypes should not be empty";
+        }
+      } else {
+        sampling_genotypes.clear();
+        relative_infectivity_each_pp.clear();
+        get_genotypes_profile_from_person(first_sampling[if_index], sampling_genotypes, relative_infectivity_each_pp);
+        // get exactly 1 infectious parasite from first person
+        auto first_genotype =
+            random->roulette_sampling_tuple<GPU::Genotype>(1, relative_infectivity_each_pp, sampling_genotypes, false)[0];
+
+        std::tuple<GPU::Genotype *, double> second_genotype = std::make_tuple(nullptr, 0.0);
+
+        if (interrupted_feeding_indices[if_index]) {
+          auto temp_if = if_index;
+          while (second_sampling[temp_if] == first_sampling[if_index]) {
+            temp_if = random->random_uniform(second_sampling.size());
+          }
+          sampling_genotypes.clear();
+          relative_infectivity_each_pp.clear();
+          get_genotypes_profile_from_person(second_sampling[temp_if], sampling_genotypes, relative_infectivity_each_pp);
+
+          if (sampling_genotypes.size() > 0) {
+            second_genotype = random->roulette_sampling_tuple<GPU::Genotype>(1, relative_infectivity_each_pp,
+                                                                        sampling_genotypes, false)[0];
+          }
+        }
+
+        sampling_genotypes.clear();
+        relative_infectivity_each_pp.clear();
+        sampling_genotypes.push_back(std::get<0>(first_genotype));
+        relative_infectivity_each_pp.push_back(std::get<1>(first_genotype));
+
+        if (std::get<0>(second_genotype) != nullptr) {
+          sampling_genotypes.push_back(std::get<0>(second_genotype));
+          relative_infectivity_each_pp.push_back(std::get<1>(second_genotype));
+        }
+      }
+
+      auto parent_genotypes =
+          random->roulette_sampling<GPU::Genotype>(2, relative_infectivity_each_pp, sampling_genotypes, false);
+
+      GPU::Genotype *sampled_genotype =
+          (parent_genotypes[0]->aa_sequence == parent_genotypes[1]->aa_sequence)
+              ? parent_genotypes[0]
+              : GPU::Genotype::free_recombine(config, random, parent_genotypes[0], parent_genotypes[1]);
+      genotypes_table[tracking_index][loc][if_index] = sampled_genotype;
+    }
+  }
+  auto lapse = std::chrono::system_clock::now() - start;
+  if(Model::CONFIG->debug_config().enable_debug_text){
+    LOG_IF(Model::GPU_SCHEDULER->current_time() % Model::CONFIG->debug_config().log_interval == 0, INFO)
+      << "[Mosquito] Update mosquito event time: "
+      << std::chrono::duration_cast<std::chrono::milliseconds>(lapse).count() << " ms";
+  }
+}
+
+std::vector<unsigned int> GPU::Mosquito::build_interrupted_feeding_indices(::Random *random,
+                                                                      const double &interrupted_feeding_rate,
+                                                                      const int &prmc_size) {
+  int number_of_interrupted_feeding = random->random_poisson(interrupted_feeding_rate * prmc_size);
+
+  std::vector<unsigned int> all_interrupted_feeding(number_of_interrupted_feeding, 1);
+  all_interrupted_feeding.resize(prmc_size, 0);
+
+  random->random_shuffle(&all_interrupted_feeding[0], all_interrupted_feeding.size(), sizeof(unsigned int));
+  return all_interrupted_feeding;
+}
+
+int GPU::Mosquito::random_genotype(int location, int tracking_index) {
+  auto genotype_index = Model::RANDOM->random_uniform_int(0, Model::CONFIG->mosquito_config().prmc_size);
+  auto genotype = genotypes_table[tracking_index][location][genotype_index];
+  if(genotype == nullptr) {
+    return -1;
+  }
+  return genotype->genotype_id;
+}
+
+void GPU::Mosquito::get_genotypes_profile_from_person(GPU::Person *person, std::vector<GPU::Genotype *> &sampling_genotypes,
+                                                 std::vector<double> &relative_infectivity_each_pp) {
+  for (auto *pp : *person->all_clonal_parasite_populations()->parasites()) {
+    auto clonal_foi = pp->gametocyte_level() * GPU::Person::relative_infectivity(pp->last_update_log10_parasite_density());
+    if (clonal_foi > 0) {
+      relative_infectivity_each_pp.push_back(clonal_foi);
+      sampling_genotypes.push_back(pp->genotype());
+    }
+  }
+}

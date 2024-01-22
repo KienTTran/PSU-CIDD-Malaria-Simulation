@@ -14,6 +14,7 @@
 #include "Core/PropertyMacro.h"
 #include "Core/TypeDef.h"
 #include "Population/ClonalParasitePopulation.h"
+
 class ClonalParasitePopulation;
 
 class Person;

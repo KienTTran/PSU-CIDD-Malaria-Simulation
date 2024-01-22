@@ -8,8 +8,8 @@
 #include "ImmunityClearanceUpdateFunction.h"
 #include "ClonalParasitePopulation.h"
 #include "SingleHostClonalParasitePopulations.h"
-#include "Person.h"
-#include "ImmuneSystem.h"
+#include "Population/Person.h"
+#include "Population/ImmuneSystem.h"
 #include "Model.h"
 #include "Parasites/Genotype.h"
 
@@ -19,6 +19,7 @@ ImmunityClearanceUpdateFunction::~ImmunityClearanceUpdateFunction() = default;
 
 double ImmunityClearanceUpdateFunction::get_current_parasite_density(ClonalParasitePopulation *parasite, int duration) {
 
+//  LOG(INFO) << "ImmunityClearanceUpdateFunction::get_current_parasite_density";
   auto *p = parasite->parasite_population()->person();
   return p->immune_system()->get_parasite_size_after_t_days(duration, parasite->last_update_log10_parasite_density(),
                                                             parasite->genotype()->daily_fitness_multiple_infection);

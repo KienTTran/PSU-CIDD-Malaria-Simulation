@@ -1,0 +1,150 @@
+//
+// Created by nguyentd on 3/30/2021.
+//
+
+#include "NovelDrugReporter.cuh"
+
+#include "Core/Config/Config.h"
+#include "Gpu/MDC/ModelDataCollector.cuh"
+#include "Model.h"
+#include "Gpu/Population/Population.cuh"
+#include "Gpu/Population/Properties/PersonIndexByLocationStateAgeClass.cuh"
+#include "Gpu/Population/SingleHostClonalParasitePopulations.cuh"
+#include "Gpu/Strategies/IStrategy.cuh"
+#include "Gpu/Strategies/NestedMFTStrategy.cuh"
+#include "Gpu/Strategies/NovelDrugIntroductionStrategy.cuh"
+
+#include "ReporterUtils.cuh"
+#include "easylogging++.h"
+
+void GPU::NovelDrugReporter::initialize() {}
+
+void GPU::NovelDrugReporter::before_run() {
+  // output header for csv file
+  ss << "TIME" << sep << "PFPR" << sep << "MUTATIONS" << sep << "NUMBER_OF_TREATMENTS" << sep
+     << "NUMBER_OF_TREATMENT_FAILURES" << sep << "NUMBER_OF_SYMPTOMATIC_CASES" << sep;
+  for (auto i = 0; i < Model::CONFIG->gpu_genotype_db.size(); i++) {
+    ss << "GENOTYPE_ID_" << i << sep;
+  }
+  ss << "IS_SWITCHED" << sep;
+  for (auto i = 0; i < Model::GPU_DATA_COLLECTOR->current_tf_by_therapy().size(); i++) {
+    ss << "TF_THERAPY_" << i << sep;
+  }
+  ss << "AVERAGE_TF_60" << sep;
+  ss << "PUBLIC_FRACTION" << sep;
+  ss << "PRIVATE_FRACTION";
+  CLOG(INFO, "monthly_reporter") << ss.str();
+  ss.str("");
+}
+
+void GPU::NovelDrugReporter::monthly_report() {
+  ss << Model::GPU_SCHEDULER->current_time() << sep;
+
+  for (auto loc = 0; loc < Model::CONFIG->number_of_locations(); ++loc) {
+    ss << Model::GPU_DATA_COLLECTOR->blood_slide_prevalence_by_location()[loc] * 100 << sep;
+  }
+
+  for (auto loc = 0; loc < Model::CONFIG->number_of_locations(); ++loc) {
+    ss << Model::GPU_DATA_COLLECTOR->monthly_number_of_mutation_events_by_location()[loc] << sep;
+    ss << Model::GPU_DATA_COLLECTOR->monthly_number_of_treatment_by_location()[loc] << sep;
+    ss << Model::GPU_DATA_COLLECTOR->monthly_number_of_TF_by_location()[loc] << sep;
+    ss << Model::GPU_DATA_COLLECTOR->monthly_number_of_clinical_episode_by_location()[loc] << sep;
+  }
+
+  output_genotype_frequency_3(Model::CONFIG->gpu_genotype_db.size(),
+                              Model::GPU_POPULATION->get_person_index<PersonIndexByLocationStateAgeClass>());
+
+  ss << (dynamic_cast<NovelDrugIntroductionStrategy*>(Model::TREATMENT_STRATEGY)->is_switched ? 1 : 0) << sep;
+  for (const auto& tf_by_therapy : Model::GPU_DATA_COLLECTOR->current_tf_by_therapy()) {
+    ss << tf_by_therapy << sep;
+  }
+
+  ss << Model::GPU_DATA_COLLECTOR->current_TF_by_location()[0] << sep;
+
+  ss << dynamic_cast<NestedMFTStrategy*>(Model::TREATMENT_STRATEGY)->distribution[0] << sep;
+  ss << dynamic_cast<NestedMFTStrategy*>(Model::TREATMENT_STRATEGY)->distribution[1];
+
+  CLOG(INFO, "monthly_reporter") << ss.str();
+  ss.str("");
+}
+
+void GPU::NovelDrugReporter::after_run() {
+  ss.str("");
+  for (auto loc = 0; loc < Model::CONFIG->number_of_locations(); ++loc) {
+    ss << Model::CONFIG->location_db()[loc].beta << sep;
+    if (Model::GPU_DATA_COLLECTOR->EIR_by_location_year()[loc].empty()) {
+      ss << 0 << sep;
+    } else {
+      ss << Model::GPU_DATA_COLLECTOR->EIR_by_location_year()[loc].back() << sep;
+    }
+    ss << Model::TREATMENT_COVERAGE->p_treatment_less_than_5[0] << sep;
+    ss << Model::GPU_DATA_COLLECTOR->cumulative_number_treatments_by_location()[loc] << sep;
+    ss << Model::GPU_DATA_COLLECTOR->cumulative_TF_by_location()[loc] << sep;
+    ss << Model::GPU_DATA_COLLECTOR->cumulative_clinical_episodes_by_location()[loc] << sep;
+    ss << std::to_string(
+        dynamic_cast<NovelDrugIntroductionStrategy*>(Model::TREATMENT_STRATEGY)->newly_introduced_strategy_id)
+       << sep;
+    ss << std::to_string(dynamic_cast<NovelDrugIntroductionStrategy*>(Model::TREATMENT_STRATEGY)->tf_threshold) << sep;
+    ss << std::to_string(dynamic_cast<NovelDrugIntroductionStrategy*>(Model::TREATMENT_STRATEGY)->replacement_fraction)
+       << sep;
+    ss << std::to_string(dynamic_cast<NovelDrugIntroductionStrategy*>(Model::TREATMENT_STRATEGY)->replacement_duration)
+       << sep;
+    ss << "FLT" << sep;
+    ss << "importation" << sep;
+  }
+
+  CLOG(INFO, "summary_reporter") << ss.str();
+  ss.str("");
+}
+
+void GPU::NovelDrugReporter::begin_time_step() {}
+
+void GPU::NovelDrugReporter::output_genotype_frequency_3(const int& number_of_genotypes,
+                                                    GPU::PersonIndexByLocationStateAgeClass* pi) {
+  auto sum1_all = 0.0;
+  std::vector<double> result3_all(number_of_genotypes, 0.0);
+  const auto number_of_locations = pi->vPerson().size();
+  const auto number_of_age_classes = pi->vPerson()[0][0].size();
+
+  for (auto loc = 0; loc < number_of_locations; loc++) {
+    std::vector<double> result3(number_of_genotypes, 0.0);
+    auto sum1 = 0.0;
+
+    for (auto hs = 0; hs < GPU::Person::NUMBER_OF_STATE - 1; hs++) {
+      for (auto ac = 0; ac < number_of_age_classes; ac++) {
+        const auto size = pi->vPerson()[loc][hs][ac].size();
+        for (auto i = 0ull; i < size; i++) {
+          auto* person = pi->vPerson()[loc][hs][ac][i];
+
+          if (!person->all_clonal_parasite_populations()->parasites()->empty()) {
+            sum1 += 1;
+            sum1_all += 1;
+          }
+
+          std::map<int, int> individual_genotype_map;
+
+          for (auto* parasite_population : *(person->all_clonal_parasite_populations()->parasites())) {
+            const auto g_id = parasite_population->genotype()->genotype_id;
+            if (individual_genotype_map.find(g_id) == individual_genotype_map.end()) {
+              individual_genotype_map[parasite_population->genotype()->genotype_id] = 1;
+            } else {
+              individual_genotype_map[parasite_population->genotype()->genotype_id] += 1;
+            }
+          }
+
+          for (const auto genotype : individual_genotype_map) {
+            result3[genotype.first] +=
+                genotype.second / static_cast<double>(person->all_clonal_parasite_populations()->parasites()->size());
+            result3_all[genotype.first] +=
+                genotype.second / static_cast<double>(person->all_clonal_parasite_populations()->parasites()->size());
+          }
+        }
+      }
+    }
+    // output per location
+    for (auto& i : result3) {
+      i /= sum1;
+      ss << (sum1 == 0 ? 0 : i) << sep;
+    }
+  }
+}

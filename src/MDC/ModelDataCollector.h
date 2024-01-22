@@ -10,6 +10,7 @@
 
 #include "Core/PropertyMacro.h"
 #include "Core/TypeDef.h"
+#include "Population/Person.h"
 
 class Model;
 
@@ -20,6 +21,9 @@ class Person;
 class Therapy;
 
 class ClonalParasitePopulation;
+
+class Genotype;
+
 
 class ModelDataCollector {
 DISALLOW_COPY_AND_ASSIGN(ModelDataCollector)
@@ -33,7 +37,6 @@ PROPERTY_REF(DoubleVector2, total_immune_by_location_age_class)
 PROPERTY_REF(IntVector, popsize_by_location)
 
 PROPERTY_REF(IntVector, popsize_residence_by_location)
-PROPERTY_REF(IntVector, popsize_residence_by_location_gpu)
 
 PROPERTY_REF(IntVector2, popsize_by_location_age_class)
 

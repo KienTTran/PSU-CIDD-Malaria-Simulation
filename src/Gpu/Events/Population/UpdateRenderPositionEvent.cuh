@@ -2,13 +2,17 @@
 // Created by kient on 8/4/2023.
 //
 
-#ifndef MASS_PERSONUPDATERENDERPOSITIONEVENT_CUH
-#define MASS_PERSONUPDATERENDERPOSITIONEVENT_CUH
+#ifndef PERSONUPDATERENDERPOSITIONEVENT_CUH
+#define PERSONUPDATERENDERPOSITIONEVENT_CUH
 
 
-#include "Events/Event.h"
+#include "Gpu/Events/Event.cuh"
 
-class UpdateRenderPositionEvent: public Event {
+namespace GPU {
+    class UpdateRenderPositionEvent;
+}
+
+class GPU::UpdateRenderPositionEvent: public GPU::Event {
 
 DISALLOW_COPY_AND_ASSIGN(UpdateRenderPositionEvent)
 
@@ -17,7 +21,7 @@ public:
 
     virtual ~UpdateRenderPositionEvent();
 
-    static void schedule_event(Scheduler *scheduler, const int &time);
+    static void schedule_event(GPU::Scheduler *scheduler, const int &time);
 
     std::string name() override;
 
@@ -28,4 +32,4 @@ private:
 };
 
 
-#endif //MASS_PERSONUPDATERENDERPOSITIONEVENT_CUH
+#endif //PERSONUPDATERENDERPOSITIONEVENT_CUH

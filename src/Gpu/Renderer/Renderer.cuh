@@ -2,8 +2,8 @@
 // Created by kient on 6/16/2023.
 //
 
-#ifndef MASS_RENDERER_H
-#define MASS_RENDERER_H
+#ifndef RENDERER_H
+#define RENDERER_H
 
 #include "imgui.h" // version 1.78 and 1.60
 #include "imgui_impl_glfw.h"
@@ -11,14 +11,18 @@
 #include <iostream>
 #include <stdlib.h>
 #include "RenderEntity.cuh"
-#include "Population/Population.h"
+#include "Gpu/Population/Population.cuh"
 #include <GLFW/glfw3.h>
 #include <chrono>
 #include <thread>
 
 class Model;
 
-class Renderer {
+namespace GPU {
+    class Renderer;
+}
+
+class GPU::Renderer {
 public:
     explicit Renderer(Model *model = nullptr);
     ~Renderer();
@@ -73,4 +77,4 @@ public:
 };
 
 
-#endif //MASS_RENDERER_H
+#endif //RENDERER_H

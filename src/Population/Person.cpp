@@ -9,7 +9,6 @@
 
 #include <algorithm>
 #include <cmath>
-#include <glm/ext/matrix_transform.hpp>
 
 #include "ClonalParasitePopulation.h"
 #include "Constants.h"
@@ -64,11 +63,6 @@ Person::Person()
   today_infections_ = nullptr;
   today_target_locations_ = nullptr;
   latest_update_time_ = -1;
-  location_col_ = -1;
-  location_row_ = -1;
-  model_ = glm::mat4(1.0f);
-  color_ = glm::vec4(0.0f);
-  id_ = -1;
 }
 
 void Person::init() {
@@ -716,28 +710,4 @@ double Person::draw_random_relative_biting_rate(Random* pRandom, Config* pConfig
   }
 
   return result + pConfig->relative_bitting_info().min_relative_biting_value;
-}
-
-void Person::generate_render_entity(int location, bool is_circulate){
-  float width = Model::CONFIG->debug_config().width > 0 ? Model::CONFIG->debug_config().width : Model::CONFIG->render_config().window_width;
-  float height = Model::CONFIG->debug_config().height > 0 ? Model::CONFIG->debug_config().height : Model::CONFIG->render_config().window_height;
-  location_col_ = thrust::get<1>(Model::CONFIG->location_db()[location].asc_cell_data);
-  location_row_ = thrust::get<2>(Model::CONFIG->location_db()[location].asc_cell_data);
-  float unit_x = width/(float)Model::CONFIG->asc_pop_ncols();
-  float unit_y = height/(float)Model::CONFIG->asc_pop_nrows();
-  float base_x_left = unit_x*location_col_;
-  float base_x_right = unit_x*location_col_ + unit_x;
-  float base_y_bottom = unit_y*location_row_;
-  float base_y_top = unit_y*location_row_+ unit_y;
-  float range_x = base_x_right - base_x_left;
-  float range_y = base_y_top - base_y_bottom;
-  float rand_x = Model::RANDOM->random_uniform_double(0.0,1.0);
-  float rand_y = Model::RANDOM->random_uniform_double(0.0,1.0);
-  float x = rand_x*range_x + base_x_left;
-  float y = height - (rand_y*range_y + base_y_bottom);//OGL from bottom to ptop, so invert Y axis only
-  glm::mat4 model = glm::mat4(1.0f);
-  model = glm::translate(model, glm::vec3(x, y, 0.0f));
-  model_ = model;
-  color_ = Model::CONFIG->h_location_colors[location];
-  if(is_circulate) color_ = glm::vec4(1.0f,1.0f,1.0f,1.0f);
 }

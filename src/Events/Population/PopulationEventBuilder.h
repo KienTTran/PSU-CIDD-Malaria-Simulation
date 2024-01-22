@@ -46,7 +46,9 @@ public:
   static std::vector<Event*> build_introduce_triple_mutant_to_dpm_parasite_events(
       const YAML::Node& node, Config* config
   );
-  static std::vector<Event*> build_change_within_host_induced_recombination(const YAML::Node node, Config* pConfig);
+  static std::vector<Event*> build_change_within_host_induced_free_recombination_events(const YAML::Node node, Config* pConfig);
+
+  static std::vector<Event*> build_change_mutation_probability_by_locus_events(const YAML::Node node, Config* pConfig);
 };
 
 #endif // POPULATIONEVENTBUILDER_H

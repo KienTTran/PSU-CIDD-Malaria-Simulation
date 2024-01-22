@@ -69,7 +69,10 @@ double ImmuneSystem::get_parasite_size_after_t_days(const int &duration, const d
       .c_min*
       last_immune_level;
 
+//  std::cout << "Day: " << Model::SCHEDULER->current_time() << "\tImmune: old density: " << originalSize << "\t duration: " << duration << "\tfitness: "
+//  << fitness << "\tlast immune level: " << last_immune_level << "\ttemp: " << temp;
   const auto value = originalSize + duration*(log10(temp) + log10(fitness));
+//  std::cout << "\tnew density: " << value << std::endl;
   return value;
 
 }

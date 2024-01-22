@@ -2,12 +2,16 @@
 // Created by kient on 12/24/2023.
 //
 
-#ifndef MASS_PERSONUPDATEBYLOCATIONEVENT_CUH
-#define MASS_PERSONUPDATEBYLOCATIONEVENT_CUH
+#ifndef PERSONUPDATEBYLOCATIONEVENT_CUH
+#define PERSONUPDATEBYLOCATIONEVENT_CUH
 
-#include "Events/Event.h"
+#include "Gpu/Events/Event.cuh"
 
-class UpdateByLocationEvent : public Event {
+namespace GPU {
+    class UpdateByLocationEvent;
+}
+
+class GPU::UpdateByLocationEvent : public GPU::Event {
 
 DISALLOW_COPY_AND_ASSIGN(UpdateByLocationEvent)
 
@@ -16,7 +20,7 @@ public:
 
 virtual ~UpdateByLocationEvent();
 
-static void schedule_event(Scheduler *scheduler, const int &time);
+static void schedule_event(GPU::Scheduler *scheduler, const int &time);
 
 std::string name() override;
 
@@ -27,4 +31,4 @@ private:
 };
 
 
-#endif //MASS_PERSONUPDATEBYLOCATIONEVENT_CUH
+#endif //PERSONUPDATEBYLOCATIONEVENT_CUH

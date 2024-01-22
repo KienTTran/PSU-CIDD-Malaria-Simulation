@@ -28,11 +28,7 @@
 #include "Properties/PersonIndexByLocationStateAgeClass.h"
 #include "SingleHostClonalParasitePopulations.h"
 #include "Spatial/SpatialModel.hxx"
-#include "Helpers/UniqueId.hxx"
 #include "easylogging++.h"
-#include "Gpu/Population/Properties/PersonIndexGPU.h"
-#include "Gpu/Population/Population.cuh"
-
 
 Population::Population(Model* model) : model_(model) {
   person_index_list_ = new PersonIndexPtrList();
@@ -145,7 +141,6 @@ std::size_t Population::size_residents_only(const int& location) {
 }
 
 void Population::perform_infection_event() {
-  auto start = std::chrono::high_resolution_clock::now();
   //    std::cout << "Infection Event" << std::endl;
 
   PersonPtrVector today_infections;
@@ -174,8 +169,6 @@ void Population::perform_infection_event() {
       person->increase_number_of_times_bitten();
 
       auto genotype_id = Model::MOSQUITO->random_genotype(loc, tracking_index);
-
-      if(genotype_id == -1) continue;
 
       const auto p_infectious = Model::RANDOM->random_flat(0.0, 1.0);
       // only infect with real infectious bite
@@ -206,12 +199,6 @@ void Population::perform_infection_event() {
   }
 
   today_infections.clear();
-  auto lapse = std::chrono::high_resolution_clock::now() - start;
-  if(Model::CONFIG->debug_config().enable_debug_text){
-      LOG_IF(Model::SCHEDULER->current_time() % Model::CONFIG->debug_config().log_interval == 0, INFO)
-      << "[Population] Update population infection event time: "
-      << std::chrono::duration_cast<std::chrono::milliseconds>(lapse).count() << " ms";
-  }
 }
 
 
@@ -246,30 +233,86 @@ void Population::initialize() {
                                                         * Model::CONFIG->artificial_rescaling_of_population_size());
       auto temp_sum = 0;
       for (auto age_class = 0; age_class < Model::CONFIG->initial_age_structure().size(); age_class++) {
-        int number_of_individual_by_loc_age_class = static_cast<int>(popsize_by_location
-                                                                     * Model::CONFIG->location_db()[loc].age_distribution[age_class]);
-//            printf("[Population] Init loc %d ac %d (%d + %d)",loc, age_class, number_of_individual_by_loc_age_class,temp_sum);
-        if(Model::CONFIG->location_db()[loc].population_size > temp_sum + number_of_individual_by_loc_age_class){
-          temp_sum += number_of_individual_by_loc_age_class;
-          if(age_class == Model::CONFIG->initial_age_structure().size() - 1) {
-            number_of_individual_by_loc_age_class = Model::CONFIG->location_db()[loc].population_size - temp_sum;
-          }
+        auto number_of_individual_by_loc_ageclass = 0;
+        if (age_class == Model::CONFIG->initial_age_structure().size() - 1) {
+          number_of_individual_by_loc_ageclass = popsize_by_location - temp_sum;
+        } else {
+          number_of_individual_by_loc_ageclass =
+              static_cast<int>(popsize_by_location * Model::CONFIG->location_db()[loc].age_distribution[age_class]);
+          temp_sum += number_of_individual_by_loc_ageclass;
         }
-        else{
-          if(age_class == Model::CONFIG->initial_age_structure().size() - 1){
-            number_of_individual_by_loc_age_class = Model::CONFIG->location_db()[loc].population_size - temp_sum;
-            if(number_of_individual_by_loc_age_class < 0){
-              number_of_individual_by_loc_age_class = 0;
-            }
+
+        //                std::cout << loc << "\t" << age_class << "\t" << number_of_individual_by_loc_ageclass <<
+        //                std::endl;
+        for (auto i = 0; i < number_of_individual_by_loc_ageclass; i++) {
+          auto p = new Person();
+          p->init();
+
+          p->set_location(loc);
+          p->set_residence_location(loc);
+          p->set_host_state(Person::SUSCEPTIBLE);
+
+          const auto age_from = (age_class == 0) ? 0 : Model::CONFIG->initial_age_structure()[age_class - 1];
+          const auto age_to = Model::CONFIG->initial_age_structure()[age_class];
+
+          // std::cout << i << "\t" << age_class << "\t" << age_from << "\t" << age_to << std::endl;
+
+          // set age will also set ageclass
+          p->set_age(static_cast<const int&>(Model::RANDOM->random_uniform_int(age_from, age_to + 1)));
+          //                    std::cout << p->age() << " \t" << p->age_class() << std::endl;
+          //                    p->set_age_class(age_class);
+
+          int days_to_next_birthday = Model::RANDOM->random_uniform(Constants::DAYS_IN_YEAR());
+
+          auto simulation_time_birthday = TimeHelpers::get_simulation_time_birthday(days_to_next_birthday, p->age(),
+                                                                                    Model::SCHEDULER->calendar_date);
+          p->set_birthday(simulation_time_birthday);
+
+          LOG_IF(simulation_time_birthday > 0, FATAL)
+              << "simulation_time_birthday have to be <= 0 when initilizing population";
+
+          BirthdayEvent::schedule_event(Model::SCHEDULER, p, days_to_next_birthday);
+
+          // set immune component
+          if (simulation_time_birthday + Constants::DAYS_IN_YEAR() / 2 >= 0) {
+            LOG_IF(p->age() > 0, FATAL) << "Error in calculating simulation_time_birthday";
+            // LOG(INFO) << "Infant: " << p->age() << " - " << simulation_time_birthday;
+            p->immune_system()->set_immune_component(new InfantImmuneComponent());
+            // schedule for switch
+            SwitchImmuneComponentEvent::schedule_for_switch_immune_component_event(
+                Model::SCHEDULER, p, simulation_time_birthday + Constants::DAYS_IN_YEAR() / 2);
+          } else {
+            // LOG(INFO) << "Adult: " << p->age() << " - " << simulation_time_birthday;
+            p->immune_system()->set_immune_component(new NonInfantImmuneComponent());
           }
-          else{
-            int minus = (temp_sum + number_of_individual_by_loc_age_class) - Model::CONFIG->location_db()[loc].population_size;
-            number_of_individual_by_loc_age_class = number_of_individual_by_loc_age_class - minus;
-            temp_sum += number_of_individual_by_loc_age_class;
-          }
-        }
-        for (auto i = 0; i < number_of_individual_by_loc_age_class; i++) {
-            generate_individual(loc, age_class);
+
+          auto immune_value = Model::RANDOM->random_beta(Model::CONFIG->immune_system_information().alpha_immune,
+                                                         Model::CONFIG->immune_system_information().beta_immune);
+          p->immune_system()->immune_component()->set_latest_value(immune_value);
+          p->immune_system()->set_increase(false);
+          //                    p->draw_random_immune();
+
+          p->innate_relative_biting_rate = Person::draw_random_relative_biting_rate(Model::RANDOM, Model::CONFIG);
+          p->update_relative_bitting_rate();
+
+          p->set_moving_level(Model::CONFIG->moving_level_generator().draw_random_level(Model::RANDOM));
+
+          p->set_latest_update_time(0);
+
+          int time = Model::RANDOM->random_uniform(Model::CONFIG->update_frequency()) + 1;
+          p->generate_prob_present_at_mda_by_age();
+
+          add_person(p);
+
+          individual_relative_biting_by_location[loc].push_back(p->current_relative_biting_rate);
+          individual_relative_moving_by_location[loc].push_back(
+              Model::CONFIG->circulation_info().v_moving_level_value[p->moving_level()]);
+
+          sum_relative_biting_by_location[loc] += p->current_relative_biting_rate;
+          sum_relative_moving_by_location[loc] +=
+              Model::CONFIG->circulation_info().v_moving_level_value[p->moving_level()];
+
+          all_alive_persons_by_location[loc].push_back(p);
         }
       }
     }
@@ -284,7 +327,9 @@ void Population::introduce_initial_cases() {
       num_of_infections = num_of_infections <= 0 ? 1 : num_of_infections;
 
       auto* genotype = Model::CONFIG->genotype_db.at(p_info.parasite_type_id);
-//       std::cout << p_info.location << "-" << p_info.parasite_type_id << "-" << num_of_infections << std::endl;
+      LOG(INFO) << "Introducing genotype " << p_info.parasite_type_id << " with prevalence: " << p_info.prevalence
+                << " : " << num_of_infections << " infections at location " << p_info.location;
+      // std::cout << p_info.location << "-" << p_info.parasite_type_id << "-" << num_of_infections << std::endl;
       introduce_parasite(p_info.location, genotype, num_of_infections);
     }
     // update current foi
@@ -313,7 +358,6 @@ void Population::introduce_parasite(const int& location, Genotype* parasite_type
 }
 
 void Population::initial_infection(Person* person, Genotype* parasite_type) const {
-  if(person == nullptr) return;
   person->immune_system()->set_increase(true);
   person->set_host_state(Person::ASYMPTOMATIC);
 
@@ -342,105 +386,23 @@ void Population::initial_infection(Person* person, Genotype* parasite_type) cons
 
 void Population::perform_birth_event() {
   //    std::cout << "Birth Event" << std::endl;
-  auto tp_start = std::chrono::high_resolution_clock::now();
-  int birth_sum = 0;
 
   for (auto loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
     auto poisson_means = size(loc) * Model::CONFIG->birth_rate() / Constants::DAYS_IN_YEAR();
     const auto number_of_births = Model::RANDOM->random_poisson(poisson_means);
     for (auto i = 0; i < number_of_births; i++) {
       give_1_birth(loc);
-      Model::DATA_COLLECTOR->update_person_days_by_years(loc, Constants::DAYS_IN_YEAR() - Model::SCHEDULER->current_day_in_year());
-      birth_sum++;
+      Model::DATA_COLLECTOR->update_person_days_by_years(
+          loc, Constants::DAYS_IN_YEAR() - Model::SCHEDULER->current_day_in_year());
     }
-    Model::CONFIG->location_db()[loc].population_size += number_of_births;
   }
 
-  if(Model::CONFIG->debug_config().enable_debug_text){
-    auto lapse = std::chrono::high_resolution_clock::now() - tp_start;
-    auto *pi = get_person_index<PersonIndexGPU>();
-    LOG_IF(Model::SCHEDULER->current_time() % Model::CONFIG->debug_config().log_interval == 0, INFO)
-    << "[Population] Update population birth (" << birth_sum << " " << pi->h_persons().size() << ") event time: "
-    << std::chrono::duration_cast<std::chrono::milliseconds>(lapse).count() << " ms";
-  }
-}
-
-
-void Population::generate_individual(int location, int age_class) {
-  auto p = new Person();
-  p->init();
-  p->set_id(UniqueId::get_instance().get_uid());
-  p->set_location(location);
-  p->set_residence_location(location);
-  p->set_host_state(Person::SUSCEPTIBLE);
-
-  const auto age_from = (age_class == 0) ? 0 : Model::CONFIG->initial_age_structure()[age_class - 1];
-  const auto age_to = Model::CONFIG->initial_age_structure()[age_class];
-
-  // std::cout << i << "\t" << age_class << "\t" << age_from << "\t" << age_to << std::endl;
-
-  // set age will also set ageclass
-  p->set_age(static_cast<const int&>(Model::RANDOM->random_uniform_int(age_from, age_to + 1)));
-  //                    std::cout << p->age() << " \t" << p->age_class() << std::endl;
-  //                    p->set_age_class(age_class);
-
-  int days_to_next_birthday = Model::RANDOM->random_uniform(Constants::DAYS_IN_YEAR());
-
-  auto simulation_time_birthday = TimeHelpers::get_simulation_time_birthday(days_to_next_birthday, p->age(),
-                                                                            Model::SCHEDULER->calendar_date);
-  p->set_birthday(simulation_time_birthday);
-
-  LOG_IF(simulation_time_birthday > 0, FATAL)
-    << "simulation_time_birthday have to be <= 0 when initilizing population";
-
-  BirthdayEvent::schedule_event(Model::SCHEDULER, p, days_to_next_birthday);
-
-  // set immune component
-  if (simulation_time_birthday + Constants::DAYS_IN_YEAR() / 2 >= 0) {
-    LOG_IF(p->age() > 0, FATAL) << "Error in calculating simulation_time_birthday";
-    // LOG(INFO) << "Infant: " << p->age() << " - " << simulation_time_birthday;
-    p->immune_system()->set_immune_component(new InfantImmuneComponent());
-    // schedule for switch
-    SwitchImmuneComponentEvent::schedule_for_switch_immune_component_event(
-            Model::SCHEDULER, p, simulation_time_birthday + Constants::DAYS_IN_YEAR() / 2);
-  } else {
-    // LOG(INFO) << "Adult: " << p->age() << " - " << simulation_time_birthday;
-    p->immune_system()->set_immune_component(new NonInfantImmuneComponent());
-  }
-
-  auto immune_value = Model::RANDOM->random_beta(Model::CONFIG->immune_system_information().alpha_immune,
-                                                 Model::CONFIG->immune_system_information().beta_immune);
-  p->immune_system()->immune_component()->set_latest_value(immune_value);
-  p->immune_system()->set_increase(false);
-  //                    p->draw_random_immune();
-
-  p->innate_relative_biting_rate = Person::draw_random_relative_biting_rate(Model::RANDOM, Model::CONFIG);
-  p->update_relative_bitting_rate();
-
-  p->set_moving_level(Model::CONFIG->moving_level_generator().draw_random_level(Model::RANDOM));
-
-  p->set_latest_update_time(0);
-
-  int time = Model::RANDOM->random_uniform(Model::CONFIG->update_frequency()) + 1;
-  p->generate_prob_present_at_mda_by_age();
-
-  add_person(p);
-
-  individual_relative_biting_by_location[location].push_back(p->current_relative_biting_rate);
-  individual_relative_moving_by_location[location].push_back(
-          Model::CONFIG->circulation_info().v_moving_level_value[p->moving_level()]);
-
-  sum_relative_biting_by_location[location] += p->current_relative_biting_rate;
-  sum_relative_moving_by_location[location] +=
-          Model::CONFIG->circulation_info().v_moving_level_value[p->moving_level()];
-
-  all_alive_persons_by_location[location].push_back(p);
+  //    std::cout << "End Birth Event" << std::endl;
 }
 
 void Population::give_1_birth(const int& location) {
   auto p = new Person();
   p->init();
-  p->set_id(UniqueId::get_instance().get_uid());
   p->set_age(0);
   p->set_host_state(Person::SUSCEPTIBLE);
   p->set_age_class(0);
@@ -477,60 +439,36 @@ void Population::give_1_birth(const int& location) {
 }
 
 void Population::perform_death_event() {
-  auto tp_start = std::chrono::high_resolution_clock::now();
-//      std::cout << "Death Event" << std::endl;
+  //    std::cout << "Death Event" << std::endl;
   // simply change state to dead and release later
   auto pi = get_person_index<PersonIndexByLocationStateAgeClass>();
-  auto pi2 = get_person_index<PersonIndexGPU>();
   if (pi == nullptr) return;
-  auto& location_db = Model::CONFIG->location_db();
 
-  int dead_sum = 0;
   for (auto loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
-    int loc_deaths = 0;
     for (auto hs = 0; hs < Person::NUMBER_OF_STATE - 1; hs++) {
       if (hs == Person::DEAD) continue;
       for (auto ac = 0; ac < Model::CONFIG->number_of_age_classes(); ac++) {
-        const size_t size = pi->vPerson()[loc][hs][ac].size();
+        const int size = pi->vPerson()[loc][hs][ac].size();
         if (size == 0) continue;
         auto poisson_means = size * Model::CONFIG->death_rate_by_age_class()[ac] / Constants::DAYS_IN_YEAR();
 
         assert(Model::CONFIG->death_rate_by_age_class().size() == Model::CONFIG->number_of_age_classes());
         const auto number_of_deaths = Model::RANDOM->random_poisson(poisson_means);
         if (number_of_deaths == 0) continue;
+
+        //                std::cout << numberOfDeaths << std::endl;
         for (int i = 0; i < number_of_deaths; i++) {
           // change state to Death;
-          int index = Model::RANDOM->random_uniform(pi->vPerson()[loc][hs][ac].size());
-//          LOG_IF(loc == 0 && hs == 2 && ac == 14,INFO)
-//                  << fmt::format("[Population] Death before select loc {} hs {} ac {} deaths {} size {}-{} size2 {} size 3 {} index {}",
-//                                 loc, hs, ac, number_of_deaths, size, pi->vPerson()[loc][hs][ac].size(),
-//                                 pi2->h_person_host_states().size(), pi2->h_persons().size(), index);
+          const int index = Model::RANDOM->random_uniform(size);
+          //                    std::cout << index << "-" << pi->vPerson()[loc][hs][ac].size() << std::endl;
           auto* p = pi->vPerson()[loc][hs][ac][index];
           p->cancel_all_events_except(nullptr);
-//          LOG_IF(loc == 0 && hs == 2 && ac == 14,INFO)
-//                  << fmt::format("[Population] Death before set host state loc {} hs {} ac {} deaths {} size {}-{} size2 {} size 3 {} index {}",
-//                                 loc, hs, ac, number_of_deaths, size,pi->vPerson()[loc][hs][ac].size(),
-//                                 pi2->h_person_host_states().size(), pi2->h_persons().size(), index);
           p->set_host_state(Person::DEAD);
-//          LOG_IF(loc == 0 && hs == 2 && ac == 14,INFO)
-//                  << fmt::format("[Population] Death after set host state loc {} hs {} ac {} deaths {} size {}-{} size2 {} size 3 {} index {}",
-//                                 loc, hs, ac, number_of_deaths, size, pi->vPerson()[loc][hs][ac].size(),
-//                                 pi2->h_person_host_states().size(), pi2->h_persons().size(),index);
         }
-        loc_deaths += number_of_deaths;
-        dead_sum += number_of_deaths;
       }
     }
-    location_db[loc].population_size -= loc_deaths;
   }
   clear_all_dead_state_individual();
-  if(Model::CONFIG->debug_config().enable_debug_text){
-    auto lapse = std::chrono::high_resolution_clock::now() - tp_start;
-    auto *pi = get_person_index<PersonIndexGPU>();
-    LOG_IF(Model::SCHEDULER->current_time() % Model::CONFIG->debug_config().log_interval == 0, INFO)
-    << "[Population] Update population death (" << dead_sum << " " << pi->h_persons().size() << ") event time: "
-            << std::chrono::duration_cast<std::chrono::milliseconds>(lapse).count() << " ms";
-  }
 }
 
 void Population::clear_all_dead_state_individual() {
@@ -552,7 +490,6 @@ void Population::clear_all_dead_state_individual() {
 }
 
 void Population::perform_circulation_event() {
-  auto tp_start = std::chrono::high_resolution_clock::now();
   // for each location
   //  get number of circulations based on size * circulation_percent
   //  distributes that number into others location based of other location size
@@ -569,14 +506,8 @@ void Population::perform_circulation_event() {
 
   for (int from_location = 0; from_location < Model::CONFIG->number_of_locations(); from_location++) {
     auto poisson_means = size(from_location) * Model::CONFIG->circulation_info().circulation_percent;
-//    LOG_IF(poisson_means == 0, DEBUG)
-//      << "[Population] Update population circulation CPU " << from_location << " "
-//      << Model::DATA_COLLECTOR->popsize_residence_by_location()[from_location]  << " poisson_means = 0";
     if (poisson_means == 0) continue;
     const auto number_of_circulating_from_this_location = Model::RANDOM->random_poisson(poisson_means);
-//    LOG_IF(number_of_circulating_from_this_location == 0, DEBUG)
-//      << "[Population] Update population circulation CPU " << from_location << " "
-//      << Model::DATA_COLLECTOR->popsize_residence_by_location()[from_location]  << " number_of_circulating_from_this_location = 0";
     if (number_of_circulating_from_this_location == 0) continue;
 
     DoubleVector v_relative_outmovement_to_destination(Model::CONFIG->number_of_locations(), 0);
@@ -602,18 +533,11 @@ void Population::perform_circulation_event() {
     }
   }
 
-//  for (auto* p : today_circulations) {
-//    p->randomly_choose_target_location();
-//  }
+  for (auto* p : today_circulations) {
+    p->randomly_choose_target_location();
+  }
 
   today_circulations.clear();
-
-  auto lapse = std::chrono::high_resolution_clock::now() - tp_start;
-  if(Model::CONFIG->debug_config().enable_debug_text){
-    LOG_IF(Model::SCHEDULER->current_time() % Model::CONFIG->debug_config().log_interval == 0, INFO)
-    << "[Population] Update population circulation CPU event time: "
-            << std::chrono::duration_cast<std::chrono::milliseconds>(lapse).count() << " ms";
-  }
 }
 
 void Population::perform_circulation_for_1_location(const int& from_location, const int& target_location,
@@ -656,14 +580,10 @@ void Population::initialize_person_indices() {
 
   auto p_index_location_moving_level = new PersonIndexByLocationMovingLevel(
       number_of_location, Model::CONFIG->circulation_info().number_of_moving_levels);
-    person_index_list_->push_back(p_index_location_moving_level);
-
-    auto p_index_gpu = new PersonIndexGPU();
-    person_index_list_->push_back(p_index_gpu);
+  person_index_list_->push_back(p_index_location_moving_level);
 }
 
 void Population::update_all_individuals() {
-  auto start = std::chrono::high_resolution_clock::now();
   // update all individuals
   auto pi = get_person_index<PersonIndexByLocationStateAgeClass>();
   for (int loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
@@ -675,31 +595,17 @@ void Population::update_all_individuals() {
       }
     }
   }
-  auto lapse = std::chrono::high_resolution_clock::now() - start;
-    if(Model::CONFIG->debug_config().enable_debug_text){
-        LOG_IF(Model::SCHEDULER->current_time() % Model::CONFIG->debug_config().log_interval == 0, INFO)
-        << "[Population] Update population all individuals event time: "
-                << std::chrono::duration_cast<std::chrono::milliseconds>(lapse).count() << " ms";
-    }
 }
 
 void Population::persist_current_force_of_infection_to_use_N_days_later() {
-  auto start = std::chrono::high_resolution_clock::now();
   for (auto loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
     force_of_infection_for_N_days_by_location[Model::SCHEDULER->current_time()
                                               % Model::CONFIG->number_of_tracking_days()][loc] =
         current_force_of_infection_by_location[loc];
   }
-  auto lapse = std::chrono::high_resolution_clock::now() - start;
-  if(Model::CONFIG->debug_config().enable_debug_text){
-    LOG_IF(Model::SCHEDULER->current_time() % Model::CONFIG->debug_config().log_interval == 0, INFO)
-      << "[Mosquito] Update FOI event time: "
-      << std::chrono::duration_cast<std::chrono::milliseconds>(lapse).count() << " ms";
-  }
 }
 
 void Population::update_current_foi() {
-  auto start = std::chrono::high_resolution_clock::now();
   auto pi = get_person_index<PersonIndexByLocationStateAgeClass>();
   for (int loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
     // reset force of infection for each location
@@ -737,11 +643,5 @@ void Population::update_current_foi() {
         }
       }
     }
-  }
-  auto lapse = std::chrono::high_resolution_clock::now() - start;
-  if(Model::CONFIG->debug_config().enable_debug_text){
-      LOG_IF(Model::SCHEDULER->current_time() % Model::CONFIG->debug_config().log_interval == 0, INFO)
-      << "[Population] Update population current foi event time: "
-              << std::chrono::duration_cast<std::chrono::milliseconds>(lapse).count() << " ms";
   }
 }

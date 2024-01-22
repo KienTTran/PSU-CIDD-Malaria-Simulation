@@ -10,8 +10,8 @@
 
 #include "Core/PropertyMacro.h"
 #include "Core/TypeDef.h"
-#include "Population/Person.h"
 #include "PersonIndex.h"
+#include "Gpu/Population/Person.cuh"
 
 class PersonIndexByLocationMovingLevel : public PersonIndex {
  DISALLOW_COPY_AND_ASSIGN(PersonIndexByLocationMovingLevel);

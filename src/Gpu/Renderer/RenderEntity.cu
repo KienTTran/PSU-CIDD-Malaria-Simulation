@@ -8,8 +8,8 @@
 #include <cuda_gl_interop.h>
 #include "Model.h"
 #include "Core/Config/Config.h"
-#include "Population/Population.h"
-#include "Gpu/Population/Properties/PersonIndexGPU.h"
+#include "Gpu/Population/Population.cuh"
+#include "Gpu/Population/Properties/PersonIndexGPU.cuh"
 #include "Gpu/Utils/Utils.cuh"
 
 GPU::RenderEntity::RenderEntity(Model* model) : model_(model) {
@@ -107,7 +107,7 @@ void GPU::RenderEntity::init_render_entity(int window_width, int window_height) 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(entity_indices), entity_indices, GL_DYNAMIC_DRAW);
 
-    auto *pi = Model::POPULATION->get_person_index<PersonIndexGPU>();
+    auto *pi = Model::GPU_POPULATION->get_person_index<PersonIndexGPU>();
     //SSBO[0]
     //instance data - buffer_object.models, use either this one or matrixVBO
     glGenBuffers(1, &SSBO[0]);

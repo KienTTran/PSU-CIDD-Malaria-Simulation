@@ -9,10 +9,12 @@
 #include "Core/Config/Config.h"
 #include "Core/PropertyMacro.h"
 
+class Person;
 class Genotype;
 class Model;
 class Config;
 class Population;
+class Random;
 
 class Mosquito {
 public:
@@ -28,10 +30,10 @@ public:
 
   void initialize(Config *config);
 
-  void infect_new_cohort_in_PRMC(Config *config, Random *random, Population *population, const int &tracking_index);
+  void infect_new_cohort_in_PRMC(Config *config, ::Random *random, ::Population *population, const int &tracking_index);
 
 public:
-  std::vector<std::vector<std::vector<Genotype *>>> genotypes_table; /* Mosquito table */
+  std::vector<std::vector<std::vector<::Genotype *>>> genotypes_table; /* Mosquito table */
 
   [[nodiscard]] static std::vector<unsigned int> build_interrupted_feeding_indices(
       Random *random, const double &interrupted_feeding_rate, const int &prmc_size);
@@ -39,7 +41,7 @@ public:
   int random_genotype(int location, int tracking_index);
 
   // this function will populate values for both parasite densities and genotypes that carried by a person
-  void get_genotypes_profile_from_person(Person *person, std::vector<Genotype *> &sampling_genotypes,
+  void get_genotypes_profile_from_person(Person *person, std::vector<::Genotype *> &sampling_genotypes,
                                          std::vector<double> &relative_infectivity_each_pp);
 };
 

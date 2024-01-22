@@ -28,8 +28,6 @@ class PersonIndexByLocationStateAgeClass;
 
 class PersonIndexByLocationBittingLevel;
 
-class PersonIndexGPU;
-
 /**
  * Population will manage the life cycle of Person object
  * it will release/delete all person object when it is deleted
@@ -117,8 +115,6 @@ public:
   void perform_death_event();
 
   void give_1_birth(const int &location);
-
-  void generate_individual(int location, int age_class);
 
   void clear_all_dead_state_individual();
 

@@ -9,7 +9,7 @@
 
 #include <cmath>
 
-#include "ClonalParasitePopulation.h"
+#include "Population/ClonalParasitePopulation.h"
 #include "Core/Config/Config.h"
 #include "Core/Random.h"
 #include "DrugsInBlood.h"

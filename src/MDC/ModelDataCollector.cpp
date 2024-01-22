@@ -14,13 +14,11 @@
 #include "Population/Person.h"
 #include "Population/Properties/PersonIndexByLocationStateAgeClass.h"
 #include "Population/Population.h"
-#include "Population/ImmuneSystem.h"
-#include "Population/SingleHostClonalParasitePopulations.h"
 #include "Therapies/SCTherapy.h"
-#include "Population/ClonalParasitePopulation.h"
 #include "Constants.h"
-#include "Gpu/Population/Properties/PersonIndexGPU.h"
-#include "Gpu/Utils/Utils.cuh"
+#include "Population/SingleHostClonalParasitePopulations.h"
+#include "Population/ClonalParasitePopulation.h"
+#include "Population/ImmuneSystem.h"
 
 ModelDataCollector::ModelDataCollector(Model* model) : model_(model), current_utl_duration_(0),
                                                        AMU_per_parasite_pop_(0),
@@ -44,7 +42,6 @@ void ModelDataCollector::initialize() {
   if (model_ != nullptr) {
     popsize_by_location_ = IntVector(Model::CONFIG->number_of_locations(), 0);
     popsize_residence_by_location_ = IntVector(Model::CONFIG->number_of_locations(), 0);
-    popsize_residence_by_location_gpu_ = IntVector(Model::CONFIG->number_of_locations(), 0);
 
     blood_slide_prevalence_by_location_ = DoubleVector(Model::CONFIG->number_of_locations(), 0.0);
     blood_slide_prevalence_by_location_age_group_ = DoubleVector2(
@@ -410,8 +407,7 @@ void ModelDataCollector::perform_population_statistic() {
     fraction_of_positive_that_are_clinical_by_location_[loc] = (blood_slide_prevalence_by_location_[loc] == 0)
                                                                ? 0
                                                                : static_cast<double>(popsize_by_location_hoststate_[
-            loc][Person::
-        CLINICAL]) /
+            loc][Person::CLINICAL]) /
                                                                  blood_slide_prevalence_by_location_[loc];
     check_nan_inf(fraction_of_positive_that_are_clinical_by_location_[loc]);
     const auto number_of_blood_slide_positive = blood_slide_prevalence_by_location_[loc];
@@ -796,9 +792,8 @@ void ModelDataCollector::update_after_run() {
 }
 
 void ModelDataCollector::record_AMU_AFU(
-    Person* person, Therapy* therapy,
-    ClonalParasitePopulation* clinical_caused_parasite
-) {
+        Person* person, Therapy* therapy,
+    ClonalParasitePopulation* clinical_caused_parasite) {
   if (Model::SCHEDULER->current_time() >= Model::CONFIG->start_of_comparison_period()) {
     auto sc_therapy = dynamic_cast<SCTherapy*>(therapy);
     if (sc_therapy != nullptr) {

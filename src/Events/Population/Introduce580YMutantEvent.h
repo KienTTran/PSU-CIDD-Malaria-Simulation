@@ -10,7 +10,7 @@
 #include "Core/PropertyMacro.h"
 #include "Events/Event.h"
 #include <string>
-#include "../../Core/ObjectPool.h"
+#include "Core/ObjectPool.h"
 
 class Introduce580YMutantEvent : public Event {
   DISALLOW_COPY_AND_ASSIGN(Introduce580YMutantEvent)

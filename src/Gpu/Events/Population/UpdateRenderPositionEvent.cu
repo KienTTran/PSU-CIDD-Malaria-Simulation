@@ -9,23 +9,23 @@
 #include <thrust/remove.h>
 #include "easylogging++.h"
 
-#include "Core/Scheduler.h"
+#include "Gpu/Core/Scheduler.cuh"
 #include "Model.h"
 #include "Core/Config/Config.h"
-#include "Gpu/Population/Properties/PersonIndexGPU.h"
+#include "Gpu/Population/Properties/PersonIndexGPU.cuh"
 
 #include "Gpu/Core/Random.cuh"
 #include "Gpu/Renderer/RenderEntity.cuh"
 #include "Gpu/Utils/Utils.cuh"
-#include "Population/Population.h"
+#include "Gpu/Population/Population.cuh"
 
 #include "UpdateRenderPositionEvent.cuh"
 
-UpdateRenderPositionEvent::UpdateRenderPositionEvent() = default;
+GPU::UpdateRenderPositionEvent::UpdateRenderPositionEvent() = default;
 
-UpdateRenderPositionEvent::~UpdateRenderPositionEvent() = default;
+GPU::UpdateRenderPositionEvent::~UpdateRenderPositionEvent() = default;
 
-void UpdateRenderPositionEvent::schedule_event(Scheduler *scheduler, const int &time) {
+void GPU::UpdateRenderPositionEvent::schedule_event(GPU::Scheduler *scheduler, const int &time) {
     if (scheduler!=nullptr) {
         auto *person_update_event = new UpdateRenderPositionEvent();
         person_update_event->dispatcher = nullptr;
@@ -35,7 +35,7 @@ void UpdateRenderPositionEvent::schedule_event(Scheduler *scheduler, const int &
     }
 }
 
-std::string UpdateRenderPositionEvent::name() {
+std::string GPU::UpdateRenderPositionEvent::name() {
     return "PersonUpdateRenderPositionEvent";
 }
 
@@ -68,8 +68,8 @@ __global__ void update_person_position(int work_from, int work_to, int work_batc
     state[thread_index] = local_state;
 }
 
-void UpdateRenderPositionEvent::execute() {
-    auto *pi = Model::POPULATION->get_person_index<PersonIndexGPU>();
+void GPU::UpdateRenderPositionEvent::execute() {
+    auto *pi = Model::GPU_POPULATION->get_person_index<GPU::PersonIndexGPU>();
     if(pi->h_persons().size() >= pi->h_person_models().size()){
         Model::CONFIG->render_config().display_gui = false;
         this->executable = false;
@@ -77,7 +77,7 @@ void UpdateRenderPositionEvent::execute() {
     }
 
     //Update population here
-//    LOG_IF(Model::SCHEDULER->current_time() % Model::CONFIG->debug_config().log_interval == 0, INFO) << "[Person Update Event] executed at time: " << time;
+//    LOG_IF(Model::GPU_SCHEDULER->current_time() % Model::CONFIG->debug_config().log_interval == 0, INFO) << "[Person Update Event] executed at time: " << time;
     if(Model::CONFIG->debug_config().enable_update){
         auto tp_start = std::chrono::high_resolution_clock::now();
 
@@ -123,7 +123,7 @@ void UpdateRenderPositionEvent::execute() {
 
         auto lapse = std::chrono::high_resolution_clock::now() - tp_start;
         if(Model::CONFIG->debug_config().enable_debug_text){
-            LOG_IF(Model::SCHEDULER->current_time() % Model::CONFIG->debug_config().log_interval == 0, INFO)
+            LOG_IF(Model::GPU_SCHEDULER->current_time() % Model::CONFIG->debug_config().log_interval == 0, INFO)
             << fmt::format("[GPU Person Update Event] Update population movement time: {} ms",std::chrono::duration_cast<std::chrono::milliseconds>(lapse).count());
         }
     }

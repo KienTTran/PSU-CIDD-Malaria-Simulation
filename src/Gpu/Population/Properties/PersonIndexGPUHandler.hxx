@@ -2,13 +2,17 @@
 // Created by kient on 12/9/2023.
 //
 
-#ifndef MASS_PERSONINDEXGPUHANDLER_HXX
-#define MASS_PERSONINDEXGPUHANDLER_HXX
+#ifndef PERSONINDEXGPUHANDLER_HXX
+#define PERSONINDEXGPUHANDLER_HXX
 
 #include "Core/PropertyMacro.h"
-#include "Population/Properties/IndexHandler.h"
+#include "IndexHandler.cuh"
 
-class PersonIndexGPUHandler : public IndexHandler {
+namespace GPU {
+    class PersonIndexGPUHandler;
+}
+
+class GPU::PersonIndexGPUHandler : public GPU::IndexHandler {
 DISALLOW_COPY_AND_ASSIGN(PersonIndexGPUHandler)
 
 public:
@@ -21,4 +25,4 @@ private:
 };
 
 
-#endif //MASS_PERSONINDEXGPUHANDLER_HXX
+#endif //PERSONINDEXGPUHANDLER_HXX

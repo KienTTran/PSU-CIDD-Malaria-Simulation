@@ -11,7 +11,7 @@
 #include "easylogging++.h"
 #include "Population/Population.h"
 #include "Population/Properties/PersonIndexByLocationStateAgeClass.h"
-#include "Population/SingleHostClonalParasitePopulations.h"
+#include "Gpu/Population/SingleHostClonalParasitePopulations.cuh"
 #include "ReporterUtils.h"
 
 MMCReporter::MMCReporter() = default;

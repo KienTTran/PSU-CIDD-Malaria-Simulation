@@ -6,23 +6,23 @@
 #include <thrust/execution_policy.h>
 #include "easylogging++.h"
 
-#include "Core/Scheduler.h"
+#include "Gpu/Core/Scheduler.cuh"
 #include "Model.h"
 #include "Core/Config/Config.h"
-#include "Gpu/Population/Properties/PersonIndexGPU.h"
+#include "Gpu/Population/Properties/PersonIndexGPU.cuh"
 
 #include "Gpu/Core/Random.cuh"
 #include "Gpu/Renderer/RenderEntity.cuh"
 #include "Gpu/Utils/Utils.cuh"
-#include "Population/Population.h"
+#include "Gpu/Population/Population.cuh"
 
 #include "UpdateRenderOGLEvent.cuh"
 
-UpdateRenderOGLEvent::UpdateRenderOGLEvent() = default;
+GPU::UpdateRenderOGLEvent::UpdateRenderOGLEvent() = default;
 
-UpdateRenderOGLEvent::~UpdateRenderOGLEvent() = default;
+GPU::UpdateRenderOGLEvent::~UpdateRenderOGLEvent() = default;
 
-void UpdateRenderOGLEvent::schedule_event(Scheduler *scheduler, const int &time) {
+void GPU::UpdateRenderOGLEvent::schedule_event(GPU::Scheduler *scheduler, const int &time) {
     if (scheduler!=nullptr) {
         auto *person_update_event = new UpdateRenderOGLEvent();
         person_update_event->dispatcher = nullptr;
@@ -32,7 +32,7 @@ void UpdateRenderOGLEvent::schedule_event(Scheduler *scheduler, const int &time)
     }
 }
 
-std::string UpdateRenderOGLEvent::name() {
+std::string GPU::UpdateRenderOGLEvent::name() {
     return "PersonUpdateRenderOGLEvent";
 }
 
@@ -50,8 +50,8 @@ __global__ void update_ogl_buffer(int work_from, int work_to, int work_batch,
     }
 }
 
-void UpdateRenderOGLEvent::execute() {
-    auto *pi = Model::POPULATION->get_person_index<PersonIndexGPU>();
+void GPU::UpdateRenderOGLEvent::execute() {
+    auto *pi = Model::GPU_POPULATION->get_person_index<GPU::PersonIndexGPU>();
     if(pi->h_persons().size() >= pi->h_person_models().size()){
         Model::CONFIG->render_config().display_gui = false;
         this->executable = false;
@@ -59,7 +59,7 @@ void UpdateRenderOGLEvent::execute() {
     }
 
     //Update population here
-//    LOG_IF(Model::SCHEDULER->current_time() % Model::CONFIG->debug_config().log_interval == 0, INFO) << "[Person Update Render] Event executed at time: " << time;
+//    LOG_IF(Model::GPU_SCHEDULER->current_time() % Model::CONFIG->debug_config().log_interval == 0, INFO) << "[Person Update Render] Event executed at time: " << time;
     auto tp_start = std::chrono::high_resolution_clock::now();
 
     int n_threads = Model::CONFIG->gpu_config().n_threads;
@@ -93,7 +93,7 @@ void UpdateRenderOGLEvent::execute() {
 
     auto lapse = std::chrono::high_resolution_clock::now() - tp_start;
     if(Model::CONFIG->debug_config().enable_debug_text) {
-        LOG_IF(Model::SCHEDULER->current_time() % Model::CONFIG->debug_config().log_interval == 0, INFO)
+        LOG_IF(Model::GPU_SCHEDULER->current_time() % Model::CONFIG->debug_config().log_interval == 0, INFO)
         << fmt::format("[GPU Person Update Render] Update population render ({} {}) time: {} ms",
                pi->h_persons().size(),pi->h_person_models().size(),
                std::chrono::duration_cast<std::chrono::milliseconds>(lapse).count());
