@@ -216,14 +216,6 @@ void ValidationReporter::monthly_report() {
         }
         ss << group_sep;///747
     }
-    for (auto loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
-        for(int resistant_list = 0; resistant_list < Model::MOSQUITO->resistant_drug_list.size(); resistant_list++){
-            for(int resistant_type = 0; resistant_type < Model::MOSQUITO->resistant_drug_list[resistant_list].first.size(); resistant_type++){
-                ss << Model::DATA_COLLECTOR->monthly_mosquito_recombined_resistant_genotype_count()[loc][resistant_list][resistant_type] << sep;
-            }
-        }
-        ss << group_sep;//764
-    }
     monthly_data_file << ss.str() << std::endl;
 
     std::stringstream gene_freq_ss;
@@ -334,17 +326,9 @@ void ValidationReporter::after_run() {
         ss << group_sep;//105
     }
     for (auto loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
-        for(int resistant_list = 0; resistant_list < Model::MOSQUITO->resistant_drug_list.size(); resistant_list++){
-            for(int resistant_type = 0; resistant_type < Model::MOSQUITO->resistant_drug_list[resistant_list].first.size(); resistant_type++){
-                ss << Model::DATA_COLLECTOR->mosquito_recombined_resistant_genotype_count()[loc][resistant_list][resistant_type] << sep;
-            }
-        }
-        ss << group_sep;//123
-    }
-    for (auto loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
         ss << Model::DATA_COLLECTOR->mosquito_recombination_events_count()[loc][0] << sep;
         ss << Model::DATA_COLLECTOR->mosquito_recombination_events_count()[loc][1] << sep;
-        ss << group_sep;//126
+        ss << group_sep;//107
     }
     summary_data_file << ss.str() << std::endl;
 

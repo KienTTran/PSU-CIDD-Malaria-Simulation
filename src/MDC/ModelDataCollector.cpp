@@ -152,22 +152,6 @@ void ModelDataCollector::initialize() {
     number_of_treatments_success_with_therapy_ID_ = IntVector(Model::CONFIG->therapy_db().size(), 0);
     number_of_treatments_fail_with_therapy_ID_ = IntVector(Model::CONFIG->therapy_db().size(), 0);
 
-    mosquito_recombined_resistant_genotype_count_ = LongVector3(
-            Model::CONFIG->number_of_locations(),LongVector2(Model::MOSQUITO->resistant_drug_list.size()));
-    for(int loc = 0; loc < Model::CONFIG->number_of_locations(); loc++){
-      for(int resistant_list = 0; resistant_list < Model::MOSQUITO->resistant_drug_list.size(); resistant_list++){
-        mosquito_recombined_resistant_genotype_count_[loc][resistant_list] = LongVector(Model::MOSQUITO->resistant_drug_list[resistant_list].first.size(), 0);
-      }
-    }
-
-    monthly_mosquito_recombined_resistant_genotype_count_ = LongVector3(
-            Model::CONFIG->number_of_locations(),LongVector2(Model::MOSQUITO->resistant_drug_list.size()));
-    for(int loc = 0; loc < Model::CONFIG->number_of_locations(); loc++){
-      for(int resistant_list = 0; resistant_list < Model::MOSQUITO->resistant_drug_list.size(); resistant_list++){
-        monthly_mosquito_recombined_resistant_genotype_count_[loc][resistant_list] = LongVector(Model::MOSQUITO->resistant_drug_list[resistant_list].first.size(), 0);
-      }
-    }
-
     mosquito_recombination_events_count_ = LongVector2(Model::CONFIG->number_of_locations(),LongVector(2, 0));
 
     AMU_per_parasite_pop_ = 0;
@@ -937,10 +921,6 @@ void ModelDataCollector::monthly_update() {
       monthly_number_of_mutation_events_by_location_[loc] = 0;
       for(int age = 0; age < 100; age++){
         monthly_number_of_clinical_episode_by_location_age_[loc][age] = 0;
-      }
-
-      for(int resistant_list = 0; resistant_list < Model::MOSQUITO->resistant_drug_list.size(); resistant_list++){
-          monthly_mosquito_recombined_resistant_genotype_count_[loc][resistant_list] = LongVector(Model::MOSQUITO->resistant_drug_list[resistant_list].first.size(), 0);
       }
     }
   }

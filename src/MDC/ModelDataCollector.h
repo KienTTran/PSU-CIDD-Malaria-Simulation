@@ -219,11 +219,6 @@ PROPERTY_REF(long, current_number_of_mutation_events_in_this_year)
 
 PROPERTY_REF(LongVector2, mosquito_recombination_events_count)
 
-PROPERTY_REF(LongVector3, mosquito_recombined_resistant_genotype_count)
-
-PROPERTY_REF(LongVector3, monthly_mosquito_recombined_resistant_genotype_count)
-
-
 static const int number_of_reported_MOI = 10;
 
 typedef std::tuple<int, int, int, int, int, int> mutation_tracker_info;
