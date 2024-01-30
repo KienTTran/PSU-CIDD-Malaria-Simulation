@@ -31,8 +31,6 @@ public:
     /*
      * Variables for infection
      * */
-    TVector<double> h_ie_foi_N_days_all_locations;/* index is loc_index*n_tracking_day+track_day_index */
-    ThrustTVectorDevice<int> d_ie_foi_N_days_all_locations;
 public:
     PopulationKernel();
     ~PopulationKernel() = default;
@@ -60,8 +58,8 @@ public:
                                           ThrustTVectorDevice<int> &d_n_person_bitten_today_all_locations);
     void perform_infection_event();
     void update_all_individuals();
-
 };
+
 
 
 #endif //GPUPOPULATION_CUH

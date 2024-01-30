@@ -2,15 +2,15 @@
 #include "Model.h"
 #include "Core/Config/Config.h"
 #include "Core/Random.h"
-#include "Therapies/Therapy.h"
+#include "Gpu/Therapies/Therapy.cuh"
 
 void GPU::NestedMFTStrategy::add_strategy(GPU::IStrategy* strategy) {
   strategy_list.push_back(strategy);
 }
 
-void GPU::NestedMFTStrategy::add_therapy(Therapy* therapy) { }
+void GPU::NestedMFTStrategy::add_therapy(GPU::Therapy* therapy) { }
 
-Therapy* GPU::NestedMFTStrategy::get_therapy(GPU::Person* person) {
+GPU::Therapy* GPU::NestedMFTStrategy::get_therapy(GPU::Person* person) {
   const auto p = Model::RANDOM->random_flat(0.0, 1.0);
 
   double sum = 0;

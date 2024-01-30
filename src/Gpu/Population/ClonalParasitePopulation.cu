@@ -12,27 +12,28 @@
 #include "Core/Config/Config.h"
 #include "Helpers/NumberHelpers.h"
 #include "Model.h"
-#include "Therapies/Therapy.h"
+#include "Gpu/Therapies/DrugDatabase.cuh"
+#include "Gpu/Therapies/Therapy.cuh"
 #include "Gpu/Population/Person.cuh"
 #include "ClinicalUpdateFunction.cuh"
 #include "ImmuneSystem.cuh"
 #include "Gpu/Utils/Utils.cuh"
-
-const double GPU::ClonalParasitePopulation::LOG_ZERO_PARASITE_DENSITY = -1000.0;
+#include "Population.cuh"
+#include "Properties/PersonIndexGPU.cuh"
 
 GPU::ClonalParasitePopulation::ClonalParasitePopulation(GPU::Genotype *genotype)
-    : last_update_log10_parasite_density_(-1000.0),
+    : last_update_log10_parasite_density_(LOG_ZERO_PARASITE_DENSITY),
       gametocyte_level_(0.0),
       first_date_in_blood_(-1),
       parasite_population_(nullptr),
       genotype_(genotype),
-      update_function_(nullptr) {
+      id_(UniqueId::get_instance().get_uid()),
+      index_(-1),
+      person_(nullptr){
 }
 
 GPU::ClonalParasitePopulation::~ClonalParasitePopulation() = default;
 
-__host__ void GPU::ClonalParasitePopulation::set_gpu_update_function(GPU::ParasiteDensityUpdateFunction *h_function) {
-}
 
 __host__ double GPU::ClonalParasitePopulation::get_current_parasite_density(const int &current_time) {
 //  printf("GPU::ClonalParasitePopulation::get_current_parasite_density %f\n",last_update_log10_parasite_density_);
@@ -48,13 +49,24 @@ __host__ double GPU::ClonalParasitePopulation::get_current_parasite_density(cons
     return last_update_log10_parasite_density_;
   }
 
+  if(person_->index() >= 1040 && person_->index() < 1010){
+    printf("%d GPU::ClonalParasitePopulation::get_current_parasite_density %d %d %d %d %d %d %f\n",
+           person_->index(),
+           index_,
+           parasite_population_->person()->latest_update_time(),
+           person_->person_index_gpu->h_person_update_info()[person_->index()].person_latest_update_time,
+           current_time,
+           duration,
+           update_function_->type(),
+           update_function_->get_current_parasite_density(this, duration));
+  }
   return update_function_->get_current_parasite_density(this, duration);
 }
 
 __device__ __host__ double GPU::ClonalParasitePopulation::get_log10_infectious_density() const {
-  if (NumberHelpers::is_equal(last_update_log10_parasite_density_, -1000.0)
+  if (NumberHelpers::is_equal(last_update_log10_parasite_density_, LOG_ZERO_PARASITE_DENSITY)
       || NumberHelpers::is_equal(gametocyte_level_, 0.0))
-    return -1000.0;
+    return LOG_ZERO_PARASITE_DENSITY;
 
   return last_update_log10_parasite_density_ + log10(gametocyte_level_);
 }
@@ -65,6 +77,8 @@ double GPU::ClonalParasitePopulation::last_update_log10_parasite_density() const
 
 void GPU::ClonalParasitePopulation::set_last_update_log10_parasite_density(const double &value) {
   last_update_log10_parasite_density_ = value;
+  person_->person_index_gpu->h_person_update_info()[person_->index()].parasite_last_update_log10_parasite_density[index_]
+  = last_update_log10_parasite_density_;
 }
 
 double GPU::ClonalParasitePopulation::gametocyte_level() const {
@@ -74,6 +88,7 @@ double GPU::ClonalParasitePopulation::gametocyte_level() const {
 void GPU::ClonalParasitePopulation::set_gametocyte_level(const double &value) {
   if (NumberHelpers::is_enot_qual(gametocyte_level_, value)) {
     gametocyte_level_ = value;
+    person_->person_index_gpu->h_person_update_info()[person_->index()].parasite_gametocyte_level[index_] = gametocyte_level_;
   }
 }
 
@@ -84,11 +99,18 @@ GPU::Genotype *GPU::ClonalParasitePopulation::genotype() const {
 void GPU::ClonalParasitePopulation::set_genotype(GPU::Genotype *value) {
   if (genotype_ != value) {
     genotype_ = value;
+    /* Convert string to char[] with NULL terminated */
+    std::copy( genotype_->aa_sequence.begin(),
+               genotype_->aa_sequence.end(),
+               person_->person_index_gpu->h_person_update_info()[person_->index()].parasite_genotype[index_]);
+    person_->person_index_gpu->h_person_update_info()[person_->index()].parasite_genotype[index_][MAX_GENOTYPE_LOCUS] = '\0';
+    person_->person_index_gpu->h_person_update_info()[person_->index()].parasite_genotype_fitness_multiple_infection[index_]
+    = genotype_->daily_fitness_multiple_infection;
   }
 }
 
 bool GPU::ClonalParasitePopulation::resist_to(const int &drug_id) const {
-  return genotype_->resist_to(Model::CONFIG->drug_db()->at(drug_id));
+  return genotype_->resist_to(Model::CONFIG->gpu_drug_db()->at(drug_id));
 }
 
 void GPU::ClonalParasitePopulation::update() {
@@ -112,37 +134,11 @@ void GPU::ClonalParasitePopulation::perform_drug_action(const double &percent_pa
   set_last_update_log10_parasite_density(newSize);
 }
 
-__device__ double GPU::ClonalParasitePopulation::get_current_parasite_density_gpu(GPU::ParasiteDensityUpdateFunction* d_update_function,
-                                                                                  GPU::Genotype* d_genotype,
-                                                                                  GPU::ImmuneSystem* d_immune_system,
-                                                                                  ParasiteDensityLevel h_parasite_density_level,
-                                                                                  ImmuneSystemInformation* d_immune_system_information,
-                                                                                  const int current_time,
-                                                                                  const int latest_update_time) {
-    const auto duration = current_time - latest_update_time;
-    if (duration == 0) {
-        printf("duration == 0\n");
-        return last_update_log10_parasite_density_;
-    }
-
-//    printf("GPU::ClonalParasitePopulation::get_current_parasite_density_gpu %d %d %d %f\n",
-//           current_time,latest_update_time,duration,last_update_log10_parasite_density_);
-
-    return 5.6;
-//    if (d_update_function == nullptr) {
-//        printf("d_update_function ==  nullptr\n");
-//        return last_update_log10_parasite_density_;
-//    }
-//
-//    double parsite_size = d_immune_system->get_parasite_size_after_t_days_gpu(d_immune_system_information,duration,
-//                                                                              last_update_log10_parasite_density_,
-//                                                                              d_genotype->daily_fitness_multiple_infection);
-//    return d_update_function->get_current_parasite_density_gpu(h_parasite_density_level,
-//                                                               parsite_size,
-//                                                               current_time);
+void GPU::ClonalParasitePopulation::set_update_function(GPU::ParasiteDensityUpdateFunction *value) {
+  update_function_ = value;
+  person_->person_index_gpu->h_person_update_info()[person_->index()].parasite_update_function_type[index_] = value->type();
 }
 
-__device__ __host__ double GPU::ClonalParasitePopulation::test2(){
-    test_ = 99.9;
-    return 45.45;
+GPU::ParasiteDensityUpdateFunction *GPU::ClonalParasitePopulation::update_function() const {
+  return update_function_;
 }

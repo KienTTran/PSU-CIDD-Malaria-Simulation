@@ -27,6 +27,8 @@ namespace GPU{
     class PersonIndex;
     class IStrategy;
     class Event;
+    class Therapy;
+    class Drug;
 };
 
 class Person;
@@ -139,6 +141,9 @@ typedef std::map<int, Drug *> DrugPtrMap;
 
 typedef std::vector<Therapy *> TherapyPtrVector;
 typedef std::vector<IStrategy *> StrategyPtrVector;
+
+typedef std::map<int, GPU::Drug *> GPUDrugPtrMap;
+typedef std::vector<GPU::Therapy *> GPUTherapyPtrVector;
 typedef std::vector<GPU::IStrategy *> GPUStrategyPtrVector;
 
 template <typename T>

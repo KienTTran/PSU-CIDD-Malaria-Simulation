@@ -16,15 +16,17 @@
 #include "Helpers/ObjectHelpers.h"
 #include "Gpu/MDC/ModelDataCollector.cuh"
 #include "Model.h"
-#include "Therapies/Drug.h"
+#include "Gpu/Therapies/Drug.cuh"
 #include "Gpu/Parasites/Genotype.cuh"
 #include "DrugsInBlood.cuh"
 #include "Person.cuh"
+#include "ImmuneSystem.cuh"
+#include "Helpers/UniqueId.hxx"
 
 __device__ __host__ GPU::SingleHostClonalParasitePopulations::SingleHostClonalParasitePopulations(GPU::Person* person)
     : person_(person),
       parasites_(nullptr),
-      log10_total_infectious_denstiy(-1000.0) {}
+      log10_total_infectious_denstiy(GPU::ClonalParasitePopulation::LOG_ZERO_PARASITE_DENSITY) {}
 
 void GPU::SingleHostClonalParasitePopulations::init() {
   parasites_ = new std::vector<GPU::ClonalParasitePopulation*>();
@@ -53,6 +55,7 @@ void GPU::SingleHostClonalParasitePopulations::clear() {
 void GPU::SingleHostClonalParasitePopulations::add(GPU::ClonalParasitePopulation* blood_parasite) {
   blood_parasite->set_parasite_population(this);
   parasites_->push_back(blood_parasite);
+  blood_parasite->set_id(UniqueId::get_instance().get_uid());
   blood_parasite->set_index(parasites_->size() - 1);
   assert(parasites_->at(blood_parasite->index()) == blood_parasite);
 }
@@ -73,6 +76,7 @@ void GPU::SingleHostClonalParasitePopulations::remove(const int& index) {
   parasites_->back()->set_index(index);
   parasites_->at(index) = parasites_->back();
   parasites_->pop_back();
+
   bp->set_index(-1);
 
   bp->set_parasite_population(nullptr);
@@ -104,7 +108,6 @@ void GPU::SingleHostClonalParasitePopulations::change_all_parasite_update_functi
   for (auto* parasite : *parasites_) {
     if (parasite->update_function() == from) {
       parasite->set_update_function(to);
-      parasite->set_gpu_update_function(to);
     }
   }
 }
@@ -116,12 +119,19 @@ void GPU::SingleHostClonalParasitePopulations::update() {
 }
 
 void GPU::SingleHostClonalParasitePopulations::clear_cured_parasites() {
+  if(person_->index() >= 1040 && person_->index() <= 1045){
+      printf("%d GPU::DrugsInBlood::clear_cured_parasites() before remove size %d\n",
+             person_->index(),parasites_->size());
+  }
   log10_total_infectious_denstiy = GPU::ClonalParasitePopulation::LOG_ZERO_PARASITE_DENSITY;
   //    std::vector<int> cured_parasites_index;
   for (int i = parasites_->size() - 1; i >= 0; i--) {
     if (parasites_->at(i)->last_update_log10_parasite_density()
         <= Model::CONFIG->parasite_density_level().log_parasite_density_cured + 0.00001) {
       remove(i);
+      if(person_->index() >= 1040 && person_->index() <= 1045){
+          printf("%d GPU::SingleHostClonalParasitePopulations::clear_cured_parasites remove parasite %d\n", person_->index(), i);
+      }
     } else {
       if (log10_total_infectious_denstiy == GPU::ClonalParasitePopulation::LOG_ZERO_PARASITE_DENSITY) {
         log10_total_infectious_denstiy = (*parasites_)[i]->get_log10_infectious_density();
@@ -130,6 +140,10 @@ void GPU::SingleHostClonalParasitePopulations::clear_cured_parasites() {
             log10(pow(10, (*parasites_)[i]->get_log10_infectious_density() - log10_total_infectious_denstiy) + 1);
       }
     }
+  }
+  if(person_->index() >= 1040 && person_->index() <= 1045){
+      printf("%d GPU::DrugsInBlood::clear_cured_parasites() after remove size %d\n",
+             person_->index(),parasites_->size());
   }
 }
 

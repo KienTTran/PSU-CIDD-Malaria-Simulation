@@ -130,11 +130,15 @@ public:
 
   CUSTOM_CONFIG_ITEM(drug_db, nullptr)
 
+  CUSTOM_CONFIG_ITEM(gpu_drug_db, nullptr)
+
   CUSTOM_CONFIG_ITEM(circulation_info, RelativeMovingInformation())
 
   CUSTOM_CONFIG_ITEM(relative_bitting_info, RelativeBittingInformation())
 
   CUSTOM_CONFIG_ITEM(therapy_db, TherapyPtrVector())
+
+  CUSTOM_CONFIG_ITEM(gpu_therapy_db, GPUTherapyPtrVector())
 
   CUSTOM_CONFIG_ITEM(strategy_db, StrategyPtrVector())
 

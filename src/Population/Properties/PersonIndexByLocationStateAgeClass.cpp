@@ -94,16 +94,16 @@ PersonIndexByLocationStateAgeClass::notify_change(Person *p, const Person::Prope
   switch (property) {
     case Person::LOCATION: {
       change_property(p, *(int *) newValue, p->host_state(), p->age_class());
+      break;
     }
-          break;
     case Person::HOST_STATE: {
       change_property(p, p->location(), *(Person::HostStates *) newValue, p->age_class());
+      break;
     }
-          break;
     case Person::AGE_CLASS: {
       change_property(p, p->location(), p->host_state(), *(int *) newValue);
+      break;
     }
-          break;
     default:break;
   }
 

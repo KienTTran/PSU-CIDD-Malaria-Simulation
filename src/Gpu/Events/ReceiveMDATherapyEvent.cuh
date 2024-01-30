@@ -17,16 +17,16 @@ namespace GPU {
     class Person;
     class Scheduler;
     class ReceiveMDATherapyEvent;
+    class Therapy;
 }
 
-class Therapy;
 
 class GPU::ReceiveMDATherapyEvent : public GPU::Event {
  DISALLOW_COPY_AND_ASSIGN(ReceiveMDATherapyEvent)
 
  DISALLOW_MOVE(ReceiveMDATherapyEvent)
 
- POINTER_PROPERTY(Therapy, received_therapy)
+ POINTER_PROPERTY(GPU::Therapy, received_therapy)
 
  public:
   ReceiveMDATherapyEvent();
@@ -34,7 +34,7 @@ class GPU::ReceiveMDATherapyEvent : public GPU::Event {
   //    ReceiveMDADrugEvent(const ReceiveMDADrugEvent& orig);
   virtual ~ReceiveMDATherapyEvent();
 
-  static void schedule_event(GPU::Scheduler *scheduler, GPU::Person *p, Therapy *therapy, const int &time);
+  static void schedule_event(GPU::Scheduler *scheduler, GPU::Person *p, GPU::Therapy *therapy, const int &time);
 
   std::string name() override {
     return "ReceiveMDADrugEvent";

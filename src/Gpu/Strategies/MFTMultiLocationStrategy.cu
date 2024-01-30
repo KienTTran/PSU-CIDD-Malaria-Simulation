@@ -4,7 +4,7 @@
 
 #include <sstream>
 #include "MFTMultiLocationStrategy.cuh"
-#include "Therapies/Therapy.h"
+#include "Gpu/Therapies/Therapy.cuh"
 #include "Model.h"
 #include "Core/Random.h"
 #include "Gpu/Population/Person.cuh"
@@ -15,11 +15,11 @@ GPU::MFTMultiLocationStrategy::MFTMultiLocationStrategy() : GPU::IStrategy(
 
 GPU::MFTMultiLocationStrategy::~MFTMultiLocationStrategy() = default;
 
-void GPU::MFTMultiLocationStrategy::add_therapy(Therapy *therapy) {
+void GPU::MFTMultiLocationStrategy::add_therapy(GPU::Therapy *therapy) {
   therapy_list.push_back(therapy);
 }
 
-Therapy *GPU::MFTMultiLocationStrategy::get_therapy(GPU::Person *person) {
+GPU::Therapy *GPU::MFTMultiLocationStrategy::get_therapy(GPU::Person *person) {
 
   const auto p = Model::RANDOM->random_flat(0.0, 1.0);
   const auto loc = person->location();

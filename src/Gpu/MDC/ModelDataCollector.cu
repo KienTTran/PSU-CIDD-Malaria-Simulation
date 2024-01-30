@@ -14,7 +14,7 @@
 #include "Gpu/Population/Person.cuh"
 #include "Gpu/Population/Properties/PersonIndexByLocationStateAgeClass.cuh"
 #include "Gpu/Population/Population.cuh"
-#include "Therapies/SCTherapy.h"
+#include "Gpu/Therapies/SCTherapy.cuh"
 #include "Constants.h"
 #include "Gpu/Population/SingleHostClonalParasitePopulations.cuh"
 #include "Gpu/Population/ClonalParasitePopulation.cuh"
@@ -148,9 +148,9 @@ void GPU::ModelDataCollector::initialize() {
     current_utl_duration_ = 0;
     UTL_duration_ = IntVector();
 
-    number_of_treatments_with_therapy_ID_ = IntVector(Model::CONFIG->therapy_db().size(), 0);
-    number_of_treatments_success_with_therapy_ID_ = IntVector(Model::CONFIG->therapy_db().size(), 0);
-    number_of_treatments_fail_with_therapy_ID_ = IntVector(Model::CONFIG->therapy_db().size(), 0);
+    number_of_treatments_with_therapy_ID_ = IntVector(Model::CONFIG->gpu_therapy_db().size(), 0);
+    number_of_treatments_success_with_therapy_ID_ = IntVector(Model::CONFIG->gpu_therapy_db().size(), 0);
+    number_of_treatments_fail_with_therapy_ID_ = IntVector(Model::CONFIG->gpu_therapy_db().size(), 0);
 
     AMU_per_parasite_pop_ = 0;
     AMU_per_person_ = 0;
@@ -229,14 +229,14 @@ void GPU::ModelDataCollector::initialize() {
     total_resistance_frequency_at_15_ = 0;
 
     total_number_of_treatments_60_by_therapy_ = IntVector2(
-        Model::CONFIG->therapy_db().size(),
+        Model::CONFIG->gpu_therapy_db().size(),
         IntVector(Model::CONFIG->tf_window_size(), 0));
     total_tf_60_by_therapy_ = IntVector2(
-        Model::CONFIG->therapy_db().size(),
+        Model::CONFIG->gpu_therapy_db().size(),
         IntVector(Model::CONFIG->tf_window_size(), 0));
-    current_tf_by_therapy_ = DoubleVector(Model::CONFIG->therapy_db().size(), 0.0);
-    today_tf_by_therapy_ = IntVector(Model::CONFIG->therapy_db().size(), 0);
-    today_number_of_treatments_by_therapy_ = IntVector(Model::CONFIG->therapy_db().size(), 0);
+    current_tf_by_therapy_ = DoubleVector(Model::CONFIG->gpu_therapy_db().size(), 0.0);
+    today_tf_by_therapy_ = IntVector(Model::CONFIG->gpu_therapy_db().size(), 0);
+    today_number_of_treatments_by_therapy_ = IntVector(Model::CONFIG->gpu_therapy_db().size(), 0);
 
     monthly_number_of_treatment_by_location_ = IntVector(Model::CONFIG->number_of_locations(), 0);
     monthly_number_of_TF_by_location_ = IntVector(Model::CONFIG->number_of_locations(), 0);
@@ -643,7 +643,7 @@ void GPU::ModelDataCollector::begin_time_step() {
     today_TF_by_location_[location] = 0;
   }
 
-  for (auto therapy_id = 0; static_cast<size_t>(therapy_id) < Model::CONFIG->therapy_db().size(); therapy_id++) {
+  for (auto therapy_id = 0; static_cast<size_t>(therapy_id) < Model::CONFIG->gpu_therapy_db().size(); therapy_id++) {
     today_number_of_treatments_by_therapy_[therapy_id] = 0;
     today_tf_by_therapy_[therapy_id] = 0;
   }
@@ -685,7 +685,7 @@ void GPU::ModelDataCollector::end_of_time_step() {
     if ((avg_tf / static_cast<double>(Model::CONFIG->number_of_locations())) <= Model::CONFIG->tf_rate()) {
       current_utl_duration_ += 1;
     }
-    for (auto therapy_id = 0; static_cast<size_t>(therapy_id) < Model::CONFIG->therapy_db().size(); therapy_id++) {
+    for (auto therapy_id = 0; static_cast<size_t>(therapy_id) < Model::CONFIG->gpu_therapy_db().size(); therapy_id++) {
       total_number_of_treatments_60_by_therapy_[therapy_id][Model::GPU_SCHEDULER->current_time() %
                                                             Model::CONFIG->tf_window_size()] = today_number_of_treatments_by_therapy_[therapy_id];
       total_tf_60_by_therapy_[therapy_id][Model::GPU_SCHEDULER->current_time() %
@@ -796,7 +796,7 @@ void GPU::ModelDataCollector::record_AMU_AFU(
         GPU::Person* person, Therapy* therapy,
     GPU::ClonalParasitePopulation* clinical_caused_parasite) {
   if (Model::GPU_SCHEDULER->current_time() >= Model::CONFIG->start_of_comparison_period()) {
-    auto sc_therapy = dynamic_cast<SCTherapy*>(therapy);
+    auto sc_therapy = dynamic_cast<GPU::SCTherapy*>(therapy);
     if (sc_therapy != nullptr) {
       const auto art_id = sc_therapy->get_arteminsinin_id();
       if (art_id != -1 && sc_therapy->drug_ids.size() > 1) {

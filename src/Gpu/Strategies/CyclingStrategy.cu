@@ -12,13 +12,13 @@
 #include "Gpu/MDC/ModelDataCollector.cuh"
 #include <sstream>
 #include "IStrategy.cuh"
-#include "Therapies/Therapy.h"
+#include "Gpu/Therapies/Therapy.cuh"
 
 GPU::CyclingStrategy::CyclingStrategy() : GPU::IStrategy("CyclingStrategy", Cycling) {}
 
 GPU::CyclingStrategy::~CyclingStrategy() = default;
 
-void GPU::CyclingStrategy::add_therapy(Therapy *therapy) {
+void GPU::CyclingStrategy::add_therapy(GPU::Therapy *therapy) {
   therapy_list.push_back(therapy);
 }
 
@@ -34,7 +34,7 @@ void GPU::CyclingStrategy::switch_therapy() {
             << ": Cycling Strategy switch therapy to: " << therapy_list[index]->id();
 }
 
-Therapy *GPU::CyclingStrategy::get_therapy(GPU::Person *person) {
+GPU::Therapy *GPU::CyclingStrategy::get_therapy(GPU::Person *person) {
 
   //int index = ((Global::scheduler->currentTime - Global::startTreatmentDay) / circleTime) % therapyList.size();
   //    std::cout << therapy_list()[index_]->id() << std::endl;

@@ -15,7 +15,7 @@
 #include "Model.h"
 #include "Core/Config/Config.h"
 #include "Gpu/MDC/ModelDataCollector.cuh"
-#include "Therapies/Therapy.h"
+#include "Gpu/Therapies/Therapy.cuh"
 #include <string>
 
 GPU::MFTRebalancingStrategy::MFTRebalancingStrategy() {

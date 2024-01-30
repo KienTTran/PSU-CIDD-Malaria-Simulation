@@ -22,7 +22,7 @@ class GPU::AdaptiveCyclingStrategy : public GPU::IStrategy {
  DISALLOW_MOVE(AdaptiveCyclingStrategy)
 
  public:
-  std::vector<Therapy *> therapy_list;
+  std::vector<GPU::Therapy *> therapy_list;
   int index{0};
   double trigger_value{0.1};
   int delay_until_actual_trigger{365};
@@ -33,11 +33,11 @@ class GPU::AdaptiveCyclingStrategy : public GPU::IStrategy {
 
   virtual ~AdaptiveCyclingStrategy();
 
-  void add_therapy(Therapy *therapy) override;
+  void add_therapy(GPU::Therapy *therapy) override;
 
   virtual void switch_therapy();
 
-  Therapy *get_therapy(GPU::Person *person) override;
+  GPU::Therapy *get_therapy(GPU::Person *person) override;
 
   std::string to_string() const override;
 

@@ -26,7 +26,7 @@ class GPU::NestedMFTStrategy : public GPU::IStrategy {
 
   virtual void add_strategy(GPU::IStrategy *strategy);
 
-  void add_therapy(Therapy *therapy) override;
+  void add_therapy(GPU::Therapy *therapy) override;
 
   Therapy *get_therapy(GPU::Person *person) override;
 

@@ -10,7 +10,7 @@
 
 class UniqueId {
     private:
-        long current_id;
+    long current_id;
 
         // Constructor
         UniqueId() { current_id = 0; }

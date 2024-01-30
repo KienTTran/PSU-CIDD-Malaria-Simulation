@@ -31,11 +31,10 @@ namespace GPU{
     class Scheduler;
     class Event;
     class ModelDataCollector;
+    class Therapy;
+    class DrugType;
+    class PersonIndexGPU;
 }
-
-class Therapy;
-
-class DrugType;
 
 class Model;
 
@@ -49,6 +48,7 @@ class GPU::Person : public GPU::PersonIndexAllHandler,
                public GPU::PersonIndexGPUHandler,
                public GPU::Dispatcher {
 public:
+
   enum Property {
     LOCATION = 0,
     HOST_STATE,
@@ -73,7 +73,9 @@ public:
 
   PROPERTY_HEADER(int, age_class)
 
-  PROPERTY_REF(long, id)
+  PROPERTY_HEADER(long, id)
+
+  PROPERTY_HEADER(int, index)
 
   // birthday has the unit of time in the scheduler
   // if birthday is -100 which is that person was born 100 day before the simulation start
@@ -108,6 +110,8 @@ public:
   PROPERTY_REF(glm::mat4, model)
   PROPERTY_REF(glm::vec4, color)
 
+  GPU::PersonIndexGPU* person_index_gpu;
+
 public:
   std::map<int, double> starting_drug_values_for_MAC;
   double innate_relative_biting_rate { 0 };
@@ -131,7 +135,7 @@ public:
   virtual void increase_age_by_1_year();
 
   //    BloodParasite* add_new_parasite_to_blood(Genotype* parasite_type);
-  GPU::ClonalParasitePopulation *add_new_parasite_to_blood(GPU::Genotype *parasite_type) const;
+  GPU::ClonalParasitePopulation *add_new_parasite_to_blood(GPU::Genotype *parasite_type);
 
   static double relative_infectivity(const double &log10_parasite_density);
 
@@ -147,14 +151,14 @@ public:
   //    void record_treatment_failure_for_test_treatment_failure_events();
 
   void change_all_parasite_update_function(GPU::ParasiteDensityUpdateFunction *from,
-                                           GPU::ParasiteDensityUpdateFunction *to) const;
+                                           GPU::ParasiteDensityUpdateFunction *to);
 
   int complied_dosing_days(const int &dosing_day) const;
 
-  void receive_therapy(Therapy *therapy, GPU::ClonalParasitePopulation *clinical_caused_parasite,
+  void receive_therapy(GPU::Therapy *therapy, GPU::ClonalParasitePopulation *clinical_caused_parasite,
                        bool is_part_of_MAC_therapy = false);
 
-  void add_drug_to_blood(DrugType *dt, const int &dosing_days, bool is_part_of_MAC_therapy = false);
+  void add_drug_to_blood(GPU::DrugType *dt, const int &dosing_days, bool is_part_of_MAC_therapy = false);
 
   void schedule_progress_to_clinical_event_by(GPU::ClonalParasitePopulation *blood_parasite);
 

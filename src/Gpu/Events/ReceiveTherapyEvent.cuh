@@ -13,13 +13,13 @@
 
 
 
-class Therapy;
 
 namespace GPU{
     class ClonalParasitePopulation;
     class Person;
     class Scheduler;
     class ReceiveTherapyEvent;
+    class Therapy;
 }
 
 class GPU::ReceiveTherapyEvent : public GPU::Event {
@@ -27,7 +27,7 @@ class GPU::ReceiveTherapyEvent : public GPU::Event {
 
  DISALLOW_MOVE(ReceiveTherapyEvent)
 
- POINTER_PROPERTY(Therapy, received_therapy)
+ POINTER_PROPERTY(GPU::Therapy, received_therapy)
 
  POINTER_PROPERTY(GPU::ClonalParasitePopulation, clinical_caused_parasite)
 
@@ -40,7 +40,7 @@ public:
   //    ReceiveTherapyEvent(const ReceiveTherapyEvent& orig);
   virtual ~ReceiveTherapyEvent();
 
-  static void schedule_event(GPU::Scheduler *scheduler, GPU::Person *p, Therapy *therapy, const int &time,
+  static void schedule_event(GPU::Scheduler *scheduler, GPU::Person *p, GPU::Therapy *therapy, const int &time,
                              GPU::ClonalParasitePopulation *clinical_caused_parasite, bool is_part_of_MAC_therapy = false);
 
   std::string name() override {

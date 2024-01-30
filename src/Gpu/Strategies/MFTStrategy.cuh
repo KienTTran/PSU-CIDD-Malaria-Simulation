@@ -13,10 +13,10 @@
 
 class Random;
 
-class Therapy;
 
 namespace GPU{
     class MFTStrategy;
+    class Therapy;
 }
 
 class GPU::MFTStrategy : public GPU::IStrategy {
@@ -25,7 +25,7 @@ class GPU::MFTStrategy : public GPU::IStrategy {
  DISALLOW_MOVE(MFTStrategy)
 
  public:
-  std::vector<Therapy *> therapy_list;
+  std::vector<GPU::Therapy *> therapy_list;
   std::vector<double> distribution;
 
   MFTStrategy();
@@ -33,7 +33,7 @@ class GPU::MFTStrategy : public GPU::IStrategy {
   //    MFTStrategy(const MFTStrategy& orig);
   virtual ~MFTStrategy();
 
-  void add_therapy(Therapy *therapy) override;
+  void add_therapy(GPU::Therapy *therapy) override;
 
   Therapy *get_therapy(GPU::Person *person) override;
 

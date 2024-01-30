@@ -35,7 +35,7 @@ public:
 public:
   // this value will be automatically updated daily in the function clear_cured_parasites
   // in order to have accurate sum of all density
-  double log10_total_infectious_denstiy{-1000.0};
+  double log10_total_infectious_denstiy;
 
 public:
     __device__ __host__ SingleHostClonalParasitePopulations(GPU::Person *person = nullptr);

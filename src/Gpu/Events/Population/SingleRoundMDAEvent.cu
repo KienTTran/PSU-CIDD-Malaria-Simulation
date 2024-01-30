@@ -48,10 +48,10 @@ void GPU::SingleRoundMDAEvent::execute() {
       const auto prob = Model::RANDOM->random_flat(0.0, 1.0);
       if (prob < p->prob_present_at_mda()) {
         // receive MDA
-        auto *therapy = Model::CONFIG->therapy_db()[Model::CONFIG->mda_therapy_id()];
+        auto *therapy = Model::CONFIG->gpu_therapy_db()[Model::CONFIG->mda_therapy_id()];
         // schedule received therapy in within days_to_complete_all_treatments
         int days_to_receive_mda_therapy = Model::RANDOM->random_uniform(days_to_complete_all_treatments) + 1;
-        ReceiveMDATherapyEvent::schedule_event(Model::GPU_SCHEDULER, p, therapy,
+        GPU::ReceiveMDATherapyEvent::schedule_event(Model::GPU_SCHEDULER, p, therapy,
                                                Model::GPU_SCHEDULER->current_time() +
                                                    days_to_receive_mda_therapy);
 

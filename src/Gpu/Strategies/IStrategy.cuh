@@ -20,11 +20,11 @@
 #include "Core/PropertyMacro.h"
 #include <map>
 
-class Therapy;
 
 namespace GPU{
   class Person;
   class IStrategy;
+  class Therapy;
 };
 
 class GPU::IStrategy {
@@ -64,7 +64,7 @@ class GPU::IStrategy {
     return type;
   };
 
-  virtual void add_therapy(Therapy *therapy) = 0;
+  virtual void add_therapy(GPU::Therapy *therapy) = 0;
 
   virtual Therapy *get_therapy(GPU::Person *person) = 0;
 

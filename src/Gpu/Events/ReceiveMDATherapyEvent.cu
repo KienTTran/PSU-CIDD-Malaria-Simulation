@@ -6,7 +6,7 @@
  */
 #include "ReceiveMDATherapyEvent.cuh"
 #include "Gpu/Core/Scheduler.cuh"
-#include "Therapies/Therapy.h"
+#include "Gpu/Therapies/Therapy.cuh"
 #include "Model.h"
 #include "Gpu/Population/Person.cuh"
 
@@ -14,7 +14,7 @@ GPU::ReceiveMDATherapyEvent::ReceiveMDATherapyEvent() : received_therapy_(nullpt
 
 GPU::ReceiveMDATherapyEvent::~ReceiveMDATherapyEvent() = default;
 
-void GPU::ReceiveMDATherapyEvent::schedule_event(GPU::Scheduler *scheduler, GPU::Person *p, Therapy *therapy, const int &time) {
+void GPU::ReceiveMDATherapyEvent::schedule_event(GPU::Scheduler *scheduler, GPU::Person *p, GPU::Therapy *therapy, const int &time) {
   if (scheduler!=nullptr) {
     auto *e = new ReceiveMDATherapyEvent();
     e->dispatcher = p;

@@ -7,7 +7,7 @@
 
 #include "ParasiteDensityUpdateFunction.cuh"
 
-__device__ __host__ GPU::ParasiteDensityUpdateFunction::ParasiteDensityUpdateFunction() {
+GPU::ParasiteDensityUpdateFunction::ParasiteDensityUpdateFunction() {
 }
 
 GPU::ParasiteDensityUpdateFunction::~ParasiteDensityUpdateFunction() {

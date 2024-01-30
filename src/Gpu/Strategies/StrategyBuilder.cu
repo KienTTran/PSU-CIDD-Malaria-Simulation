@@ -58,7 +58,7 @@ GPU::IStrategy* GPU::StrategyBuilder::build(const YAML::Node &ns, const int &str
 
 void GPU::StrategyBuilder::add_therapies(const YAML::Node &ns, GPU::IStrategy* result, Config* config) {
   for (auto i = 0; i < ns["therapy_ids"].size(); i++) {
-    result->add_therapy(config->therapy_db()[ns["therapy_ids"][i].as<int>()]);
+    result->add_therapy(config->gpu_therapy_db()[ns["therapy_ids"][i].as<int>()]);
   }
 }
 
@@ -72,7 +72,7 @@ GPU::IStrategy* GPU::StrategyBuilder::buildSFTStrategy(const YAML::Node &ns, con
   auto* result = new GPU::SFTStrategy();
   result->id = strategy_id;
   result->name = ns["name"].as<std::string>();
-  result->add_therapy(config->therapy_db()[ns["therapy_id"].as<int>()]);
+  result->add_therapy(config->gpu_therapy_db()[ns["therapy_id"].as<int>()]);
   return result;
 }
 

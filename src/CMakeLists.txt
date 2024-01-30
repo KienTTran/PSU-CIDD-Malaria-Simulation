@@ -50,6 +50,8 @@ file(GLOB SRC_FILES *.cpp
         Gpu/Events/Population/*.cuh
         Gpu/Strategies/*.cu
         Gpu/Strategies/*.cuh
+        Gpu/Therapies/*.cu
+        Gpu/Therapies/*.cuh
         Gpu/Reporters/*.cu
         Gpu/Reporters/*.cuh
         Gpu/Utils/*.cu

@@ -10,17 +10,17 @@
 #include "Model.h"
 #include <sstream>
 #include "IStrategy.cuh"
-#include "Therapies/Therapy.h"
+#include "Gpu/Therapies/Therapy.cuh"
 
 GPU::MFTStrategy::MFTStrategy() : GPU::IStrategy("MFTStrategy", MFT) {}
 
 GPU::MFTStrategy::~MFTStrategy() = default;
 
-void GPU::MFTStrategy::add_therapy(Therapy *therapy) {
+void GPU::MFTStrategy::add_therapy(GPU::Therapy *therapy) {
   therapy_list.push_back(therapy);
 }
 
-Therapy *GPU::MFTStrategy::get_therapy(GPU::Person *person) {
+GPU::Therapy *GPU::MFTStrategy::get_therapy(GPU::Person *person) {
 
   const auto p = Model::RANDOM->random_flat(0.0, 1.0);
 

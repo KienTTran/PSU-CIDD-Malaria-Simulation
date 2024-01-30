@@ -72,7 +72,7 @@
     type& operator=(type&&) = delete;
 
 #define PROPERTY_HEADER(property_type, property_name)\
-    private:\
+    public:\
         property_type property_name##_;\
     public:\
         property_type property_name() const;\

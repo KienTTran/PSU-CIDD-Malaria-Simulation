@@ -18,7 +18,7 @@ class GPU::CyclingStrategy : public GPU::IStrategy {
  DISALLOW_COPY_AND_ASSIGN(CyclingStrategy)
 
  public:
-  std::vector<Therapy *> therapy_list;
+  std::vector<GPU::Therapy *> therapy_list;
   int index{0};
   int cycling_time{0};
   int next_switching_day{0};
@@ -28,7 +28,7 @@ class GPU::CyclingStrategy : public GPU::IStrategy {
   //    CyclingStrategy(const CyclingStrategy& orig);
   virtual ~CyclingStrategy();
 
-  void add_therapy(Therapy *therapy) override;
+  void add_therapy(GPU::Therapy *therapy) override;
 
   virtual void switch_therapy();
 

@@ -10,7 +10,7 @@
 
 #include "Core/PropertyMacro.h"
 #include "Core/TypeDef.h"
-#include "Therapies/DrugType.h"
+#include "Gpu/Therapies/DrugType.cuh"
 
 namespace GPU{
     class Person;
@@ -20,7 +20,7 @@ namespace GPU{
 class GPU::DrugsInBlood {
  POINTER_PROPERTY(GPU::Person, person)
 
- POINTER_PROPERTY(DrugPtrMap, drugs)
+ POINTER_PROPERTY(GPUDrugPtrMap, drugs)
 
  public:
   explicit DrugsInBlood(GPU::Person *person = nullptr);
@@ -30,13 +30,13 @@ class GPU::DrugsInBlood {
 
   void init();
 
-  Drug *add_drug(Drug *drug);
+  Drug *add_drug(GPU::Drug *drug);
 
-  bool is_drug_in_blood(DrugType *drug_type) const;
+  bool is_drug_in_blood(GPU::DrugType *drug_type) const;
 
   bool is_drug_in_blood(int drug_type_id) const;
 
-  void remove_drug(Drug *drug) const;
+  void remove_drug(GPU::Drug *drug) const;
 
   void remove_drug(const int &drug_type_id) const;
 

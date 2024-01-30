@@ -14,13 +14,13 @@
 
 class Model;
 
-class Therapy;
 
 namespace GPU{
     class ModelDataCollector;
     class Person;
     class ClonalParasitePopulation;
     class Genotype;
+    class Therapy;
 }
 
 class GPU::ModelDataCollector {
@@ -276,7 +276,7 @@ public:
   void update_after_run();
 
 
-  void record_AMU_AFU(GPU::Person* person, Therapy* therapy, GPU::ClonalParasitePopulation* clinical_caused_parasite);
+  void record_AMU_AFU(GPU::Person* person, GPU::Therapy* therapy, GPU::ClonalParasitePopulation* clinical_caused_parasite);
 
   double get_blood_slide_prevalence(const int& location, const int& age_from, const int& age_to);
 

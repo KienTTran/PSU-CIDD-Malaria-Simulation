@@ -35,6 +35,9 @@ GPU::MoveParasiteToBloodEvent::schedule_event(GPU::Scheduler *scheduler, GPU::Pe
 
 void GPU::MoveParasiteToBloodEvent::execute() {
   auto *person = dynamic_cast<GPU::Person *>(dispatcher);
+    if(person->index() >= 1040 && person->index() <= 1045){
+      printf("GPU::MoveParasiteToBloodEvent::execute() %d\n",person->index());
+    }
   auto *parasite_type = person->liver_parasite_type();
   person->set_liver_parasite_type(nullptr);
 
@@ -54,7 +57,6 @@ void GPU::MoveParasiteToBloodEvent::execute() {
   if (person->has_effective_drug_in_blood()) {
     //person has drug in blood
     new_parasite->set_update_function(Model::MODEL->gpu_having_drug_update_function());
-    new_parasite->set_gpu_update_function(Model::MODEL->gpu_having_drug_update_function());
   } else {
 
     if (person->all_clonal_parasite_populations()->size() > 1) {
@@ -62,7 +64,6 @@ void GPU::MoveParasiteToBloodEvent::execute() {
         person->determine_clinical_or_not(new_parasite);
       } else {
         new_parasite->set_update_function(Model::MODEL->gpu_immunity_clearance_update_function());
-        new_parasite->set_gpu_update_function(Model::MODEL->gpu_immunity_clearance_update_function());
       }
     } else {
       person->determine_clinical_or_not(new_parasite);

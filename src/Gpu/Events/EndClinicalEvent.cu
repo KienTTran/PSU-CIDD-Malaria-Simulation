@@ -32,6 +32,9 @@ GPU::EndClinicalEvent::schedule_event(GPU::Scheduler *scheduler, GPU::Person *p,
 
 void GPU::EndClinicalEvent::execute() {
   auto person = dynamic_cast<GPU::Person *>(dispatcher);
+  if(person->index() >= 1040 && person->index() <= 1045){
+      printf("GPU::EndClinicalEvent::execute() %d\n",person->index());
+  }
 
   if (person->all_clonal_parasite_populations()->size()==0) {
     person->change_state_when_no_parasite_in_blood();

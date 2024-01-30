@@ -22,13 +22,12 @@
 #include "ClonalParasitePopulation.cuh"
 #include "SingleHostClonalParasitePopulations.cuh"
 #include "ImmuneSystem.cuh"
+#include <math.h>
 
 GPU::PopulationKernel::PopulationKernel() {
 }
 
 void GPU::PopulationKernel::init() {
-    h_ie_foi_N_days_all_locations = TVector<double>(Model::CONFIG->number_of_locations()
-            *Model::CONFIG->number_of_tracking_days());
 }
 /*
  * Calculate number of circulations from each location
@@ -100,7 +99,7 @@ void GPU::PopulationKernel::calculate_circulate_locations(int n_locations,Thrust
 
     //Get circulations by location
     int n_threads = Model::CONFIG->gpu_config().n_threads;
-    int block_size = (d_n_circulations_from_locations.size() + n_threads - 1)/n_threads;
+    int block_size = ceil((d_n_circulations_from_locations.size() + n_threads - 1)/n_threads);
     calculate_circulation_number<<<block_size,n_threads>>>(n_locations,
                                                            thrust::raw_pointer_cast(d_ce_popsize_residence_by_location.data()),
                                                            Model::CONFIG->circulation_info().circulation_percent,
@@ -157,7 +156,7 @@ void GPU::PopulationKernel::calculate_moving_level_density(ThrustTuple2VectorDev
     d_ce_popsize_by_moving_level = Model::CONFIG->h_popsize_by_moving_level;
     d_ce_moving_level_value = Model::CONFIG->circulation_info().v_moving_level_value;
     int n_threads = Model::CONFIG->gpu_config().n_threads;
-    int block_size = (d_moving_level_density.size() + n_threads - 1)/n_threads;
+    int block_size = ceil((d_moving_level_density.size() + n_threads - 1)/n_threads);
     calculate_moving_level_density_kernel<<<block_size,n_threads>>>(d_circulation_indices.size(),
                                                              Model::CONFIG->circulation_info().number_of_moving_levels,
                                                              thrust::raw_pointer_cast(d_circulation_indices.data()),
@@ -389,7 +388,7 @@ void GPU::PopulationKernel::perform_circulation_event() {
     d_ce_all_moving_levels.resize(d_n_circulations_all_loc_ml.size());
     if(d_n_circulations_all_loc_ml.size() == 0) return;
     int n_threads = Model::CONFIG->gpu_config().n_threads;
-    int block_size = (d_n_circulations_all_loc_ml.size() + n_threads - 1)/n_threads;
+    int block_size = ceil((d_n_circulations_all_loc_ml.size() + n_threads - 1)/n_threads);
     extract_locations_and_moving_levels<<<block_size,n_threads>>>(d_circulations_indices_no_zero.size(),
                                                       Model::CONFIG->circulation_info().number_of_moving_levels,
                                                       thrust::raw_pointer_cast(d_circulations_indices_no_zero.data()),
@@ -500,7 +499,7 @@ void GPU::PopulationKernel::perform_circulation_event() {
         if(n_persons == 1){
             int p_index = h_circulate_person_indices_today[i].get<4>();
             GPU::Person* p = pi->vPerson()[from_location][moving_level][p_index];
-            assert(p->host_state()!=Person::DEAD);
+            assert(p->host_state()!=GPU::Person::DEAD);
             p->today_target_locations()->push_back(target_location);
             p->randomly_choose_target_location();
 //            printf("i %d GPU from %d to %d moving level %d n_persons %d p_index %d\n",
@@ -512,7 +511,7 @@ void GPU::PopulationKernel::perform_circulation_event() {
             for(int j = 0; j < n_persons; j++) {
                 int p_index = Model::RANDOM->random_uniform(size);
                 GPU::Person* p = pi->vPerson()[from_location][moving_level][p_index];
-                assert(p->host_state()!=Person::DEAD);
+                assert(p->host_state()!=GPU::Person::DEAD);
                 p->today_target_locations()->push_back(target_location);
                 p->randomly_choose_target_location();
 //                printf("i %d j %d CPU from %d to %d moving level %d n_persons %d p_index %d\n",
@@ -566,57 +565,6 @@ void GPU::PopulationKernel::update_current_foi(){
 }
 
 /*
- * In order to use virtual in kernel, the base class needs to be instanced on GPU
- * */
-__global__ void set_gpu_update_function_kernel(int size,
-                                               GPU::ParasiteDensityUpdateFunction** d_function,
-//                                               GPU::ImmuneSystem** d_immune_system,
-                                               int* type){
-    int thread_index = threadIdx.x + blockIdx.x * blockDim.x;
-    int stride = blockDim.x * gridDim.x;
-    for(int index = thread_index; index < size; index += stride) {
-        switch(type[index]) {
-            case 1:
-                d_function[index] = new GPU::ClinicalUpdateFunction();
-                break;
-            case 2:
-                d_function[index] = new GPU::ImmunityClearanceUpdateFunction();
-                break;
-            default:
-                printf("[GPU::ClonalParasitePopulation] ERROR: GPU::ParasiteDensityUpdateFunction not set\n");
-                break;
-        }
-//        d_immune_system[index] = new GPU::ImmuneSystem();
-    }
-}
-
-/*
- * Set update function inside kernel
- * To do this the base class of update function needs to be on GPU first
- * Remember to run
- * h_cpp->set_h_parasite_density_level(Model::CONFIG->parasite_density_level());
- * h_cpp->allocate_on_gpu();
- * before calling this function
- * */
-//__global__ void update_all_individuals_kernel(int size,
-//                                              int current_time,
-//                                              ParasiteDensityLevel h_parasite_density_level,
-//                                              ImmuneSystemInformation h_immune_system_information,
-////                                              GPU::ParasiteDensityUpdateFunction** d_update_function,
-////                                              GPU::ImmuneSystem** d_immune_system,
-//                                              GPU::ClonalParasitePopulation** d_cpp){
-//    int thread_index = threadIdx.x + blockIdx.x * blockDim.x;
-//    int stride = blockDim.x * gridDim.x;
-//    for(int index = thread_index; index < size; index += stride) {
-////        printf("index %d cpp %d\n",index,d_update_function[index]->type());
-//        d_cpp[index]->update_gpu(h_parasite_density_level,h_immune_system_information,
-////                          d_update_function[index],d_immune_system[index],
-//                          current_time);
-//    }
-//}
-
-
-/*
  * Set update function inside kernel
  * To do this the base class of update function needs to be on GPU first
  * Remember to run
@@ -625,189 +573,362 @@ __global__ void set_gpu_update_function_kernel(int size,
  * before calling this function
  * */
 __global__ void update_all_individuals_kernel2(int size,
-                                              int* d_person_id,
                                               int current_time,
-                                              int* lastest_updated_time,
+                                              int* latest_updated_time,
                                               ParasiteDensityLevel h_parasite_density_level,
-                                              ImmuneSystemInformation *h_immune_system_information,
-                                              GPU::ClonalParasitePopulation** d_cpp,
-                                              GPU::Genotype** d_genotype,
-                                              GPU::ParasiteDensityUpdateFunction** d_update_function,
-                                              GPU::ImmuneSystem** d_immune_system){
+                                              ImmuneSystemInformation *d_immune_system_information,
+                                              int* d_update_function_type,
+                                              double* d_last_update_log10_parasite_density,
+                                              double* d_daily_fitness_multiple_infection,
+                                              double* d_latest_immune_value,
+                                              double* d_clonal_log10_parasite_density){
     int thread_index = threadIdx.x + blockIdx.x * blockDim.x;
     int stride = blockDim.x * gridDim.x;
     for(int index = thread_index; index < size; index += stride) {
-        if (lastest_updated_time[index] == current_time) return;
-        d_person_id[index],d_cpp[index]->get_current_parasite_density_gpu(d_update_function[index],
-                                                                          d_genotype[index],
-                                                                          d_immune_system[index],
-                                                                          h_parasite_density_level,
-                                                                          h_immune_system_information,
-                                                                          current_time,
-                                                                          lastest_updated_time[index]);
-//        printf("kernel d_cpp %d %f\n",d_person_id[index],d_cpp[index]->get_current_parasite_density_gpu(d_update_function[index],
-//                                                                                                        d_genotype[index],
-//                                                                                                        d_immune_system[index],
-//                                                                                                        h_parasite_density_level,
-//                                                                                                        h_immune_system_information,
-//                                                                                                        current_time,
-//                                                                                                        lastest_updated_time[index]));
-        lastest_updated_time[index] = current_time;
+        if (latest_updated_time[index] == current_time) return;
+        int duration = current_time - latest_updated_time[index];
+        if(d_update_function_type[index] == 1){
+            d_clonal_log10_parasite_density[index] = h_parasite_density_level.log_parasite_density_asymptomatic;
+        }
+        if(d_update_function_type[index] == 2){
+            double temp = d_immune_system_information->c_max*(1 - d_latest_immune_value[index])
+                    + d_immune_system_information->c_min*d_latest_immune_value[index];
+            d_clonal_log10_parasite_density[index] = d_last_update_log10_parasite_density[index]
+                    + duration*(log10(temp) + log10(d_daily_fitness_multiple_infection[index]));
+        }
     }
 }
 
-void GPU::PopulationKernel::update_all_individuals(){
-    auto *pi = Model::GPU_POPULATION->get_person_index<GPU::PersonIndexGPU>();
-    TVector<GPU::ClonalParasitePopulation*> h_cpp;
-    TVector<GPU::Genotype*> h_genotype;
-    TVector<GPU::ImmuneSystem*> h_immune_system;
-    TVector<int> h_cpp_update_function_type;
-    TVector<int> h_person_id;
-    TVector<int> h_latest_update_time;
-    for(int i = 0; i < pi->h_persons().size(); i++){
-        auto sh = pi->h_persons()[i]->all_clonal_parasite_populations();
-        if(sh->size() == 0) continue;
-        for(int j = 0; j < sh->size(); j++){
-            if(sh->parasites()->at(j)->update_function() == nullptr) continue;
-            if(sh->parasites()->at(j)->update_function()->type() == 0) continue;
-            h_genotype.push_back(sh->parasites()->at(j)->genotype());
-            h_immune_system.push_back(pi->h_persons()[i]->immune_system());
-            h_cpp.push_back(sh->parasites()->at(j));
-            h_cpp_update_function_type.push_back(sh->parasites()->at(j)->update_function()->type());
-            h_person_id.push_back(pi->h_persons()[i]->id());
-            h_latest_update_time.push_back(pi->h_persons()[i]->latest_update_time());
+
+__global__ void all_individuals_update_parasite_kernel(int size,
+                                               int current_time,
+                                               ParasiteDensityLevel h_parasite_density_level,
+                                               ImmuneSystemInformation *d_immune_system_information,
+                                               GPU::PersonUpdateInfo* d_person_parasite_info){
+    int thread_index = threadIdx.x + blockIdx.x * blockDim.x;
+    int stride = blockDim.x * gridDim.x;
+    for(int index = thread_index; index < size; index += stride) {
+        /* Update parasites
+         * This is equal to all_clonal_parasite_populations_->update();
+         * */
+        if (d_person_parasite_info[index].person_latest_update_time != current_time){
+            for(int p_index = 0; p_index < d_person_parasite_info[index].parasite_size; p_index++){
+//                if(d_person_parasite_info[index].person_index >= 1040 && d_person_parasite_info[index].person_index <= 1045){
+//                    printf("%d GPU all_individuals_update_parasite_kernel before update parasite %d %d %d %d %s %f\n",
+//                           index,
+//                           p_index,
+//                           d_person_parasite_info[index].person_latest_update_time,
+//                           current_time,
+//                           d_person_parasite_info[index].parasite_update_function_type[p_index],
+//                           d_person_parasite_info[index].parasite_genotype[p_index],
+//                           d_person_parasite_info[index].parasite_last_update_log10_parasite_density[p_index]);
+//                }
+                int duration = current_time - d_person_parasite_info[index].person_latest_update_time;
+                if(d_person_parasite_info[index].parasite_update_function_type[p_index] == 1){
+                    d_person_parasite_info[index].parasite_last_update_log10_parasite_density[p_index] = h_parasite_density_level.log_parasite_density_asymptomatic;
+                }
+                if(d_person_parasite_info[index].parasite_update_function_type[p_index] == 2){
+                    double temp = d_immune_system_information->c_max*(1 - d_person_parasite_info[index].person_latest_immune_value)
+                                  + d_immune_system_information->c_min*d_person_parasite_info[index].person_latest_immune_value;
+                    d_person_parasite_info[index].parasite_last_update_log10_parasite_density[p_index] =
+                            d_person_parasite_info[index].parasite_last_update_log10_parasite_density[p_index]
+                            + duration*(log10(temp) + log10(d_person_parasite_info[index].parasite_genotype_fitness_multiple_infection[p_index]));
+                }
+                d_person_parasite_info[index].person_latest_update_time = current_time;
+//                if(d_person_parasite_info[index].person_index >= 1040 && d_person_parasite_info[index].person_index <= 1045){
+//                    printf("%d GPU all_individuals_update_parasite_kernel after update parasite %d %d %d %d %s %f\n",
+//                           index,
+//                           p_index,
+//                           d_person_parasite_info[index].person_latest_update_time,
+//                           current_time,
+//                           d_person_parasite_info[index].parasite_update_function_type[p_index],
+//                           d_person_parasite_info[index].parasite_genotype[p_index],
+//                           d_person_parasite_info[index].parasite_last_update_log10_parasite_density[p_index]);
+//                }
+            }
         }
     }
-    if(h_cpp.size() == 0) return;
+}
 
-    printf("h_cpp size %d\n",h_cpp.size());
-    const int h_cpp_size = h_cpp.size();
+__global__ void all_individuals_update_drug_kernel(int size,
+                                                       int current_time,
+                                                       ParasiteDensityLevel h_parasite_density_level,
+                                                       ImmuneSystemInformation *d_immune_system_information,
+                                                       GPU::PersonUpdateInfo* d_person_parasite_info){
+    int thread_index = threadIdx.x + blockIdx.x * blockDim.x;
+    int stride = blockDim.x * gridDim.x;
+    for(int index = thread_index; index < size; index += stride) {
+//        if(d_person_parasite_info[index].person_index == 1000){
+//            printf("%d GPU update_all_individuals_kernel current_time %d\n",index,current_time);
+//        }
+        /* Update drug in blood
+         * This is equal to drugs_in_blood_->update();
+         * */
+        for(int d_index = 0; d_index < d_person_parasite_info[index].drug_in_blood_size; d_index++){
+            const int d_type_id = d_person_parasite_info[index].drug_in_blood_type_id[d_index];
+            if(d_type_id != -1) {
+//                if(d_person_parasite_info[index].person_index >= 1040 && d_person_parasite_info[index].person_index <= 1045){
+//                    printf("%d GPU update_all_individuals_kernel before update drug %d %d %d %f %f\n",
+//                           index,
+//                           d_person_parasite_info[index].drug_start_time[d_type_id],
+//                           d_person_parasite_info[index].drug_last_update_time[d_type_id],
+//                           d_type_id,
+//                           d_person_parasite_info[index].drug_starting_value[d_type_id],
+//                           d_person_parasite_info[index].drug_last_update_value[d_type_id]);
+//                }
+                d_person_parasite_info[index].drug_last_update_time[d_type_id] = current_time;
+                const auto days = current_time - d_person_parasite_info[index].drug_start_time[d_type_id];
+                if (days == 0) {
+                    d_person_parasite_info[index].drug_last_update_value[d_type_id] = 0;
+//                    if(d_person_parasite_info[index].person_index >= 1040 && d_person_parasite_info[index].person_index <= 1045){
+//                        printf("%d GPU update_all_individuals_kernel after update drug %d %d %d %f %f [1]\n",
+//                               index,
+//                               d_person_parasite_info[index].drug_start_time[d_type_id],
+//                               d_person_parasite_info[index].drug_last_update_time[d_type_id],
+//                               d_type_id,
+//                               d_person_parasite_info[index].drug_starting_value[d_type_id],
+//                               d_person_parasite_info[index].drug_last_update_value[d_type_id]);
+//                    }
+                    continue;
+                }
+                if (days <= d_person_parasite_info[index].drug_dosing_days[d_type_id]) {
+                    if (d_type_id == 0) {
+                        // drug is artemisinin
+                        d_person_parasite_info[index].drug_last_update_value[d_type_id] =
+                                d_person_parasite_info[index].drug_starting_value[d_type_id] + d_person_parasite_info[index].drug_rand_uniform_1[d_type_id];
+//                        if(d_person_parasite_info[index].person_index >= 1040 && d_person_parasite_info[index].person_index <= 1045){
+//                            printf("%d GPU update_all_individuals_kernel after update drug %d %d %d %f %f [2]\n",
+//                                   index,
+//                                   d_person_parasite_info[index].drug_start_time[d_type_id],
+//                                   d_person_parasite_info[index].drug_last_update_time[d_type_id],
+//                                   d_type_id,
+//                                   d_person_parasite_info[index].drug_starting_value[d_type_id],
+//                                   d_person_parasite_info[index].drug_last_update_value[d_type_id]);
+//                        }
+                        continue;
+                    }
+                    d_person_parasite_info[index].drug_starting_value[d_type_id] += days >= 1 ? d_person_parasite_info[index].drug_rand_uniform_2[d_type_id] : 0;
+                    d_person_parasite_info[index].drug_last_update_value[d_type_id] = d_person_parasite_info[index].drug_starting_value[d_type_id];
+//                        if(d_person_parasite_info[index].person_index >= 1040 && d_person_parasite_info[index].person_index <= 1045){
+//                            printf("%d GPU update_all_individuals_kernel after update drug %d %d %d %f %f [3]\n",
+//                                   index,
+//                                   d_person_parasite_info[index].drug_start_time[d_type_id],
+//                                   d_person_parasite_info[index].drug_last_update_time[d_type_id],
+//                                   d_type_id,
+//                                   d_person_parasite_info[index].drug_starting_value[d_type_id],
+//                                   d_person_parasite_info[index].drug_last_update_value[d_type_id]);
+//                        }
+                    continue;
+                } else {
+                    const auto temp = fabs(d_person_parasite_info[index].drug_half_life[d_type_id] - 0.0) < d_person_parasite_info[index].drug_epsilon
+                                      ? -100
+                                      : -(days - d_person_parasite_info[index].drug_dosing_days[d_type_id]) * logf(2)
+                                        / d_person_parasite_info[index].drug_half_life[d_type_id];  //-ai*t = - t* ln2 / tstar
+                    if (exp(temp) <= (10.0 / 100.0)) {
+                        d_person_parasite_info[index].drug_last_update_value[d_type_id] = 0;
+//                    if(d_person_parasite_info[index].person_index >= 1040 && d_person_parasite_info[index].person_index <= 1045){
+//                        printf("%d GPU update_all_individuals_kernel after update drug %d %d %d %f %f [4]\n",
+//                               index,
+//                               d_person_parasite_info[index].drug_start_time[d_type_id],
+//                               d_person_parasite_info[index].drug_last_update_time[d_type_id],
+//                               d_type_id,
+//                               d_person_parasite_info[index].drug_starting_value[d_type_id],
+//                               d_person_parasite_info[index].drug_last_update_value[d_type_id]);
+                        continue;
+                    }
+                    d_person_parasite_info[index].drug_last_update_value[d_type_id] = d_person_parasite_info[index].drug_starting_value[d_type_id] * exp(temp);
+//                    if(d_person_parasite_info[index].person_index >= 1040 && d_person_parasite_info[index].person_index <= 1045){
+//                        printf("%d GPU update_all_individuals_kernel after update drug %d %d %d %f %f [5]\n",
+//                               index,
+//                               d_person_parasite_info[index].drug_start_time[d_type_id],
+//                               d_person_parasite_info[index].drug_last_update_time[d_type_id],
+//                               d_type_id,
+//                               d_person_parasite_info[index].drug_starting_value[d_type_id],
+//                               d_person_parasite_info[index].drug_last_update_value[d_type_id]);
+//                    }
+                    continue;
+                }
+            }
+        }
+    }
+}
 
-//    printf("Host:\n");
-//    for (int i = 0; i < h_cpp_size; i++) {
-//        std::cout << h_genotype[i]->test2() << std::endl;
-//        std::cout << h_immune_system[i]->test_ << std::endl;
-//        printf("%d type %d\n",i,h_cpp_update_function_type[i]);
+__global__ void all_individuals_update_parasite_by_drug_kernel(int size,
+                                                   int current_time,
+                                                   ParasiteDensityLevel h_parasite_density_level,
+                                                   ImmuneSystemInformation *d_immune_system_information,
+                                                   GPU::PersonUpdateInfo* d_person_parasite_info){
+    int thread_index = threadIdx.x + blockIdx.x * blockDim.x;
+    int stride = blockDim.x * gridDim.x;
+    for(int index = thread_index; index < size; index += stride) {
+//        if(d_person_parasite_info[index].person_index == 1000){
+//            printf("%d GPU update_all_individuals_kernel current_time %d\n",index,current_time);
+//        }
+        /* Update drug in blood
+         * This is equal to all_clonal_parasite_populations_->update_by_drugs(drugs_in_blood_);
+         * */
+        for(int d_index = 0; d_index < d_person_parasite_info[index].drug_in_blood_size; d_index++){
+
+        }
+    }
+}
+
+struct person_has_parasites{
+    __host__ __device__
+    bool operator()(GPU::PersonUpdateInfo x){
+        return x.parasite_size > 0;
+    }
+};
+
+void GPU::PopulationKernel::update_all_individuals(){
+    auto *pi = Model::GPU_POPULATION->get_person_index<GPU::PersonIndexGPU>();
+
+    ThrustTVectorDevice<GPU::PersonUpdateInfo> d_person_update_info = pi->h_person_update_info();
+
+//    for(int index = 1040; index <= 1045; index++){
+//        if(pi->h_person_update_info()[index].parasite_size > 0){
+//            for(int p_index = 0; p_index < pi->h_person_update_info()[index].parasite_size; p_index++){
+//                printf("%d %d HOST update_all_individuals before before update parasite %d %d %d %d %s %f\n",
+//                       Model::GPU_SCHEDULER->current_time(),
+//                       index,
+//                       p_index,
+//                       pi->h_person_update_info()[index].person_latest_update_time,
+//                       Model::GPU_SCHEDULER->current_time(),
+//                       pi->h_person_update_info()[index].parasite_update_function_type[p_index],
+//                       pi->h_person_update_info()[index].parasite_genotype[p_index],
+//                       pi->h_person_update_info()[index].parasite_last_update_log10_parasite_density[p_index]);
+//            }
+//        }
 //    }
+//
+//    ThrustTVectorDevice<GPU::Person::PersonUpdateInfo> d_person_update_info(pi->h_person_update_info().size());
+//    thrust::copy(pi->h_person_update_info().begin(),
+//                 pi->h_person_update_info().end(),
+//                 d_person_update_info.begin());
 
-    /*
-     * Since ParasiteDensityUpdateFunction and ImmuneSystem are virtual classes,
-     * they need to be instanced on GPU first
-     * */
-    int *d_cpp_update_function_type;
-    cudaMalloc((void**)&d_cpp_update_function_type, sizeof(int) * h_cpp_size);
-    cudaMemcpy(d_cpp_update_function_type, h_cpp_update_function_type.data(), sizeof(int) * h_cpp_size, cudaMemcpyHostToDevice);
-    check_cuda_error(cudaGetLastError());
-
-    GPU::ParasiteDensityUpdateFunction **d_update_function;
-    cudaMalloc((void**)&d_update_function, h_cpp_size*sizeof(GPU::ParasiteDensityUpdateFunction*));
-    check_cuda_error(cudaGetLastError());
-
-//    GPU::ImmuneSystem **d_immune_system;
-//    cudaMalloc((void**)&d_immune_system, h_cpp_size*sizeof(GPU::ImmuneSystem*));
+//    /*
+//     * Filter out person with no clonal parasite
+//     * */
+//    size_t n_has_parasites = thrust::count_if(thrust::device,
+//                                              d_person_update_info.begin(),
+//                                              d_person_update_info.end(),
+//                                              person_has_parasites());
+//    printf("GPU::PopulationKernel::update_all_individuals n_has_parasites %d\n",n_has_parasites);
+//    ThrustTVectorDevice<GPU::Person::PersonUpdateInfo> d_person_update_info_has_parasites(n_has_parasites);
+//    thrust::copy_if(thrust::device,
+//                    d_person_update_info.begin(),
+//                    d_person_update_info.end(),
+//                    d_person_update_infohas_parasites.begin(),
+//                    person_has_parasites());
 //    check_cuda_error(cudaGetLastError());
 
-    int n_threads = 256;
-    int block_size = (h_cpp_size + n_threads - 1)/n_threads;
-    set_gpu_update_function_kernel<<<block_size,n_threads>>>(h_cpp_size,
-                                            d_update_function,
-//                                            d_immune_system,
-                                            d_cpp_update_function_type);
+    for(int index = 1040; index <= 1045; index++){
+        if(pi->h_person_update_info()[index].parasite_size > 0){
+            for(int p_index = 0; p_index < pi->h_person_update_info()[index].parasite_size; p_index++){
+                printf("%d %d HOST update_all_individuals before update parasite %d %d %d %d %s %f\n",
+                       Model::GPU_SCHEDULER->current_time(),
+                       index,
+                       p_index,
+                       pi->h_person_update_info()[index].person_latest_update_time,
+                       Model::GPU_SCHEDULER->current_time(),
+                       pi->h_person_update_info()[index].parasite_update_function_type[p_index],
+                       pi->h_person_update_info()[index].parasite_genotype[p_index],
+                       pi->h_person_update_info()[index].parasite_last_update_log10_parasite_density[p_index]);
+            }
+        }
+    }
+
+    /*
+     * Update clonal parasite density
+     * Here we don't copy Model::CONFIG->parasite_density_level()
+     * to device because there is no vector or pointers in this struct
+     * If it has any vector or pointers, we need to copy it to device first.
+     * In the same manner we will need to copy ImmuneSystemInformation to device.
+     * */
+    ImmuneSystemInformation *d_immune_system_information;
+    cudaMalloc((void**)&d_immune_system_information, sizeof(ImmuneSystemInformation));
+    cudaMemcpy(d_immune_system_information, &Model::CONFIG->immune_system_information(), sizeof(ImmuneSystemInformation), cudaMemcpyHostToDevice);
+    check_cuda_error(cudaGetLastError());
+    int n_threads = Model::CONFIG->gpu_config().n_threads;
+    int block_size = (pi->h_person_update_info().size() + n_threads - 1)/n_threads;
+    all_individuals_update_parasite_kernel<<<block_size,n_threads>>>(pi->h_person_update_info().size(),
+                                                            Model::GPU_SCHEDULER->current_time(),
+                                                            Model::CONFIG->parasite_density_level(),
+                                                            d_immune_system_information,
+                                                            thrust::raw_pointer_cast(d_person_update_info.data())
+                                                            );
     cudaDeviceSynchronize();
     check_cuda_error(cudaGetLastError());
 
+    for(int index = 1040; index <= 1045; index++){
+        if(pi->h_person_update_info()[index].drug_in_blood_size > 0){
+            for(int d_index = 0; d_index < pi->h_person_update_info()[index].drug_in_blood_size; d_index++){
+                if(pi->h_person_update_info()[index].drug_in_blood_type_id[d_index] != -1){
+                    int d_type_id = pi->h_person_update_info()[index].drug_in_blood_type_id[d_index];
+                    printf("%d %d HOST update_all_individuals before update drug %d %d %d %f %f\n",
+                           Model::GPU_SCHEDULER->current_time(),
+                           index,
+                           pi->h_person_update_info()[index].drug_start_time[d_type_id],
+                           pi->h_person_update_info()[index].drug_last_update_time[d_type_id],
+                           d_type_id,
+                           pi->h_person_update_info()[index].drug_starting_value[d_type_id],
+                           pi->h_person_update_info()[index].drug_last_update_value[d_type_id]);
+                }
+            }
+        }
+    }
 
-//    /*
-//     * ClonalParasitePopulation and Genotype are not virtual classes,
-//     * they can be copied from CPU
-//     * refer to https://stackoverflow.com/questions/38978297/pointer-to-array-of-pointers-to-objects-in-cuda
-//     * */
-//    GPU::ClonalParasitePopulation** h_d_cpp = (GPU::ClonalParasitePopulation**)malloc(sizeof(GPU::ClonalParasitePopulation*) * h_cpp_size);
-//    for (int i = 0; i < h_cpp_size; i++) {
-//        // Allocate space for an Obj and assign
-//        cudaMalloc((void**)&h_d_cpp[i], sizeof(GPU::ClonalParasitePopulation));
-//        // Copy the object to the device (only has single scalar field to keep it simple)
-//        cudaMemcpy(h_d_cpp[i], &(h_cpp[i]), sizeof(GPU::ClonalParasitePopulation), cudaMemcpyHostToDevice);
-//        check_cuda_error(cudaGetLastError());
-//    }
-//
-//    // Create a pointer which will point to device memory
-//    GPU::ClonalParasitePopulation** d_d_cpp = NULL;
-//    // Allocate space for 3 pointers on device at above location
-//    cudaMalloc((void**)&d_d_cpp, sizeof(GPU::ClonalParasitePopulation*) * h_cpp_size);
-//    // Copy the pointers from the host memory to the device array
-//    cudaMemcpy(d_d_cpp, h_d_cpp, sizeof(GPU::ClonalParasitePopulation*) * h_cpp_size, cudaMemcpyHostToDevice);
-//    check_cuda_error(cudaGetLastError());
-//
-//    GPU::Genotype** h_d_genotype = (GPU::Genotype**)malloc(sizeof(GPU::Genotype*) * h_cpp_size);
-//    for (int i = 0; i < h_cpp_size; i++) {
-//        // Allocate space for an Obj and assign
-//        cudaMalloc((void**)&h_d_genotype[i], sizeof(GPU::Genotype));
-//        // Copy the object to the device (only has single scalar field to keep it simple)
-//        cudaMemcpy(h_d_genotype[i], &(h_genotype[i]), sizeof(GPU::Genotype), cudaMemcpyHostToDevice);
-//        check_cuda_error(cudaGetLastError());
-//    }
-//
-//    // Create a pointer which will point to device memory
-//    GPU::Genotype** d_d_genotype = NULL;
-//    // Allocate space for 3 pointers on device at above location
-//    cudaMalloc((void**)&d_d_genotype, sizeof(GPU::Genotype*) * h_cpp_size);
-//    // Copy the pointers from the host memory to the device array
-//    cudaMemcpy(d_d_genotype, h_d_genotype, sizeof(GPU::Genotype*) * h_cpp_size, cudaMemcpyHostToDevice);
-//    check_cuda_error(cudaGetLastError());
-//
-//    ImmuneSystemInformation *d_immune_system_information;
-//    cudaMalloc((void**)&d_immune_system_information, sizeof(ImmuneSystemInformation));
-//    cudaMemcpy(d_immune_system_information, &Model::CONFIG->immune_system_information(), sizeof(ImmuneSystemInformation), cudaMemcpyHostToDevice);
-//    check_cuda_error(cudaGetLastError());
-//
-//    int *d_person_id;
-//    cudaMalloc((void**)&d_person_id, sizeof(int) * h_cpp_size);
-//    cudaMemcpy(d_person_id, h_person_id.data(), sizeof(int) * h_cpp_size, cudaMemcpyHostToDevice);
-//    check_cuda_error(cudaGetLastError());
-//
-//    int *d_latest_update_time;
-//    cudaMalloc((void**)&d_latest_update_time, sizeof(int) * h_cpp_size);
-//    cudaMemcpy(d_latest_update_time, h_latest_update_time.data(), sizeof(int) * h_cpp_size, cudaMemcpyHostToDevice);
-//    check_cuda_error(cudaGetLastError());
-//
-////    update_all_individuals_kernel2<<<block_size,n_threads>>>(h_cpp_size,
-////                                                            d_person_id,
-////                                                            Model::GPU_SCHEDULER->current_time(),
-////                                                            d_latest_update_time,
-////                                                            Model::CONFIG->parasite_density_level(),
-////                                                            d_immune_system_information,
-////                                                            d_d_cpp,
-////                                                            d_d_genotype,
-////                                                            d_update_function,
-////                                                            d_immune_system);
-////    cudaDeviceSynchronize();
-////    check_cuda_error(cudaGetLastError());
-//
-////    for (int i = 0; i < h_cpp_size; i++) {
-////        cudaMemcpy(h_cpp[i], h_d_cpp[i], sizeof(GPU::ClonalParasitePopulation), cudaMemcpyDeviceToHost);
-//////        cudaMemcpy(h_genotype[i], h_d_genotype[i], sizeof(GPU::Genotype), cudaMemcpyDeviceToHost);
-////        cudaMemcpy(h_immune_system[i], h_d_immune_system[i], sizeof(GPU::ImmuneSystem), cudaMemcpyDeviceToHost);
-////        check_cuda_error(cudaGetLastError());
-////    }
-//
-//    // Write out
-////    printf("D2H Host:\n");
-////    for (int i = 0; i < h_cpp_size; i++) {
-////        std::cout << h_cpp[i]->test2() << std::endl;
-////        std::cout << h_genotype[i]->test_ << std::endl;
-////    }
-//
-//    for(int i = 0; i < h_cpp_size; i++){
-//        cudaFree(h_d_cpp[i]);
-//        cudaFree(h_d_genotype[i]);
-//    }
-//    cudaFree(d_immune_system);
-//    cudaFree(d_update_function);
-//    cudaFree(d_immune_system_information);
-//    cudaFree(d_person_id);
-//    cudaFree(d_latest_update_time);
-//    h_cpp.clear();
-//    h_genotype.clear();
-//    h_immune_system.clear();
+    block_size = (d_person_update_info.size() + n_threads - 1)/n_threads;
+    all_individuals_update_drug_kernel<<<block_size,n_threads>>>(d_person_update_info.size(),
+                                                                 Model::GPU_SCHEDULER->current_time(),
+                                                                 Model::CONFIG->parasite_density_level(),
+                                                                 d_immune_system_information,
+                                                                 thrust::raw_pointer_cast(d_person_update_info.data()));
+    cudaDeviceSynchronize();
+    check_cuda_error(cudaGetLastError());
+
+    /*
+     * Copy back to host
+     * */
+
+    thrust::copy(d_person_update_info.begin(),
+                 d_person_update_info.end(),
+                 pi->h_person_update_info().begin());
+
+    for(int index = 1040; index <= 1045; index++){
+        if(pi->h_person_update_info()[index].drug_in_blood_size > 0){
+            for(int d_index = 0; d_index < pi->h_person_update_info()[index].drug_in_blood_size; d_index++){
+                if(pi->h_person_update_info()[index].drug_in_blood_type_id[d_index] != -1){
+                    int d_type_id = pi->h_person_update_info()[index].drug_in_blood_type_id[d_index];
+                    printf("%d %d HOST update_all_individuals after update drug %d %d %d %f %f\n",
+                           Model::GPU_SCHEDULER->current_time(),
+                           index,
+                           pi->h_person_update_info()[index].drug_start_time[d_type_id],
+                           pi->h_person_update_info()[index].drug_last_update_time[d_type_id],
+                           d_type_id,
+                           pi->h_person_update_info()[index].drug_starting_value[d_type_id],
+                           pi->h_person_update_info()[index].drug_last_update_value[d_type_id]);
+                }
+            }
+        }
+    }
+
+    for(int index = 1040; index <= 1045; index++){
+        if(pi->h_person_update_info()[index].parasite_size > 0){
+            for(int p_index = 0; p_index < pi->h_person_update_info()[index].parasite_size; p_index++){
+                printf("%d %d HOST update_all_individuals after update parasite %d %d %d %d %s %f\n",
+                       Model::GPU_SCHEDULER->current_time(),
+                       index,
+                       p_index,
+                       pi->h_person_update_info()[index].person_latest_update_time,
+                       Model::GPU_SCHEDULER->current_time(),
+                       pi->h_person_update_info()[index].parasite_update_function_type[p_index],
+                       pi->h_person_update_info()[index].parasite_genotype[p_index],
+                       pi->h_person_update_info()[index].parasite_last_update_log10_parasite_density[p_index]);
+            }
+        }
+    }
+
+    if(Model::GPU_SCHEDULER->current_time() > 8)
+        exit(0);
 }

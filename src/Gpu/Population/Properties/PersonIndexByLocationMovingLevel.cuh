@@ -17,7 +17,7 @@ namespace GPU {
     class PersonIndexByLocationMovingLevel;
 }
 
-class GPU::PersonIndexByLocationMovingLevel : public PersonIndex {
+class GPU::PersonIndexByLocationMovingLevel : public GPU::PersonIndex {
  PROPERTY_REF(GPUPersonPtrVector3, vPerson);
  public:
   PersonIndexByLocationMovingLevel(const int &no_location = 1, const int &no_level = 1);

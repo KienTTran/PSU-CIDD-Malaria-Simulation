@@ -98,7 +98,6 @@ void GPU::ImportationPeriodicallyEvent::execute() {
     blood_parasite->set_gametocyte_level(Model::CONFIG->gametocyte_level_full());
     blood_parasite->set_last_update_log10_parasite_density(size);
     blood_parasite->set_update_function(Model::MODEL->gpu_immunity_clearance_update_function());
-    blood_parasite->set_gpu_update_function(Model::MODEL->gpu_immunity_clearance_update_function());
 
     //        Model::GPU_POPULATION->initial_infection(pi->vPerson()[0][0][ind_ac][index],
     //        Model::CONFIG->parasite_db()->get(0));

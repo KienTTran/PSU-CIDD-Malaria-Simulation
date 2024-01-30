@@ -203,6 +203,30 @@ class drug_db : public IConfigItem {
   void set_value(const YAML::Node &node) override;
 };
 
+class gpu_drug_db : public IConfigItem {
+DISALLOW_COPY_AND_ASSIGN(gpu_drug_db)
+
+DISALLOW_MOVE(gpu_drug_db)
+
+public:
+    GPU::DrugDatabase *value_;
+public:
+    //constructor
+    explicit gpu_drug_db(const std::string &name, GPU::DrugDatabase *default_value, Config *config = nullptr) : IConfigItem(
+            config, name),
+                                                                                                       value_{
+                                                                                                               default_value} {}
+
+    // destructor
+    ~gpu_drug_db() override;
+
+    virtual GPU::DrugDatabase *operator()() {
+        return value_;
+    }
+
+    void set_value(const YAML::Node &node) override;
+};
+
 class EC50_power_n_table : public IConfigItem {
  DISALLOW_COPY_AND_ASSIGN(EC50_power_n_table)
 
@@ -299,6 +323,32 @@ class therapy_db : public IConfigItem {
   }
 
   void set_value(const YAML::Node &node) override;
+};
+
+
+class gpu_therapy_db : public IConfigItem {
+DISALLOW_COPY_AND_ASSIGN(gpu_therapy_db)
+
+DISALLOW_MOVE(gpu_therapy_db)
+
+public:
+    GPUTherapyPtrVector value_;
+public:
+    //constructor
+    explicit gpu_therapy_db(const std::string &name, GPUTherapyPtrVector default_value, Config *config = nullptr)
+            : IConfigItem(config, name),
+              value_{
+                      std::move(default_value)
+              } {}
+
+    // destructor
+    virtual ~gpu_therapy_db();
+
+    virtual GPUTherapyPtrVector &operator()() {
+        return value_;
+    }
+
+    void set_value(const YAML::Node &node) override;
 };
 
 class strategy_db : public IConfigItem {

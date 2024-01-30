@@ -1,7 +1,7 @@
 #include "NovelDrugIntroductionStrategy.cuh"
 #include "Model.h"
 #include "Core/Random.h"
-#include "Therapies/Therapy.h"
+#include "Gpu/Therapies/Therapy.cuh"
 #include "Gpu/MDC/ModelDataCollector.cuh"
 #include "Core/Config/Config.h"
 #include "Helpers/TimeHelpers.h"

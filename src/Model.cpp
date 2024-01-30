@@ -114,6 +114,7 @@ Model::Model(const int& object_pool_size) {
   immunity_clearance_update_function_ = new ImmunityClearanceUpdateFunction(this);
   having_drug_update_function_ = new ImmunityClearanceUpdateFunction(this);
   clinical_update_function_ = new ImmunityClearanceUpdateFunction(this);
+//
 
   gpu_progress_to_clinical_update_function_ = new GPU::ClinicalUpdateFunction(this);
   gpu_immunity_clearance_update_function_ = new GPU::ImmunityClearanceUpdateFunction(this);
@@ -143,12 +144,12 @@ void Model::set_treatment_strategy(const int& strategy_id) {
   treatment_strategy_ = strategy_id == -1 ? nullptr : config_->strategy_db()[strategy_id];
   TREATMENT_STRATEGY = treatment_strategy_;
 
-  treatment_strategy_->adjust_started_time_point(Model::SCHEDULER->current_time());
+  treatment_strategy_->adjust_started_time_point(Model::GPU_SCHEDULER->current_time());
 
   gpu_treatment_strategy_ = strategy_id == -1 ? nullptr : config_->gpu_strategy_db()[strategy_id];
   GPU_TREATMENT_STRATEGY = gpu_treatment_strategy_;
 
-  gpu_treatment_strategy_->adjust_started_time_point(Model::SCHEDULER->current_time());
+  gpu_treatment_strategy_->adjust_started_time_point(Model::GPU_SCHEDULER->current_time());
 
   //
   // if (treatment_strategy_->get_type() == IStrategy::NestedSwitching) {
@@ -383,32 +384,32 @@ void Model::begin_time_step() {
 }
 
 void Model::daily_update() {
-//  gpu_population_->update_all_individuals();
-  LOG(INFO) << "Update all individuals on  GPU";
+  LOG(INFO) << "Update all individuals on CPU " << Model::GPU_SCHEDULER->current_time();
+  gpu_population_->update_all_individuals();
+  LOG(INFO) << "Update all individuals on GPU " << Model::GPU_SCHEDULER->current_time();
   gpu_population_kernel_->update_all_individuals();
-
-  if(Model::SCHEDULER->current_time() > 1) exit(0);
-
-  // for safety remove all dead by calling perform_death_event
+//
+//  // for safety remove all dead by calling perform_death_event
   gpu_population_->perform_death_event();
   gpu_population_->perform_birth_event();
-
-  // update current foi should be call after perform death, birth event
-  // in order to obtain the right all alive individuals,
-  // infection event will use pre-calculated individual relative biting rate to infect new infections
-  // circulation event will use pre-calculated individual relative moving rate to migrate individual to new location
+//
+//  // update current foi should be call after perform death, birth event
+//  // in order to obtain the right all alive individuals,
+//  // infection event will use pre-calculated individual relative biting rate to infect new infections
+//  // circulation event will use pre-calculated individual relative moving rate to migrate individual to new location
   gpu_population_->update_current_foi();
-
+//
   gpu_population_->perform_infection_event();
-  gpu_population_kernel_->perform_circulation_event();
-
-  // infect new mosquito cohort in prmc must be run after population perform infection event and update current foi
-  // because the prmc at the tracking index will be overridden with new cohort to use N days later and
-  // infection event used the prmc at the tracking index for the today infection
+  gpu_population_->perform_circulation_event();
+//  gpu_population_kernel_->perform_circulation_event();
+//
+//  // infect new mosquito cohort in prmc must be run after population perform infection event and update current foi
+//  // because the prmc at the tracking index will be overridden with new cohort to use N days later and
+//  // infection event used the prmc at the tracking index for the today infection
   auto tracking_index = gpu_scheduler_->current_time() % config_->number_of_tracking_days();
   gpu_mosquito_->infect_new_cohort_in_PRMC(config_, random_, gpu_population_, tracking_index);
-
-  // this function must be called after mosquito infect new cohort in prmc
+//
+//  // this function must be called after mosquito infect new cohort in prmc
   gpu_population_->persist_current_force_of_infection_to_use_N_days_later();
 
 }
@@ -417,7 +418,8 @@ void Model::monthly_update() {
   monthly_report();
 
   // reset monthly variables
-  data_collector()->monthly_update();
+//  data_collector()->monthly_update();
+  gpu_data_collector_->monthly_update();
 
   treatment_strategy_->monthly_update();
 

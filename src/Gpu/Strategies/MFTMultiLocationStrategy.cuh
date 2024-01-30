@@ -18,7 +18,7 @@ class GPU::MFTMultiLocationStrategy : public GPU::IStrategy {
  DISALLOW_MOVE(MFTMultiLocationStrategy)
 
  public:
-  std::vector<Therapy *> therapy_list;
+  std::vector<GPU::Therapy *> therapy_list;
   // DoubleVector2 distribution_by_location;
   DoubleVector2 distribution;
   DoubleVector2 start_distribution;
@@ -31,7 +31,7 @@ class GPU::MFTMultiLocationStrategy : public GPU::IStrategy {
   //    MFTStrategy(const MFTStrategy& orig);
   ~MFTMultiLocationStrategy() override;
 
-  void add_therapy(Therapy *therapy) override;
+  void add_therapy(GPU::Therapy *therapy) override;
 
   Therapy *get_therapy(GPU::Person *person) override;
 

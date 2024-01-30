@@ -7,7 +7,7 @@
 
 #include "ReceiveTherapyEvent.cuh"
 #include "Gpu/Core/Scheduler.cuh"
-#include "Therapies/Therapy.h"
+#include "Gpu/Therapies/Therapy.cuh"
 #include "Gpu/Population/ClonalParasitePopulation.cuh"
 #include "Gpu/Population/Person.cuh"
 
@@ -15,7 +15,7 @@ GPU::ReceiveTherapyEvent::ReceiveTherapyEvent() : received_therapy_(nullptr), cl
 
 GPU::ReceiveTherapyEvent::~ReceiveTherapyEvent() = default;
 
-void GPU::ReceiveTherapyEvent::schedule_event(GPU::Scheduler *scheduler, GPU::Person *p, Therapy *therapy, const int &time,
+void GPU::ReceiveTherapyEvent::schedule_event(GPU::Scheduler *scheduler, GPU::Person *p, GPU::Therapy *therapy, const int &time,
                                          GPU::ClonalParasitePopulation *clinical_caused_parasite,
                                          bool is_part_of_MAC_therapy) {
   if (scheduler != nullptr) {
@@ -33,6 +33,9 @@ void GPU::ReceiveTherapyEvent::schedule_event(GPU::Scheduler *scheduler, GPU::Pe
 
 void GPU::ReceiveTherapyEvent::execute() {
   auto *person = dynamic_cast<GPU::Person *>(dispatcher);
+  if(person->index() >= 1040 && person->index() <= 1045){
+      printf("GPU::ReceiveTherapyEvent::execute() %d\n",person->index());
+  }
   //    if (person->is_in_external_population()) {
   //        return;
   //    }

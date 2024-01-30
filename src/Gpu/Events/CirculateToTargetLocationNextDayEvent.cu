@@ -36,6 +36,9 @@ std::string GPU::CirculateToTargetLocationNextDayEvent::name() {
 
 void GPU::CirculateToTargetLocationNextDayEvent::execute() {
   auto *person = dynamic_cast<GPU::Person *>(dispatcher);
+  if(person->index() >= 1040 && person->index() <= 1045){
+      printf("GPU::CirculateToTargetLocationNextDayEvent::execute() %d\n",person->index());
+  }
   person->set_location(target_location_);
 
   if (target_location_!=person->residence_location()) {
@@ -51,7 +54,7 @@ void GPU::CirculateToTargetLocationNextDayEvent::execute() {
       }
 
       //            std::cout << length_of_trip << std::endl;
-      ReturnToResidenceEvent::schedule_event(Model::GPU_SCHEDULER, person,
+      GPU::ReturnToResidenceEvent::schedule_event(Model::GPU_SCHEDULER, person,
                                              Model::GPU_SCHEDULER->current_time() + length_of_trip);
 
     }

@@ -9,7 +9,7 @@
 #include "Core/Random.h"
 #include "Gpu/Population/Person.cuh"
 #include "Gpu/Core/Scheduler.cuh"
-#include "Therapies/Therapy.h"
+#include "Gpu/Therapies/Therapy.cuh"
 
 
 GPU::NestedMFTMultiLocationStrategy::NestedMFTMultiLocationStrategy() : GPU::IStrategy(
@@ -22,9 +22,9 @@ void GPU::NestedMFTMultiLocationStrategy::add_strategy(GPU::IStrategy* strategy)
   strategy_list.push_back(strategy);
 }
 
-void GPU::NestedMFTMultiLocationStrategy::add_therapy(Therapy* therapy) { }
+void GPU::NestedMFTMultiLocationStrategy::add_therapy(GPU::Therapy* therapy) { }
 
-Therapy* GPU::NestedMFTMultiLocationStrategy::get_therapy(GPU::Person* person) {
+GPU::Therapy* GPU::NestedMFTMultiLocationStrategy::get_therapy(GPU::Person* person) {
   const auto loc = person->location();
   const auto p = Model::RANDOM->random_flat(0.0, 1.0);
 

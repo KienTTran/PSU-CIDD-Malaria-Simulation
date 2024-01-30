@@ -55,9 +55,9 @@ GPU::Genotype *GPU::GenotypeDatabase::get_genotype(const std::string &aa_sequenc
     new_genotype->calculate_daily_fitness(config->pf_genotype_info());
 
     // calculate ec50
-    new_genotype->calculate_EC50_power_n(config->pf_genotype_info(), config->drug_db());
+    new_genotype->calculate_EC50_power_n(config->pf_genotype_info(), config->gpu_drug_db());
 
-    new_genotype->override_EC50_power_n(config->override_ec50_patterns(), config->drug_db());
+    new_genotype->override_EC50_power_n(config->override_ec50_patterns(), config->gpu_drug_db());
 
     aa_sequence_id_map[aa_sequence] = new_genotype;
     add(new_genotype);

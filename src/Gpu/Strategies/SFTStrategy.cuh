@@ -20,7 +20,7 @@ class GPU::SFTStrategy : public GPU::IStrategy {
 
  DISALLOW_MOVE(SFTStrategy)
 
- VIRTUAL_PROPERTY_REF(std::vector<Therapy *>, therapy_list)
+ VIRTUAL_PROPERTY_REF(std::vector<GPU::Therapy *>, therapy_list)
 
  public:
   SFTStrategy();
@@ -28,9 +28,9 @@ class GPU::SFTStrategy : public GPU::IStrategy {
   //    SFTStrategy(const SFTStrategy& orig);
   virtual ~SFTStrategy();
 
-  virtual std::vector<Therapy *> &get_therapy_list();
+  virtual std::vector<GPU::Therapy *> &get_therapy_list();
 
-  void add_therapy(Therapy *therapy) override;
+  void add_therapy(GPU::Therapy *therapy) override;
 
   Therapy *get_therapy(GPU::Person *person) override;
 

@@ -8,8 +8,8 @@
 #include <algorithm>
 #include "Core/Config/Config.h"
 #include "Helpers/NumberHelpers.h"
-#include "Therapies/DrugDatabase.h"
-#include "Therapies/SCTherapy.h"
+#include "Gpu/Therapies/DrugDatabase.cuh"
+#include "Gpu/Therapies/SCTherapy.cuh"
 
 __device__ __host__ GPU::Genotype::Genotype(const std::string &in_aa_sequence) : aa_sequence { in_aa_sequence } {
   // create aa structure
@@ -30,7 +30,7 @@ __device__ __host__ GPU::Genotype::Genotype(const std::string &in_aa_sequence) :
 
 GPU::Genotype::~Genotype() = default;
 
-bool GPU::Genotype::resist_to(DrugType *dt) {
+bool GPU::Genotype::resist_to(GPU::DrugType *dt) {
   return EC50_power_n[dt->id()] > pow(dt->base_EC50, dt->n());
 }
 
@@ -39,7 +39,7 @@ GPU::Genotype *GPU::Genotype::combine_mutation_to(const int &locus, const int &v
   return this;
 }
 
-double GPU::Genotype::get_EC50_power_n(DrugType *dt) const {
+double GPU::Genotype::get_EC50_power_n(GPU::DrugType *dt) const {
   return EC50_power_n[dt->id()];
 }
 
@@ -91,7 +91,6 @@ bool GPU::Genotype::is_valid(const PfGeneInfo &gene_info) {
 }
 void GPU::Genotype::calculate_daily_fitness(const PfGeneInfo &gene_info) {
   daily_fitness_multiple_infection = 1.0;
-  cudaMalloc((void **)&d_daily_fitness_multiple_infection, sizeof(double));
 
   for (int chromosome_i = 0; chromosome_i < pf_genotype_str.size(); ++chromosome_i) {
     auto chromosome_info = gene_info.chromosome_infos[chromosome_i];
@@ -131,10 +130,9 @@ void GPU::Genotype::calculate_daily_fitness(const PfGeneInfo &gene_info) {
       }
     }
   }
-  cudaMemcpy(d_daily_fitness_multiple_infection, &daily_fitness_multiple_infection, sizeof(double), cudaMemcpyHostToDevice);
 }
 
-void GPU::Genotype::calculate_EC50_power_n(const PfGeneInfo &gene_info, DrugDatabase *drug_db) {
+void GPU::Genotype::calculate_EC50_power_n(const PfGeneInfo &gene_info, GPU::DrugDatabase *drug_db) {
   EC50_power_n.resize(drug_db->size());
   for (const auto &[drug_id, dt] : *drug_db) {
     EC50_power_n[drug_id] = dt->base_EC50;
@@ -203,7 +201,7 @@ void GPU::Genotype::calculate_EC50_power_n(const PfGeneInfo &gene_info, DrugData
   }
 }
 
-GPU::Genotype *GPU::Genotype::perform_mutation_by_drug(Config *pConfig, Random *pRandom, DrugType *pDrugType, double mutation_probability_by_locus) const {
+GPU::Genotype *GPU::Genotype::perform_mutation_by_drug(Config *pConfig, ::Random *pRandom, GPU::DrugType *pDrugType, double mutation_probability_by_locus) const {
   std::string new_aa_sequence { aa_sequence };
   for(int aa_pos_id = 0; aa_pos_id < pDrugType->resistant_aa_locations.size(); aa_pos_id++) {
     // get aa position info (aa index in aa string, is copy number)
@@ -250,7 +248,7 @@ GPU::Genotype *GPU::Genotype::perform_mutation_by_drug(Config *pConfig, Random *
   return pConfig->gpu_genotype_db.get_genotype(new_aa_sequence, pConfig);
 }
 
-void GPU::Genotype::override_EC50_power_n(const std::vector<OverrideEC50Pattern> &override_patterns, DrugDatabase *drug_db) {
+void GPU::Genotype::override_EC50_power_n(const std::vector<OverrideEC50Pattern> &override_patterns, GPU::DrugDatabase *drug_db) {
   if (EC50_power_n.size() != drug_db->size()) {
     EC50_power_n.resize(drug_db->size());
   }
@@ -271,7 +269,7 @@ bool GPU::Genotype::match_pattern(const std::string &pattern) {
   return id >= aa_sequence.length();
 }
 
-GPU::Genotype *GPU::Genotype::free_recombine_with(Config *pConfig, Random *pRandom, GPU::Genotype *other) {
+GPU::Genotype *GPU::Genotype::free_recombine_with(Config *pConfig, ::Random *pRandom, GPU::Genotype *other) {
   // TODO: this function is not optimized 100%, use with care
   PfGenotypeStr new_pf_genotype_str;
   // for each chromosome
@@ -339,7 +337,7 @@ std::string GPU::Genotype::Convert_PfGenotypeStr_To_String(const PfGenotypeStr &
 
   return ss.str();
 }
-GPU::Genotype *GPU::Genotype::free_recombine(Config *config, Random *pRandom, GPU::Genotype *f, GPU::Genotype *m) {
+GPU::Genotype *GPU::Genotype::free_recombine(Config *config, ::Random *pRandom, GPU::Genotype *f, GPU::Genotype *m) {
   PfGenotypeStr new_pf_genotype_str;
   // for each chromosome
   for (int chromosome_id = 0; chromosome_id < f->pf_genotype_str.size(); ++chromosome_id) {

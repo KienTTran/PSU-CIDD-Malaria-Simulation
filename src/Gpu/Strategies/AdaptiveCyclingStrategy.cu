@@ -11,13 +11,13 @@
 #include "Core/Config/Config.h"
 #include <sstream>
 #include "IStrategy.cuh"
-#include "Therapies/Therapy.h"
+#include "Gpu/Therapies/Therapy.cuh"
 
 GPU::AdaptiveCyclingStrategy::AdaptiveCyclingStrategy() : GPU::IStrategy("AdaptiveCyclingStrategy", AdaptiveCycling) {}
 
 GPU::AdaptiveCyclingStrategy::~AdaptiveCyclingStrategy() = default;
 
-void GPU::AdaptiveCyclingStrategy::add_therapy(Therapy *therapy) {
+void GPU::AdaptiveCyclingStrategy::add_therapy(GPU::Therapy *therapy) {
   therapy_list.push_back(therapy);
 }
 
@@ -31,7 +31,7 @@ void GPU::AdaptiveCyclingStrategy::switch_therapy() {
             << ": Adaptive Cycling Strategy switch Therapy to: " << therapy_list[index]->id();
 }
 
-Therapy *GPU::AdaptiveCyclingStrategy::get_therapy(GPU::Person *person) {
+GPU::Therapy *GPU::AdaptiveCyclingStrategy::get_therapy(GPU::Person *person) {
   return therapy_list[index];
 }
 

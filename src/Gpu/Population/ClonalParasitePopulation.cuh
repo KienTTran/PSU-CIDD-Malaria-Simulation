@@ -9,7 +9,7 @@
 #define CLONALPARASITEPOPULATION_CUH
 
 #include "Core/PropertyMacro.h"
-#include "Therapies/DrugType.h"
+#include "Gpu/Therapies/DrugType.cuh"
 #include "Core/ObjectPool.h"
 #include "Gpu/Population/Properties/IndexHandler.cuh"
 #include "SingleHostClonalParasitePopulations.cuh"
@@ -17,7 +17,6 @@
 #include "ImmunityClearanceUpdateFunction.cuh"
 #include "ParasiteDensityUpdateFunction.cuh"
 
-class Therapy;
 
 namespace GPU{
     class ClonalParasitePopulation;
@@ -25,9 +24,11 @@ namespace GPU{
     class ClinicalUpdateFunction;
     class Genotype;
     class ImmuneSystem;
+    class Therapy;
+    class Person;
 }
 
-class GPU::ClonalParasitePopulation : public IndexHandler {
+class GPU::ClonalParasitePopulation : public GPU::IndexHandler {
 public:
   PROPERTY_HEADER(double, last_update_log10_parasite_density)
 
@@ -37,13 +38,16 @@ public:
 
  POINTER_PROPERTY(GPU::SingleHostClonalParasitePopulations, parasite_population)
 
+ POINTER_PROPERTY(GPU::Person, person)
+
  POINTER_PROPERTY_HEADER(GPU::Genotype, genotype)
 
- POINTER_PROPERTY(GPU::ParasiteDensityUpdateFunction, update_function)
+ POINTER_PROPERTY_HEADER(GPU::ParasiteDensityUpdateFunction, update_function)
 
  public:
-    static const double LOG_ZERO_PARASITE_DENSITY;
-
+    constexpr static const double LOG_ZERO_PARASITE_DENSITY = -1000.0;
+    PROPERTY_REF(long, id);
+    PROPERTY_REF(int, index);
 
  public:
     ClonalParasitePopulation(GPU::Genotype *genotype = nullptr);
@@ -61,23 +65,6 @@ public:
 
   void perform_drug_action(const double &percent_parasite_remove);
 
-public:/* FOr GPU */
-    __host__ void set_gpu_update_function(GPU::ParasiteDensityUpdateFunction *h_function);
-
-    __device__ double get_current_parasite_density_gpu(GPU::ParasiteDensityUpdateFunction* d_update_function,
-                                                       GPU::Genotype* d_genotype,
-                                                       GPU::ImmuneSystem* d_immune_system,
-                                                       ParasiteDensityLevel h_parasite_density_level,
-                                                       ImmuneSystemInformation* d_immune_system_information,
-                                                       const int current_time,
-                                                       const int latest_update_time);
-    double test_ = 2.0;
-    __device__ __host__ double test(){
-      test_ = 9.0;
-      return test_;
-    }
-
-    __device__ __host__ double test2();
 
 };
 

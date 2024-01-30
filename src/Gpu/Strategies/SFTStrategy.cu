@@ -7,7 +7,7 @@
 
 #include <cassert>
 #include "SFTStrategy.cuh"
-#include "Therapies/Therapy.h"
+#include "Gpu/Therapies/Therapy.cuh"
 #include "IStrategy.cuh"
 #include <sstream>
 
@@ -15,15 +15,15 @@ GPU::SFTStrategy::SFTStrategy() : GPU::IStrategy("SFTStrategy", SFT) {}
 
 GPU::SFTStrategy::~SFTStrategy() = default;
 
-std::vector<Therapy *> &GPU::SFTStrategy::get_therapy_list() {
+std::vector<GPU::Therapy *> &GPU::SFTStrategy::get_therapy_list() {
   return therapy_list_;
 }
 
-void GPU::SFTStrategy::add_therapy(Therapy *therapy) {
+void GPU::SFTStrategy::add_therapy(GPU::Therapy *therapy) {
   therapy_list_.push_back(therapy);
 }
 
-Therapy *GPU::SFTStrategy::get_therapy(GPU::Person *person) {
+GPU::Therapy *GPU::SFTStrategy::get_therapy(GPU::Person *person) {
   return therapy_list_[0];
 }
 

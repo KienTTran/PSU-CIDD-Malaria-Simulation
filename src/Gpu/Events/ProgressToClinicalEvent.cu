@@ -12,11 +12,12 @@
 #include "Model.h"
 #include "Core/Config/Config.h"
 #include "Gpu/Strategies/IStrategy.cuh"
-#include "Therapies/SCTherapy.h"
+#include "Gpu/Therapies/SCTherapy.cuh"
 #include "Core/Random.h"
 #include "Gpu/MDC/ModelDataCollector.cuh"
 #include "Gpu/Population/SingleHostClonalParasitePopulations.cuh"
 #include "Gpu/Population/ClonalParasitePopulation.cuh"
+#include "Gpu/Population/Properties/PersonIndexGPU.cuh"
 
 GPU::ProgressToClinicalEvent::ProgressToClinicalEvent() : clinical_caused_parasite_(nullptr) {}
 
@@ -24,6 +25,12 @@ GPU::ProgressToClinicalEvent::~ProgressToClinicalEvent() = default;
 
 void GPU::ProgressToClinicalEvent::execute() {
   auto *person = dynamic_cast<GPU::Person *>(dispatcher);
+  auto *pi = Model::GPU_POPULATION->get_person_index<GPU::PersonIndexGPU>();
+  if(person->index() >= 1040 && person->index() <= 1045){
+      printf("GPU::ProgressToClinicalEvent::execute() %d %d %f\n",person->index(),
+             clinical_caused_parasite_->index(),
+             clinical_caused_parasite_->last_update_log10_parasite_density());
+  }
   if (person->all_clonal_parasite_populations()->size()==0) {
     //parasites might be cleaned by immune system or other things else
     return;
@@ -36,8 +43,13 @@ void GPU::ProgressToClinicalEvent::execute() {
 
   if (person->host_state()==GPU::Person::CLINICAL) {
     clinical_caused_parasite_->set_update_function(Model::MODEL->gpu_immunity_clearance_update_function());
-    clinical_caused_parasite_->set_gpu_update_function(Model::MODEL->gpu_immunity_clearance_update_function());
     return;
+  }
+
+  if(person->index() >= 1040 && person->index() <= 1045){
+    printf("GPU::ProgressToClinicalEvent::execute() before density %d %d %f\n",person->index(),
+           clinical_caused_parasite_->index(),
+           clinical_caused_parasite_->last_update_log10_parasite_density());
   }
 
 
@@ -51,6 +63,12 @@ void GPU::ProgressToClinicalEvent::execute() {
 
   clinical_caused_parasite_->set_last_update_log10_parasite_density(density);
 
+  if(person->index() >= 1040 && person->index() <= 1045){
+    printf("GPU::ProgressToClinicalEvent::execute() after density %d %d %f\n",person->index(),
+           clinical_caused_parasite_->index(),
+           clinical_caused_parasite_->last_update_log10_parasite_density());
+  }
+
   // Person change state to Clinical
   person->set_host_state(GPU::Person::CLINICAL);
 
@@ -63,7 +81,6 @@ void GPU::ProgressToClinicalEvent::execute() {
   person->change_all_parasite_update_function(Model::MODEL->gpu_progress_to_clinical_update_function(),
                                               Model::MODEL->gpu_immunity_clearance_update_function());
   clinical_caused_parasite_->set_update_function(Model::MODEL->gpu_clinical_update_function());
-  clinical_caused_parasite_->set_gpu_update_function(Model::MODEL->gpu_clinical_update_function());
 
   //Statistic collect cumulative clinical episodes
   Model::GPU_DATA_COLLECTOR->collect_1_clinical_episode(person->location(), person->age(), person->age_class());
@@ -78,16 +95,22 @@ void GPU::ProgressToClinicalEvent::execute() {
     auto *therapy = Model::GPU_TREATMENT_STRATEGY->get_therapy(person);
 
     person->receive_therapy(therapy, clinical_caused_parasite_);
+
     //Statistic increase today treatments
     Model::GPU_DATA_COLLECTOR->record_1_treatment(person->location(), person->age(), therapy->id());
 
     clinical_caused_parasite_->set_update_function(Model::MODEL->gpu_having_drug_update_function());
-    clinical_caused_parasite_->set_gpu_update_function(Model::MODEL->gpu_having_drug_update_function());
 
     // calculate EAMU
     Model::GPU_DATA_COLLECTOR->record_AMU_AFU(person, therapy, clinical_caused_parasite_);
     //        calculateEAMU(therapy);
     //
+
+    if(person->index() >= 1040 && person->index() <= 1045){
+      printf("GPU::ProgressToClinicalEvent::execute() p <= p_treatment %d %d %f\n",person->index(),
+             clinical_caused_parasite_->index(),
+             clinical_caused_parasite_->last_update_log10_parasite_density());
+    }
 
     // death is 90% lower than no treatment
     if (person->will_progress_to_death_when_recieve_treatment()) {
@@ -105,6 +128,12 @@ void GPU::ProgressToClinicalEvent::execute() {
       Model::GPU_DATA_COLLECTOR->record_1_TF(person->location(), true);
       Model::GPU_DATA_COLLECTOR->record_1_treatment_failure_by_therapy(person->location(), person->age(),
                                                                    therapy->id());
+      if(person->index() >= 1040 && person->index() <= 1045){
+        printf("GPU::ProgressToClinicalEvent::execute() p <= p_treatment to DEAD %d %d %f\n",person->index(),
+               clinical_caused_parasite_->index(),
+               clinical_caused_parasite_->last_update_log10_parasite_density());
+      }
+
       return;
     }
 
@@ -121,6 +150,13 @@ void GPU::ProgressToClinicalEvent::execute() {
     Model::GPU_DATA_COLLECTOR->record_1_non_treated_case(person->location(), person->age());
 
     receive_no_treatment_routine(person);
+
+    if(person->index() >= 1040 && person->index() <= 1045){
+      printf("GPU::ProgressToClinicalEvent::execute() after receive no treatment %d %d %f\n",person->index(),
+             clinical_caused_parasite_->index(),
+             clinical_caused_parasite_->last_update_log10_parasite_density());
+    }
+
     if (person->host_state()==GPU::Person::DEAD) {
       Model::GPU_DATA_COLLECTOR->record_1_malaria_death(person->location(), person->age());
       return;

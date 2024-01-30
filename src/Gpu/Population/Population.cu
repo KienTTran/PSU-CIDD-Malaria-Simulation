@@ -320,8 +320,6 @@ void GPU::Population::introduce_parasite(const int& location, GPU::Genotype* par
 
 void GPU::Population::initial_infection(GPU::Person* person, GPU::Genotype* parasite_type) const {
   if(person == nullptr) return;
-  person->immune_system()->set_increase(true);
-  person->set_host_state(GPU::Person::ASYMPTOMATIC);
 
   auto* blood_parasite = person->add_new_parasite_to_blood(parasite_type);
 
@@ -338,14 +336,26 @@ void GPU::Population::initial_infection(GPU::Person* person, GPU::Genotype* para
   if (p < p_clinical) {
     // progress to clinical after several days
     blood_parasite->set_update_function(model_->gpu_progress_to_clinical_update_function());
-    blood_parasite->set_gpu_update_function(model_->gpu_progress_to_clinical_update_function());
     person->schedule_progress_to_clinical_event_by(blood_parasite);
   } else {
     // only progress to clearance by Immune system
     // progress to clearance
     blood_parasite->set_update_function(model_->gpu_immunity_clearance_update_function());
-    blood_parasite->set_gpu_update_function(model_->gpu_immunity_clearance_update_function());
   }
+
+//  assert(person->id() == pi->h_persons()[p_index]->id());
+//  assert(person->index() == pi->h_persons()[p_index]->index());
+
+    if(person->index() >= 1040 && person->index() <= 1045){
+        for(auto *parasite: *person->all_clonal_parasite_populations()->parasites()){
+            printf("%d GPU::Population::initial_infection %d %d %s %f\n",
+                   person->index(),
+                   parasite->index(),
+                   parasite->update_function()->type(),
+                   parasite->genotype()->aa_sequence.c_str(),
+                   parasite->last_update_log10_parasite_density());
+        }
+    }
 }
 
 void GPU::Population::perform_birth_event() {
@@ -401,7 +411,7 @@ void GPU::Population::generate_individual(int location, int age_class) {
   LOG_IF(simulation_time_birthday > 0, FATAL)
     << "simulation_time_birthday have to be <= 0 when initilizing population";
 
-  BirthdayEvent::schedule_event(Model::GPU_SCHEDULER, p, days_to_next_birthday);
+  GPU::BirthdayEvent::schedule_event(Model::GPU_SCHEDULER, p, days_to_next_birthday);
 
   // set immune component
   if (simulation_time_birthday + Constants::DAYS_IN_YEAR() / 2 >= 0) {
@@ -409,7 +419,7 @@ void GPU::Population::generate_individual(int location, int age_class) {
     // LOG(INFO) << "Infant: " << p->age() << " - " << simulation_time_birthday;
     p->immune_system()->set_immune_component(new GPU::InfantImmuneComponent());
     // schedule for switch
-    SwitchImmuneComponentEvent::schedule_for_switch_immune_component_event(
+    GPU::SwitchImmuneComponentEvent::schedule_for_switch_immune_component_event(
             Model::GPU_SCHEDULER, p, simulation_time_birthday + Constants::DAYS_IN_YEAR() / 2);
   } else {
     // LOG(INFO) << "Adult: " << p->age() << " - " << simulation_time_birthday;
@@ -593,7 +603,7 @@ void GPU::Population::perform_circulation_event() {
         v_number_of_residents_by_location);
 
     std::vector<unsigned int> v_num_leavers_to_destination(
-        static_cast<unsigned long long int>(Model::CONFIG->number_of_locations()));
+        static_cast<unsigned int>(Model::CONFIG->number_of_locations()));
 
     Model::RANDOM->random_multinomial(static_cast<int>(v_relative_outmovement_to_destination.size()),
                                       static_cast<unsigned int>(number_of_circulating_from_this_location),

@@ -32,6 +32,9 @@ void GPU::MatureGametocyteEvent::schedule_event(GPU::Scheduler *scheduler, GPU::
 
 void GPU::MatureGametocyteEvent::execute() {
   auto *person = dynamic_cast<GPU::Person *>(dispatcher);
+  if(person->index() >= 1040 && person->index() <= 1045){
+      printf("GPU::MatureGametocyteEvent::execute() %d\n",person->index());
+  }
   if (person->all_clonal_parasite_populations()->contain(blood_parasite_)) {
     blood_parasite_->set_gametocyte_level(Model::CONFIG->gametocyte_level_full());
   }

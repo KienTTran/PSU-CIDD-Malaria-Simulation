@@ -15,7 +15,7 @@ namespace GPU {
     class PersonIndexByLocationMovingLevelHandler;
 }
 
-class GPU::PersonIndexByLocationMovingLevelHandler : public IndexHandler {
+class GPU::PersonIndexByLocationMovingLevelHandler : public GPU::IndexHandler {
  public:
   PersonIndexByLocationMovingLevelHandler();
 

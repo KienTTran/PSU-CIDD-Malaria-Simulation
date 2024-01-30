@@ -54,6 +54,10 @@ void GPU::PersonIndexByLocationStateAgeClass::add(GPU::Person *p, const int &loc
 //                   vPerson()[p->location()][p->host_state()][p->age_class()].size(),
 //                   vPerson()[location][host_state][age_class].size());
   vPerson_[location][host_state][age_class].push_back(p);
+//  printf("GPU::PersonIndexByLocationStateAgeClass::add loc %d hs %d ac %d person_index %d -> (size -1) %d\n",
+//         location,host_state,age_class,
+//         p->GPU::PersonIndexByLocationStateAgeClassHandler::index(),
+//         vPerson_[location][host_state][age_class].size() - 1);
   p->GPU::PersonIndexByLocationStateAgeClassHandler::set_index(vPerson_[location][host_state][age_class].size() - 1);
 //  LOG_IF(p->location() == 0 && p->host_state() == 2 && p->age_class() == 14,INFO)
 //    << fmt::format("LocHostAC add before loc {}->{} hs {}->{} ac {}->{} size {}->{}",
@@ -93,17 +97,20 @@ GPU::PersonIndexByLocationStateAgeClass::notify_change(GPU::Person *p, const GPU
 
   switch (property) {
     case GPU::Person::LOCATION: {
+//      printf("GPU::PersonIndexByLocationStateAgeClass::notify_change LOCATION\n");
       change_property(p, *(int *) newValue, p->host_state(), p->age_class());
+      break;
     }
-          break;
     case GPU::Person::HOST_STATE: {
+//      printf("GPU::PersonIndexByLocationStateAgeClass::notify_change HOST_STATE\n");
       change_property(p, p->location(), *(GPU::Person::HostStates *) newValue, p->age_class());
+      break;
     }
-          break;
     case GPU::Person::AGE_CLASS: {
+//      printf("GPU::PersonIndexByLocationStateAgeClass::notify_change AGE_CLASS\n");
       change_property(p, p->location(), p->host_state(), *(int *) newValue);
+      break;
     }
-          break;
     default:break;
   }
 
@@ -120,8 +127,16 @@ void GPU::PersonIndexByLocationStateAgeClass::change_property(GPU::Person *p, co
 //                   vPerson()[p->location()][p->host_state()][p->age_class()].size(),
 //                   vPerson()[location][host_state][age_class].size());
   //remove from old position
+//  printf("GPU::PersonIndexByLocationStateAgeClass::change_property before remove p->loc %d -> %d, p->hs %d -> %d, p->ac %d -> %d\n",
+//         p->location(),location,p->host_state(),host_state,p->age_class(),age_class);
+//  printf("GPU::PersonIndexByLocationStateAgeClass::change_property before remove p->loc %d p->hs %d p->ac %d size %d person_index %d\n",
+//         p->location(),p->host_state(),p->age_class(),
+//         vPerson_[p->location()][p->host_state()][p->age_class()].size(),
+//         p->GPU::PersonIndexByLocationStateAgeClassHandler::index());
   remove_without_set_index(p); //to save 1 set and improve performance since the index of p will changed when add
-
+//  printf("GPU::PersonIndexByLocationStateAgeClass::change_property after remove p->loc %d p->hs %d p->ac %d size %d\n",
+//         p->location(),p->host_state(),p->age_class(),
+//         vPerson_[p->location()][p->host_state()][p->age_class()].size());
   //add to new position
   add(p, location, host_state, age_class);
 //  LOG_IF(p->location() == 0 && p->host_state() == 2 && p->age_class() == 14,INFO)

@@ -11,7 +11,7 @@
 gpu_config:
   n_threads: 1024
   people_1_batch: 102400000
-  pre_allocated_mem_ratio: 1.1 #1.0 will turn off displaying GUI as well
+  pre_allocated_mem_ratio: 1.0 #1.0 will turn off displaying GUI as well
   n_parasites_per_person: 1
 
 render_config:
@@ -34,7 +34,7 @@ debug_config:
   log_interval: 100
 
 #set 0 to randomize seed using clock
-initial_seed_number: 0 #123456789
+initial_seed_number: 123456789
 
 # starting time point of the simulation (in yyyy/m/d format)
 # which is day 0 in the simulation
@@ -772,6 +772,142 @@ strategy_db:
     therapy_id: 13
 
 
+gpu_drug_db:
+  0:
+    name: "artemisinin"
+    half_life: 0.0
+    maximum_parasite_killing_rate: 0.999
+    n: 25
+    age_specific_drug_concentration_sd: [ 0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4 ]
+    k: 4
+    base_EC50: 0.75
+  1:
+    name: "lumefantrine"
+    half_life: 4.5
+    maximum_parasite_killing_rate: 0.99
+    n: 20
+    age_specific_drug_concentration_sd: [ 0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4 ]
+    age_specific_drug_absorption: [ 0.7,0.7,0.85,0.85,0.85,0.85,0.85,0.85,0.85,0.85,1.0,1.0,1.0,1.0,1.0 ]
+    k: 4
+    base_EC50: 0.6
+  2:
+    name: "amodiaquine"
+    half_life: 9.0
+    maximum_parasite_killing_rate: 0.95
+    n: 19
+    age_specific_drug_concentration_sd: [ 0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4 ]
+    k: 4
+    base_EC50: 0.5
+  3:
+    name: "piperaquine"
+    half_life: 28.0
+    maximum_parasite_killing_rate: 0.9
+    n: 15
+    age_specific_drug_concentration_sd: [ 0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4 ]
+    k: 4
+    base_EC50: 0.58
+  #MQ
+  4:
+    name: "Mefloquine"
+    half_life: 21.0
+    maximum_parasite_killing_rate: 0.9
+    n: 15
+    age_specific_drug_concentration_sd: [ 0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4 ]
+    k: 4
+    base_EC50: 0.45
+    resistant_genes: [ "Pfmdr1" ]
+  5:
+    name: "SP"
+    half_life: 6.5
+    maximum_parasite_killing_rate: 0.9
+    age_specific_drug_concentration_sd: [ 0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4 ]
+    n: 15
+    k: 4
+    base_EC50: 1.08
+    resistant_genes: [ ]
+  6:
+    name: "CQ"
+    half_life: 10
+    maximum_parasite_killing_rate: 0.95
+    n: 19
+    age_specific_drug_concentration_sd: [ 0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4 ]
+    k: 4
+    base_EC50: 0.72
+  7:
+    name: "KAF156"
+    half_life: 1.6
+    maximum_parasite_killing_rate: 0.99
+    n: 15
+    age_specific_drug_concentration_sd: [ 0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4 ]
+    k: 4
+    base_EC50: 0.55
+  8:
+    name: "generic"
+    half_life: 7
+    maximum_parasite_killing_rate: 0.8
+    n: 15
+    age_specific_drug_concentration_sd: [ 0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4 ]
+    k: 4
+    base_EC50: 0.68
+
+gpu_therapy_db:
+  #mono as
+  0:
+    drug_id: [0]
+    dosing_days: [3]
+  #mono Lumefaltrine
+  1:
+    drug_id: [1]
+    dosing_days: [3]
+  #mono AQ
+  2:
+    drug_id: [2]
+    dosing_days: [3]
+  #mono PPQ
+  3:
+    drug_id: [3]
+    dosing_days: [3]
+  #mono MQ
+  4:
+    drug_id: [4]
+    dosing_days: [3]
+  #mono SP
+  5:
+    drug_id: [5]
+    dosing_days: [3]
+  #AL
+  6:
+    drug_id: [0,1]
+    dosing_days: [3]
+  #AS-AQ
+  7:
+    drug_id: [0,2]
+    dosing_days: [3]
+  # DHA-PPQ
+  8:
+    drug_id: [0,3]
+    dosing_days: [3]
+  #AS-MQ
+  9:
+    drug_id: [0,4]
+    dosing_days: [3]
+  #TACT DHA-PPQ-MQ
+  10:
+    drug_id: [0,3,4]
+    dosing_days: [3]
+  #TACT AL-AQ
+  11:
+    drug_id: [0,1,2]
+    dosing_days: [3]
+  #CQ
+  12:
+    drug_id: [6]
+    dosing_days: [3]
+  #Generic for Burn-in
+  13:
+    drug_id: [8]
+    dosing_days: [3]
+
 gpu_strategy_db:
   0:
     name: SP-AQ-CQ-AL-MFTStrategy
@@ -891,7 +1027,7 @@ gpu_strategy_db:
     type: SFT
     therapy_id: 13
 
-initial_strategy_id: 16
+initial_strategy_id: 10
 
 
 # this number use to detemine whether a therapy is "useful" or not and it is used to calculate
@@ -1027,10 +1163,6 @@ mosquito_config:
 within_host_induced_free_recombination: true
 
 events:
-  - name: change_treatment_strategy
-    info:
-      - day: 2010/1/1
-        strategy_id: 5
   - name: change_treatment_coverage
     info:
       - type: SteadyTCM

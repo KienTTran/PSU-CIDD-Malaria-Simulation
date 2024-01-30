@@ -21,7 +21,7 @@ namespace GPU{
     class MFTRebalancingStrategy;
 }
 
-class GPU::MFTRebalancingStrategy : public MFTStrategy {
+class GPU::MFTRebalancingStrategy : public GPU::MFTStrategy {
  DISALLOW_COPY_AND_ASSIGN(MFTRebalancingStrategy)
 
  DISALLOW_MOVE(MFTRebalancingStrategy)

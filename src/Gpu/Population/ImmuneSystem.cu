@@ -77,6 +77,7 @@ __device__ __host__ double GPU::ImmuneSystem::get_parasite_size_after_t_days_gpu
                                                                         const double &fitness) const {
     printf("GPU::ImmuneSystem::get_parasite_size_after_t_days_gpu %d %f %f %f %f %f\n",
            duration,immunity_system_info->c_max,immunity_system_info->c_min,originalSize,fitness,get_lastest_immune_value());
+    return 8.7;
     const auto last_immune_level = get_lastest_immune_value();
     const auto temp = immunity_system_info->c_max*(1 - last_immune_level) + immunity_system_info->c_min*last_immune_level;
     const auto value = originalSize + duration*(log10(temp) + log10(fitness));

@@ -16,8 +16,10 @@
 #include "Strategies/IStrategy.h"
 #include "Strategies/StrategyBuilder.h"
 #include "Therapies/Therapy.h"
+#include "Gpu/Therapies/DrugDatabase.cuh"
 #include "GIS/SpatialData.h"
 #include "Therapies/TherapyBuilder.h"
+#include "Gpu/Therapies/TherapyBuilder.cuh"
 #include "Environment/SeasonalInfo.h"
 #include "Gpu/Strategies/IStrategy.cuh"
 #include "Gpu/Strategies/StrategyBuilder.cuh"
@@ -233,6 +235,53 @@ void drug_db::set_value(const YAML::Node &node) {
 }
 
 
+gpu_drug_db::~gpu_drug_db() {
+    ObjectHelpers::delete_pointer<GPU::DrugDatabase>(value_);
+}
+
+void gpu_drug_db::set_value(const YAML::Node &node) {
+    ObjectHelpers::delete_pointer<GPU::DrugDatabase>(value_);
+    value_ = new GPU::DrugDatabase();
+
+    for (auto drug_id = 0; drug_id < node[name_].size(); drug_id++) {
+        auto *dt = new GPU::DrugType();
+        dt->set_id(drug_id);
+
+        const auto i_s = NumberHelpers::number_to_string<int>(drug_id);
+        const auto &dt_node = node[name_][i_s];
+
+        dt->set_name(dt_node["name"].as<std::string>());
+        dt->set_drug_half_life(dt_node["half_life"].as<double>());
+        dt->set_maximum_parasite_killing_rate(dt_node["maximum_parasite_killing_rate"].as<double>());
+        dt->set_n(dt_node["n"].as<double>());
+        //    dt->set_EC50(node["EC50"].as<double>());
+
+        //    std::cout <<dt->drug_half_life() << "-" << dt->maximum_parasite_killing_rate() << "-" << dt->n() << "-" <<
+        //    dt->EC50() << std::endl;
+        for (std::size_t i = 0; i < dt_node["age_specific_drug_concentration_sd"].size(); i++) {
+            dt->age_group_specific_drug_concentration_sd().push_back(
+                    dt_node["age_specific_drug_concentration_sd"][i].as<double>());
+            dt->age_specific_drug_absorption().push_back(1.0);
+        }
+        //    assert(dt->age_group_specific_drug_concentration_sd().size() == 15);
+
+        if (dt_node["age_specific_drug_absorption"]) {
+            for (std::size_t i = 0; i < dt_node["age_specific_drug_absorption"].size(); i++) {
+                dt->age_specific_drug_absorption()[i] = dt_node["age_specific_drug_absorption"][i].as<double>();
+            }
+        }
+
+        dt->set_k(dt_node["k"].as<double>());
+
+        dt->base_EC50 = dt_node["base_EC50"].as<double>();
+
+        dt->populate_resistant_aa_locations(config_);
+
+        value_->add(dt);
+    }
+}
+
+
 void circulation_info::set_value(const YAML::Node &node) {
   auto info_node = node[name_];
   value_.max_relative_moving_value = info_node["max_relative_moving_value"].as<double>();
@@ -368,6 +417,27 @@ void therapy_db::set_value(const YAML::Node &node) {
   //    read_all_therapy
   for (std::size_t i = 0; i < node[name_].size(); i++) {
     auto *t = read_therapy(node[name_], (int)i);
+    value_.push_back(t);
+  }
+}
+
+gpu_therapy_db::~gpu_therapy_db() {
+  for (auto &i : value_) {
+    delete i;
+  }
+  value_.clear();
+}
+
+GPU::Therapy *read_therapy_gpu(const YAML::Node &n, const int &therapy_id) {
+  const auto t_id = NumberHelpers::number_to_string<int>(therapy_id);
+  auto *t = GPU::TherapyBuilder::build(n[t_id], therapy_id);
+  return t;
+}
+
+void gpu_therapy_db::set_value(const YAML::Node &node) {
+  //    read_all_therapy
+  for (std::size_t i = 0; i < node[name_].size(); i++) {
+    auto *t = read_therapy_gpu(node[name_], (int)i);
     value_.push_back(t);
   }
 }

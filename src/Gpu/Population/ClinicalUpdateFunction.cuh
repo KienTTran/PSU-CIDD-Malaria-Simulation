@@ -22,15 +22,12 @@ class GPU::ClinicalUpdateFunction : public GPU::ParasiteDensityUpdateFunction {
  POINTER_PROPERTY(Model, model)
 
  public:
-  explicit __device__ __host__ ClinicalUpdateFunction(Model *model = nullptr);
+  ClinicalUpdateFunction(Model *model = nullptr);
   //    ClinicalUpdateFunction(const ClinicalUpdateFunction& orig);
 
   virtual ~ClinicalUpdateFunction();
 
-  __host__ double get_current_parasite_density(GPU::ClonalParasitePopulation *parasite, int duration) override;
-  __device__ double get_current_parasite_density_gpu(ParasiteDensityLevel h_parasite_density_level,
-                                                     double person_immune_parasite_size_after_t_days,
-                                                     int duration) override;
+    __device__ __host__ double get_current_parasite_density(GPU::ClonalParasitePopulation *parasite, int duration) override;
     __device__ __host__ int type() const override {
         return 1;
   }

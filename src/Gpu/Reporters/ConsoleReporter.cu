@@ -98,7 +98,7 @@ void GPU::ConsoleReporter::after_run() {
   }
   std::cout << std::endl;
 
-  for (int t_id = 0; t_id < Model::CONFIG->therapy_db().size(); t_id++) {
+  for (int t_id = 0; t_id < Model::CONFIG->gpu_therapy_db().size(); t_id++) {
 
     int nTreaments = Model::GPU_DATA_COLLECTOR->number_of_treatments_with_therapy_ID()[t_id];
     int nSuccess = Model::GPU_DATA_COLLECTOR->number_of_treatments_success_with_therapy_ID()[t_id];

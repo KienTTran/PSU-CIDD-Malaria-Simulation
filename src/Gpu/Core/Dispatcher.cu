@@ -23,18 +23,18 @@ GPU::Dispatcher::~Dispatcher() {
 
 void GPU::Dispatcher::add(GPU::Event *event) {
   events_->push_back(event);
-  event->IndexHandler::set_index(events_->size() - 1);
+  event->GPU::IndexHandler::set_index(events_->size() - 1);
 }
 
 void GPU::Dispatcher::remove(GPU::Event *event) {
-  events_->back()->IndexHandler::set_index(event->IndexHandler::index());
+  events_->back()->GPU::IndexHandler::set_index(event->GPU::IndexHandler::index());
 
   //    std::cout << "1"<<event->IndexHandler::index()<< std::endl;
-  events_->at(event->IndexHandler::index()) = events_->back();
+  events_->at(event->GPU::IndexHandler::index()) = events_->back();
   //    std::cout << "2"<< std::endl;
 
   events_->pop_back();
-  event->IndexHandler::set_index(-1);
+  event->GPU::IndexHandler::set_index(-1);
 }
 
 void GPU::Dispatcher::clear_events() {
