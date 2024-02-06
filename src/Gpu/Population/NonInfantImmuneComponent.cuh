@@ -18,15 +18,18 @@ namespace GPU{
 
 class GPU::NonInfantImmuneComponent : public GPU::ImmuneComponent {
  public:
-    __device__ __host__ NonInfantImmuneComponent(GPU::ImmuneSystem *immune_system = nullptr);
+    NonInfantImmuneComponent(GPU::ImmuneSystem *immune_system = nullptr);
 
   // NonInfantImmuneComponent(const NonInfantImmuneComponent& orig);
   virtual ~NonInfantImmuneComponent();
 
-    __device__ __host__ virtual double get_decay_rate(ImmuneSystemInformation h_immune_system_information,const int &age = 0) const;
+    virtual double get_decay_rate(ImmuneSystemInformation h_immune_system_information,const int &age = 0) const;
 
-    __device__ __host__ virtual double get_acquire_rate(ImmuneSystemInformation h_immune_system_information,int latest_update_time,const int &age = 0) const;
+    virtual double get_acquire_rate(ImmuneSystemInformation h_immune_system_information,int latest_update_time,const int &age = 0) const;
 
+    virtual int type() const {
+        return 2;
+    }
 public:
     ImmuneSystemInformation h_immune_system_information;
  private:

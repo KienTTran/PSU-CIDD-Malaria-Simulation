@@ -54,7 +54,7 @@ public:
     HOST_STATE,
     AGE,
     AGE_CLASS,
-    BITTING_LEVEL,
+    BITING_LEVEL,
     MOVING_LEVEL,
     EXTERNAL_POPULATION_MOVING_LEVEL
   };
@@ -79,7 +79,7 @@ public:
 
   // birthday has the unit of time in the scheduler
   // if birthday is -100 which is that person was born 100 day before the simulation start
-  PROPERTY_REF(int, birthday)
+  PROPERTY_HEADER(int, birthday)
 
   POINTER_PROPERTY_HEADER(GPU::ImmuneSystem, immune_system)
 
@@ -91,7 +91,7 @@ public:
 
   POINTER_PROPERTY(GPU::DrugsInBlood, drugs_in_blood)
 
-  POINTER_PROPERTY(GPU::Genotype, liver_parasite_type)
+  POINTER_PROPERTY_HEADER(GPU::Genotype, liver_parasite_type)
 
   POINTER_PROPERTY(IntVector, today_infections)
 
@@ -225,7 +225,7 @@ public:
 
   static double draw_random_relative_biting_rate(::Random *pRandom, Config *pConfig);
 
-    void generate_render_entity(int location, bool is_circulate = false);
+  void generate_render_entity(int location, bool is_circulate = false);
 };
 
 #endif /* PERSON_CUH */

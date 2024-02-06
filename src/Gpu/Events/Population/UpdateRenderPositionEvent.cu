@@ -109,7 +109,7 @@ void GPU::UpdateRenderPositionEvent::execute() {
                     thrust::raw_pointer_cast(pi->buffer_person_models().data()),
                     thrust::raw_pointer_cast(pi->buffer_person_colors().data()),
                     Model::GPU_RANDOM->d_states);
-            cudaDeviceSynchronize();
+            check_cuda_error(cudaDeviceSynchronize());
             check_cuda_error(cudaGetLastError());
             /* D2H */
             thrust::copy(pi->buffer_person_models().begin(), pi->buffer_person_models().end(), pi->h_person_models().begin() + batch_from);

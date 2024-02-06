@@ -101,7 +101,7 @@ GPU::Person::~Person() {
   ObjectHelpers::delete_pointer<IntVector>(today_target_locations_);
 }
 
-void GPU::Person::NotifyChange(const Property& property, const void* oldValue, const void* newValue) {
+void GPU::Person::NotifyChange(const GPU::Person::Property& property, const void* oldValue, const void* newValue) {
   if (population_ != nullptr) {
     population_->notify_change(this, property, oldValue, newValue);
   }
@@ -150,7 +150,7 @@ GPU::Person::HostStates GPU::Person::host_state() const {
   return host_state_;
 }
 
-void GPU::Person::set_host_state(const HostStates& value) {
+void GPU::Person::set_host_state(const GPU::Person::HostStates& value) {
   if (host_state_ != value) {
     NotifyChange(HOST_STATE, &host_state_, &value);
     if (value == DEAD) {
@@ -231,6 +231,14 @@ void GPU::Person::set_immune_system(GPU::ImmuneSystem* value) {
   }
 }
 
+void GPU::Person::set_birthday(const int &value) {
+    birthday_ = value;
+}
+
+int GPU::Person::birthday() const {
+    return birthday_;
+}
+
 GPU::ClonalParasitePopulation* GPU::Person::add_new_parasite_to_blood(GPU::Genotype* parasite_type) {
   auto *pi = Model::GPU_POPULATION->get_person_index<GPU::PersonIndexGPU>();
   auto* blood_parasite = new GPU::ClonalParasitePopulation(parasite_type);
@@ -246,32 +254,30 @@ GPU::ClonalParasitePopulation* GPU::Person::add_new_parasite_to_blood(GPU::Genot
              parasite_type->aa_sequence.end(),
              person_index_gpu->h_person_update_info()[index_].parasite_genotype[blood_parasite->index()]);
   person_index_gpu->h_person_update_info()[index_].parasite_genotype[blood_parasite->index()][MAX_GENOTYPE_LOCUS] = '\0';
+  blood_parasite->set_index(all_clonal_parasite_populations_->size() - 1);
   person_index_gpu->h_person_update_info()[index_].parasite_genotype_fitness_multiple_infection[blood_parasite->index()]
   = parasite_type->daily_fitness_multiple_infection;
 
   blood_parasite->set_last_update_log10_parasite_density(Model::CONFIG->parasite_density_level().log_parasite_density_from_liver);
 
-    if(index_ >= 1040 && index_ <= 1045){
-        printf("%d GPU::Person::add_new_parasite_to_blood before %d %s %f\n",
+  LOG_IF(index_ >= 1040 && index_ <= 1045,INFO)
+    << fmt::format("{} GPU::Person::add_new_parasite_to_blood before {} {} {}",
                index_,all_clonal_parasite_populations_->size()-1,
                parasite_type->aa_sequence.c_str(),
                blood_parasite->last_update_log10_parasite_density());
-    }
 
 //  printf("add_new_parasite_to_blood: id %d <--> id %d p_index %d <--> c_index %d\n", id_,blood_parasite->id(),index_,blood_parasite->index());
   person_index_gpu->h_person_update_info()[index_].person_id = id_;
   person_index_gpu->h_person_update_info()[index_].person_index = index_;
   person_index_gpu->h_person_update_info()[index_].person_latest_update_time = latest_update_time_;
-  person_index_gpu->h_person_update_info()[index_].person_latest_immune_value = immune_system_->get_lastest_immune_value();
-  person_index_gpu->h_person_update_info()[index_].parasite_size = all_clonal_parasite_populations_->size();
-  person_index_gpu->h_person_update_info()[index_].parasite_current_index = blood_parasite->index();
-  person_index_gpu->h_person_update_info()[index_].parasite_id = blood_parasite->id();
-    if(index_ >= 1040 && index_ <= 1045){
-        printf("%d GPU::Person::add_new_parasite_to_blood after %d %s %f\n",
+  person_index_gpu->h_person_update_info()[index_].parasites_size = all_clonal_parasite_populations_->size();
+  person_index_gpu->h_person_update_info()[index_].parasites_current_index = blood_parasite->index();
+  person_index_gpu->h_person_update_info()[index_].parasite_id[blood_parasite->index()] = blood_parasite->id();
+  LOG_IF(index_ >= 1040 && index_ <= 1045,INFO)
+    << fmt::format("{} GPU::Person::add_new_parasite_to_blood after {} {} {}",
                index_,all_clonal_parasite_populations_->size(),
                person_index_gpu->h_person_update_info()[index_].parasite_genotype[blood_parasite->index()],
                person_index_gpu->h_person_update_info()[index_].parasite_last_update_log10_parasite_density[blood_parasite->index()]);
-    }
 
   return blood_parasite;
 }
@@ -378,8 +384,8 @@ void GPU::Person::receive_therapy(GPU::Therapy* therapy, GPU::ClonalParasitePopu
 
       dosing_days = complied_dosing_days(dosing_days);
       int drug_id = sc_therapy->drug_ids[j];
-      if(index_ >= 1040 && index_ <= 1045)
-        printf("%d receive_therapy: SCTherapy\n",index_);
+      LOG_IF(index_ >= 1040 && index_ <= 1045,INFO)
+        << fmt::format("{} receive_therapy: SCTherapy\n",index_);
       add_drug_to_blood(Model::CONFIG->gpu_drug_db()->at(drug_id), dosing_days, is_part_of_MAC_therapy);
     }
   } else {
@@ -392,8 +398,8 @@ void GPU::Person::receive_therapy(GPU::Therapy* therapy, GPU::ClonalParasitePopu
       const auto start_day = mac_therapy->start_at_days()[i];
 
       if (start_day == 1) {
-          if(index_ >= 1040 && index_ <= 1045)
-            printf("%d receive_therapy: MACTherapy\n",index_);
+        LOG_IF(index_ >= 1040 && index_ <= 1045,INFO)
+          << fmt::format("{} receive_therapy: MACTherapy\n",index_);
         receive_therapy(Model::CONFIG->gpu_therapy_db()[therapy_id], clinical_caused_parasite, true);
       } else {
         assert(start_day > 1);
@@ -537,77 +543,87 @@ void GPU::Person::update() {
 
   if (latest_update_time_ == Model::GPU_SCHEDULER->current_time()) return;
 
-    if(index_ >= 1040 && index_ <= 1045){
-        for(auto *parasite: *all_clonal_parasite_populations_->parasites()){
-            printf("%d CPU update_all_individuals before update parasite %d %d %d %d %s %f\n",
-                   index_,
-                   parasite->index(),
-                   all_clonal_parasite_populations_->latest_update_time(),
-                   Model::GPU_SCHEDULER->current_time(),
-                   parasite->update_function()->type(),
-                   parasite->genotype()->aa_sequence.c_str(),
-                   parasite->last_update_log10_parasite_density());
-        }
-    }
+//  for(auto *parasite: *all_clonal_parasite_populations_->parasites()){
+//    LOG_IF(index_ >= 1040 && index_ <= 1045,INFO)
+//      << fmt::format("{} CPU update_all_individuals before update parasite {} {} {} {} {} {}",
+//             index_,
+//             parasite->index(),
+//             all_clonal_parasite_populations_->latest_update_time(),
+//             Model::GPU_SCHEDULER->current_time(),
+//             parasite->update_function()->type(),
+//             parasite->genotype()->aa_sequence.c_str(),
+//             parasite->last_update_log10_parasite_density());
+//  }
   //    std::cout << "ppu"<< std::endl;
   // update the density of each blood parasite in parasite population
   // parasite will be killed by immune system
+
   all_clonal_parasite_populations_->update();
 
-    if(index_ >= 1040 && index_ <= 1045){
-        for (auto &drug : *drugs_in_blood_->drugs()) {
-            printf("%d CPU update_all_individuals before update drug %d %d %d %f %f\n",
-                   index_,drug.second->start_time(),drug.second->last_update_time(),drug.first,
-                   drug.second->starting_value(),drug.second->last_update_value());
-        }
-    }
+//  for (auto &drug : *drugs_in_blood_->drugs()) {
+//    LOG_IF(index_ >= 1040 && index_ <= 1045,INFO)
+//      << fmt::format("{} CPU update_all_individuals before update drug {} {} {} {} {}",
+//             index_,drug.second->start_time(),drug.second->last_update_time(),drug.first,
+//             drug.second->starting_value(),drug.second->last_update_value());
+//  }
 
 //  printf("DrugsInBlood::update drugs_in_blood_ size %d\n", drugs_in_blood_->size());
   // update all drugs concentration
   drugs_in_blood_->update();
 
-    if(index_ >= 1040 && index_ <= 1045){
-        for (auto &drug : *drugs_in_blood_->drugs()) {
-            printf("%d CPU update_all_individuals after update drug %d %d %d %f %f\n",
-                   index_,drug.second->start_time(),drug.second->last_update_time(),drug.first,
-                   drug.second->starting_value(),drug.second->last_update_value());
-        }
-    }
+//  for (auto &drug : *drugs_in_blood_->drugs()) {
+//    LOG_IF(index_ >= 1040 && index_ <= 1045,INFO)
+//      << fmt::format("{} CPU update_all_individuals after update drug {} {} {} {} {}",
+//             index_,drug.second->start_time(),drug.second->last_update_time(),drug.first,
+//             drug.second->starting_value(),drug.second->last_update_value());
+//  }
 
   // update drug activity on parasite
   all_clonal_parasite_populations_->update_by_drugs(drugs_in_blood_);
 
-//  immune_system_->update(Model::CONFIG->immune_system_information(),latest_update_time_,Model::GPU_SCHEDULER->current_time());
-//
-//  update_current_state();
-//
-//  // update bitting level only less than 1 to save performance
-//  //  the other will be update in birthday event
-//  update_relative_bitting_rate();
+//  LOG_IF(index_ >= 1040 && index_ <= 1045,INFO)
+//    << fmt::format("{} CPU update_all_individuals before update immune {} {} {}",
+//                   index_,
+//                   latest_update_time(),
+//                   Model::GPU_SCHEDULER->current_time(),
+//                   immune_system()->get_lastest_immune_value());
+
+  immune_system_->update(Model::CONFIG->immune_system_information(),latest_update_time_,Model::GPU_SCHEDULER->current_time());
+
+  update_current_state();
+
+  // update bitting level only less than 1 to save performance
+  //  the other will be update in birthday event
+  update_relative_bitting_rate();
 
   latest_update_time_ = Model::GPU_SCHEDULER->current_time();
   //    std::cout << "End Person Update"<< std::endl;
 
-  if(index_ >= 1040 && index_ <= 1045){
-    for(auto *parasite: *all_clonal_parasite_populations_->parasites()){
-      printf("%d CPU update_all_individuals after update parasite %d %d %d %d %s %f\n",
-             index_,
-             parasite->index(),
-             all_clonal_parasite_populations_->latest_update_time(),
-             Model::GPU_SCHEDULER->current_time(),
-             parasite->update_function()->type(),
-             parasite->genotype()->aa_sequence.c_str(),
-             parasite->last_update_log10_parasite_density());
-    }
-  }
+//  for(auto *parasite: *all_clonal_parasite_populations_->parasites()){
+//      LOG_IF(index_ >= 1040 && index_ <= 1045,INFO)
+//        << fmt::format("{} CPU update_all_individuals after update parasite {} {} {} {} {} {}",
+//             index_,
+//             parasite->index(),
+//             all_clonal_parasite_populations_->latest_update_time(),
+//             Model::GPU_SCHEDULER->current_time(),
+//             parasite->update_function()->type(),
+//             parasite->genotype()->aa_sequence.c_str(),
+//             parasite->last_update_log10_parasite_density());
+//  }
 
-    if(index_ >= 1040 && index_ <= 1045){
-        for (auto &drug : *drugs_in_blood_->drugs()) {
-            printf("%d CPU update_all_individuals after update drug clear %d %d %d %f %f\n",
-                   index_,drug.second->start_time(),drug.second->last_update_time(),drug.first,
-                   drug.second->starting_value(),drug.second->last_update_value());
-        }
-    }
+//  for (auto &drug : *drugs_in_blood_->drugs()) {
+//    LOG_IF(index_ >= 1040 && index_ <= 1045,INFO)
+//      << fmt::format("{} CPU update_all_individuals after update drug clear {} {} {} {} {}",
+//             index_,drug.second->start_time(),drug.second->last_update_time(),drug.first,
+//             drug.second->starting_value(),drug.second->last_update_value());
+//  }
+
+//  LOG_IF(index_ >= 1040 && index_ <= 1045,INFO)
+//    << fmt::format("{} CPU update_all_individuals after update immune {} {} {}",
+//                   index_,
+//                   latest_update_time(),
+//                   Model::GPU_SCHEDULER->current_time(),
+//                   immune_system()->get_lastest_immune_value());
 }
 
 void GPU::Person::update_relative_bitting_rate() {
@@ -657,7 +673,11 @@ void GPU::Person::infected_by(const int& parasite_type_id) {
     }
 
     GPU::Genotype* genotype = Model::CONFIG->gpu_genotype_db.at(parasite_type_id);
-    liver_parasite_type_ = genotype;
+    set_liver_parasite_type(genotype);
+    std::copy( genotype->aa_sequence.begin(),
+               genotype->aa_sequence.end(),
+               person_index_gpu->h_person_update_info()[index_].person_liver_parasite_genotype);
+    person_index_gpu->h_person_update_info()[index_].person_liver_parasite_genotype[MAX_GENOTYPE_LOCUS] = '\0';
 
     // move parasite to blood in next 7 days
     schedule_move_parasite_to_blood(genotype, 7);
@@ -850,4 +870,21 @@ void GPU::Person::generate_render_entity(int location, bool is_circulate){
   model_ = model;
   color_ = Model::CONFIG->h_location_colors[location];
   if(is_circulate) color_ = glm::vec4(1.0f,1.0f,1.0f,1.0f);
+}
+
+void ::GPU::Person::set_liver_parasite_type(GPU::Genotype* value) {
+  liver_parasite_type_ = value;
+  if(value ==nullptr){
+    person_index_gpu->h_person_update_info()[index_].person_liver_parasite_genotype[0] = '\0';
+  }
+  else{
+    std::copy( value->aa_sequence.begin(),
+               value->aa_sequence.end(),
+               person_index_gpu->h_person_update_info()[index_].person_liver_parasite_genotype);
+    person_index_gpu->h_person_update_info()[index_].person_liver_parasite_genotype[MAX_GENOTYPE_LOCUS] = '\0';
+  }
+}
+
+GPU::Genotype* GPU::Person::liver_parasite_type() const {
+  return liver_parasite_type_;
 }

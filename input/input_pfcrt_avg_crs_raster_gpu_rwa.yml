@@ -42,7 +42,7 @@ initial_seed_number: 123456789
 starting_date: 2000/1/1
 
 # ending time point of the simulation (in yyyy/m/d format)
-ending_date: 2001/1/1
+ending_date: 2030/1/1
 
 # the day at which the simulation's reporting functionality begins collecting data for
 # EIR, # of clinical episodes, # death , # of treatment, #TF by location,...
@@ -1028,7 +1028,7 @@ gpu_strategy_db:
     type: SFT
     therapy_id: 13
 
-initial_strategy_id: 10
+initial_strategy_id: 16
 
 # this number use to detemine whether a therapy is "useful" or not and it is used to calculate
 # the useful therapeutic duration of a therapy
@@ -1163,6 +1163,10 @@ mosquito_config:
 within_host_induced_free_recombination: true
 
 events:
+  - name: change_treatment_strategy
+    info:
+      - day: 2010/1/1
+        strategy_id: 7
   - name: change_treatment_coverage
     info:
       - type: SteadyTCM

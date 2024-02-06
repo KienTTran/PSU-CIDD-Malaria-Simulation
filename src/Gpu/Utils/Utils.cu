@@ -16,6 +16,7 @@
 #include <thrust/remove.h>
 #include "Model.h"
 #include "Core/Config/Config.h"
+#include <bit> /* Needs C++20 */
 
 GPU::Utils::Utils() {
 }
@@ -146,7 +147,7 @@ TVector<T> GPU::Utils::count_by_1key(TVector<T> input_keys, int size){
     fill_missing_indices<T><<<n_blocks,n_threads>>>(thrust::raw_pointer_cast(device_output_temp.data()),
                                                       thrust::raw_pointer_cast(device_output_values.data()),
                                                       size);
-    cudaDeviceSynchronize();
+    check_cuda_error(cudaDeviceSynchronize());
     check_cuda_error(cudaGetLastError());
     thrust::copy(device_output_values.begin(), device_output_values.end(), host_output_values.begin());
     return host_output_values;
@@ -173,3 +174,56 @@ __global__ void extract_locations_and_moving_levels_kernel(int n_locations,
         d_moving_levels[index] = index % n_moving_levels;
     }
 }
+
+/*
+ * From NumberHelpers::is_equal
+ * */
+__device__ bool is_equal(double a, double b, double epsilon){
+    return fabs(a - b) < epsilon;
+}
+
+//int bit_length(unsigned x)
+//{
+//    return (8*sizeof x) - std::countl_zero(x);
+//}
+//__device__ __host__ int encode_vec_to_int(TVector<int> int_vector){
+//    int encoded_number = 0;
+//    int bit_position = 0;
+//    int num_bits;
+//    for(int num : int_vector){
+//        num_bits = bit_length(num);
+//        encoded_number |= (num & ((1 << num_bits) - 1)) << bit_position;
+//        bit_position += num_bits;
+//    }
+//    /* Encode size to last bit */
+//    num_bits = bit_length(int_vector.size());
+//    encoded_number |= (int_vector.size() & ((1 << num_bits) - 1)) << bit_position;
+//    return encoded_number;
+//}
+//
+//__device__ __host__ int* decode_int_to_arr(int encoded_value){
+//    decoded_numbers = []
+//    bit_position = 0
+//
+//    for bit_length in bit_lengths:
+//# Decode the number using the specified number of bits
+//    decoded_numbers.append((encoded_number >> bit_position) & ((1 << bit_length) - 1))
+//
+//# Update the bit position for the next number
+//    bit_position += bit_length
+//
+//    return tuple(decoded_numbers)
+//}
+
+__host__ int encode_vec2_to_int(TVector<int> int_vector){
+    return (int_vector[0] << 16) | int_vector[1];
+}
+
+/* Decode to array to use in device kernel and host,
+ * remember to free result after calling this func in device
+ * */
+__device__ int* decode_int_to_arr2(int encoded_value, int* result){
+    result[1] = encoded_value & 0xFFFF;
+    result[0] = (encoded_value >> 16) & 0xFFFF;
+}
+

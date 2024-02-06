@@ -11,9 +11,10 @@
 #include "Gpu/Core/Scheduler.cuh"
 #include "Gpu/Population/SingleHostClonalParasitePopulations.cuh"
 #include "Gpu/Population/ClonalParasitePopulation.cuh"
+#include "Gpu/Population/Properties/PersonIndexGPU.cuh"
 #include "Gpu/Population/ImmuneSystem.cuh"
 #include "Gpu/Parasites/Genotype.cuh"
-#include "GPu/Population/DrugsInBlood.cuh"
+#include "Gpu/Population/DrugsInBlood.cuh"
 #include "Gpu/Population/Person.cuh"
 
 GPU::MoveParasiteToBloodEvent::MoveParasiteToBloodEvent() : infection_genotype_(nullptr) {}
@@ -35,9 +36,8 @@ GPU::MoveParasiteToBloodEvent::schedule_event(GPU::Scheduler *scheduler, GPU::Pe
 
 void GPU::MoveParasiteToBloodEvent::execute() {
   auto *person = dynamic_cast<GPU::Person *>(dispatcher);
-    if(person->index() >= 1040 && person->index() <= 1045){
-      printf("GPU::MoveParasiteToBloodEvent::execute() %d\n",person->index());
-    }
+  LOG_IF(person->index() >= 1040 && person->index() <= 1045,INFO)
+    << fmt::format("GPU::MoveParasiteToBloodEvent::execute() {}",person->index());
   auto *parasite_type = person->liver_parasite_type();
   person->set_liver_parasite_type(nullptr);
 

@@ -29,6 +29,7 @@ namespace GPU{
     class Event;
     class Therapy;
     class Drug;
+    class PersonUpdateInfo;
 };
 
 class Person;
@@ -153,7 +154,6 @@ using TVector2 = std::vector<TVector<T>>;
 template <typename T>
 using TVector3 = std::vector<TVector2<T>>;
 
-typedef double (*GPUClonalParasiteUpdateFunction) (const int &duration);
 
 struct GPUConfig{
     int n_threads;

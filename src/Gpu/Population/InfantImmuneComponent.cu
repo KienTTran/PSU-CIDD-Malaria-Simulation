@@ -12,19 +12,19 @@
 #include <cmath>
 
 
-__device__ __host__ GPU::InfantImmuneComponent::InfantImmuneComponent(GPU::ImmuneSystem *immune_system) : GPU::ImmuneComponent(immune_system) {}
+GPU::InfantImmuneComponent::InfantImmuneComponent(GPU::ImmuneSystem *immune_system) : GPU::ImmuneComponent(immune_system) {}
 
 GPU::InfantImmuneComponent::~InfantImmuneComponent() = default;
 
-__device__ __host__ double GPU::InfantImmuneComponent::get_acquire_rate(ImmuneSystemInformation h_immune_system_information,int latest_update_time,const int &age) const {
+double GPU::InfantImmuneComponent::get_acquire_rate(ImmuneSystemInformation h_immune_system_information,int latest_update_time,const int &age) const {
   return 0;
 }
 
-__device__ __host__ double GPU::InfantImmuneComponent::get_decay_rate(ImmuneSystemInformation h_immune_system_information,const int &age) const {
+double GPU::InfantImmuneComponent::get_decay_rate(ImmuneSystemInformation h_immune_system_information,const int &age) const {
   return 0.0315;
 }
 
-__device__ __host__ double GPU::InfantImmuneComponent::get_current_value(ImmuneSystemInformation h_immune_system_information,int latest_update_time,int current_time) {
+double GPU::InfantImmuneComponent::get_current_value(ImmuneSystemInformation h_immune_system_information,int latest_update_time,int current_time) {
   auto temp = 0.0;
   if (latest_update_time > 0) {
     const auto duration = current_time - latest_update_time;

@@ -20,6 +20,7 @@
 #include "CustomConfigItem.h"
 #include "Spatial/Location.h"
 #include "Gpu/Parasites/GenotypeDatabase.cuh"
+#include "Gpu/Therapies/DrugType.cuh"
 
 class Model;
 
@@ -177,6 +178,7 @@ public:
     IntVector h_location_indices;
     TVector<glm::vec4> h_location_colors;
     IntVector h_popsize_by_moving_level;
+    TVector<GPU::DrugType::ResistantAALocation> h_drug_res_aa_locs;
 
 public:
     GenotypeDatabase genotype_db {};

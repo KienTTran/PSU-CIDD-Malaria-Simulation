@@ -14,7 +14,7 @@ GPU::ImmunityClearanceUpdateFunction::ImmunityClearanceUpdateFunction(Model *mod
 
 GPU::ImmunityClearanceUpdateFunction::~ImmunityClearanceUpdateFunction() = default;
 
-__device__ __host__ double GPU::ImmunityClearanceUpdateFunction::get_current_parasite_density(GPU::ClonalParasitePopulation *parasite,
+double GPU::ImmunityClearanceUpdateFunction::get_current_parasite_density(GPU::ClonalParasitePopulation *parasite,
                                                                                               int duration) {
 
   auto *p = parasite->parasite_population()->person();

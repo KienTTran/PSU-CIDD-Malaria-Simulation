@@ -23,8 +23,8 @@ class GPU::ParasiteDensityUpdateFunction {
   //    ParasiteUpdateFunction(const ParasiteUpdateFunction& orig);
   virtual ~ParasiteDensityUpdateFunction();
 
-    __device__ __host__ virtual double get_current_parasite_density(GPU::ClonalParasitePopulation *parasite, int duration) = 0;
-    __device__ __host__ virtual int type() const {
+  virtual double get_current_parasite_density(GPU::ClonalParasitePopulation *parasite, int duration) = 0;
+  virtual int type() const {
       return 0;
     }
 

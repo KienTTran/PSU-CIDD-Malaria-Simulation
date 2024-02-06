@@ -28,8 +28,8 @@ class GPU::ImmunityClearanceUpdateFunction : public GPU::ParasiteDensityUpdateFu
   //    ImmunityClearanceUpdateFunction(const ImmunityClearanceUpdateFunction& orig);
   virtual ~ImmunityClearanceUpdateFunction();
 
-    __device__ __host__ double get_current_parasite_density(GPU::ClonalParasitePopulation *parasite, int duration) override;
-    __device__ __host__  int type() const override {
+    double get_current_parasite_density(GPU::ClonalParasitePopulation *parasite, int duration) override;
+     int type() const override {
     return 2;
   }
 

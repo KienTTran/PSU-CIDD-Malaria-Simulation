@@ -13,6 +13,7 @@
 
 namespace GPU{
     class PersonIndex;
+    class Person;
 }
 
 class GPU::PersonIndex {

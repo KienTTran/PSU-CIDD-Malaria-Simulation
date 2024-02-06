@@ -33,9 +33,8 @@ void GPU::ReceiveTherapyEvent::schedule_event(GPU::Scheduler *scheduler, GPU::Pe
 
 void GPU::ReceiveTherapyEvent::execute() {
   auto *person = dynamic_cast<GPU::Person *>(dispatcher);
-  if(person->index() >= 1040 && person->index() <= 1045){
-      printf("GPU::ReceiveTherapyEvent::execute() %d\n",person->index());
-  }
+  LOG_IF(person->index() >= 1040 && person->index() <= 1045,INFO)
+    << fmt::format("GPU::ReceiveTherapyEvent::execute() {}",person->index());
   //    if (person->is_in_external_population()) {
   //        return;
   //    }

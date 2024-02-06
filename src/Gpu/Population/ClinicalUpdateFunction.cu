@@ -14,7 +14,7 @@ GPU::ClinicalUpdateFunction::ClinicalUpdateFunction(Model *model) : model_(model
 
 GPU::ClinicalUpdateFunction::~ClinicalUpdateFunction() = default;
 
-__device__ __host__ double GPU::ClinicalUpdateFunction::get_current_parasite_density(GPU::ClonalParasitePopulation *parasite, int duration) {
+double GPU::ClinicalUpdateFunction::get_current_parasite_density(GPU::ClonalParasitePopulation *parasite, int duration) {
   return model_->config()->parasite_density_level().log_parasite_density_asymptomatic;
 }
 

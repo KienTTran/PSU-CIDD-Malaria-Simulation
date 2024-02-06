@@ -233,7 +233,6 @@ GPU::Genotype *GPU::Genotype::perform_mutation_by_drug(Config *pConfig, ::Random
                         .amino_acids;
                 // draw random aa id
                 auto new_aa_id = pRandom->random_uniform(aa_list.size() - 1);
-
                 auto old_aa = aa_sequence[aa_pos.aa_index_in_aa_string];
                 auto new_aa = aa_list[new_aa_id];
                 if (new_aa == old_aa) {
@@ -244,6 +243,11 @@ GPU::Genotype *GPU::Genotype::perform_mutation_by_drug(Config *pConfig, ::Random
         }
     }
   }
+//  printf("CPU perform_mutation_by_drug\n"
+//         "genotype old %s\n"
+//         "genotype new %s\n",
+//         aa_sequence.c_str(),
+//         new_aa_sequence.c_str());
   // get genotype pointer from gene database based on aa sequence
   return pConfig->gpu_genotype_db.get_genotype(new_aa_sequence, pConfig);
 }

@@ -83,7 +83,7 @@ void GPU::UpdateRenderOGLEvent::execute() {
                                                                                    thrust::raw_pointer_cast(pi->buffer_person_colors().data()),
                                                                                    Model::GPU_RENDER_ENTITY->d_ogl_buffer_model_ptr,
                                                                                    Model::GPU_RENDER_ENTITY->d_ogl_buffer_color_ptr);
-        cudaDeviceSynchronize();
+        check_cuda_error(cudaDeviceSynchronize());
         check_cuda_error(cudaGetLastError());
     }
     pi->buffer_person_models().clear();

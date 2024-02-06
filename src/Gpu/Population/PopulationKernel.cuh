@@ -6,6 +6,8 @@
 #define GPUPOPULATIONKERNEL_CUH
 
 #include "Core/TypeDef.h"
+#include "Gpu/Therapies/DrugType.cuh"
+#include "Gpu/Population/Properties/PersonIndexGPU.cuh"
 
 namespace GPU{
     class PopulationKernel;
@@ -31,6 +33,25 @@ public:
     /*
      * Variables for infection
      * */
+    TVector<GPU::DrugType::ResistantAALocation> h_drug_res_aa_loc;
+    ThrustTVectorDevice<GPU::DrugType::ResistantAALocation> d_drug_res_aa_loc;
+    TVector<int> h_drug_res_aa_loc_index;
+    ThrustTVectorDevice<int> d_drug_res_aa_loc_index;
+
+    TVector<int> h_gen_gene_size;
+    ThrustTVectorDevice<int> d_gen_gene_size;
+    TVector<int> h_gen_max_copies;
+    ThrustTVectorDevice<int> d_gen_max_copies;
+    TVector<int> h_gen_aa_size;
+    ThrustTVectorDevice<int> d_gen_aa_size;
+    TVector<std::string> h_gen_aa_test;
+    TVector<int> h_gen_aa_int;
+    ThrustTVectorDevice<int> d_gen_aa_int;
+    TVector<int> h_gen_aa_int_start_index;
+    ThrustTVectorDevice<int> d_gen_aa_int_start_index;
+    char* d_gen_mutation_mask;
+    ImmuneSystemInformation *d_immune_system_information;
+    GPU::PersonIndexGPU *pi;
 public:
     PopulationKernel();
     ~PopulationKernel() = default;

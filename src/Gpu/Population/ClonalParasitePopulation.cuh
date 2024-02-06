@@ -55,9 +55,9 @@ public:
   //    BloodParasite(const BloodParasite& orig);
   virtual ~ClonalParasitePopulation();
 
-  __host__ double get_current_parasite_density(const int &current_time);
+  double get_current_parasite_density(const int &current_time);
 
-    __device__ __host__ double get_log10_infectious_density() const;
+  double get_log10_infectious_density() const;
 
   bool resist_to(const int &drug_id) const;
 

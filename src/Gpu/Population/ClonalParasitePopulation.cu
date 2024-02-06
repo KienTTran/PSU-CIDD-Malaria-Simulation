@@ -35,7 +35,7 @@ GPU::ClonalParasitePopulation::ClonalParasitePopulation(GPU::Genotype *genotype)
 GPU::ClonalParasitePopulation::~ClonalParasitePopulation() = default;
 
 
-__host__ double GPU::ClonalParasitePopulation::get_current_parasite_density(const int &current_time) {
+double GPU::ClonalParasitePopulation::get_current_parasite_density(const int &current_time) {
 //  printf("GPU::ClonalParasitePopulation::get_current_parasite_density %f\n",last_update_log10_parasite_density_);
   const auto duration = current_time - parasite_population_->person()->latest_update_time();
   if (duration == 0) {
@@ -49,21 +49,20 @@ __host__ double GPU::ClonalParasitePopulation::get_current_parasite_density(cons
     return last_update_log10_parasite_density_;
   }
 
-  if(person_->index() >= 1040 && person_->index() < 1010){
-    printf("%d GPU::ClonalParasitePopulation::get_current_parasite_density %d %d %d %d %d %d %f\n",
-           person_->index(),
-           index_,
-           parasite_population_->person()->latest_update_time(),
-           person_->person_index_gpu->h_person_update_info()[person_->index()].person_latest_update_time,
-           current_time,
-           duration,
-           update_function_->type(),
-           update_function_->get_current_parasite_density(this, duration));
-  }
+//  LOG_IF(person_->index() >= 1040 && person_->index() <= 1045,INFO)
+//    << fmt::format("{} GPU::ClonalParasitePopulation::get_current_parasite_density {} {} {} {} {} {} {}",
+//           person_->index(),
+//           index_,
+//           parasite_population_->person()->latest_update_time(),
+//           person_->person_index_gpu->h_person_update_info()[person_->index()].person_latest_update_time,
+//           current_time,
+//           duration,
+//           update_function_->type(),
+//           update_function_->get_current_parasite_density(this, duration));
   return update_function_->get_current_parasite_density(this, duration);
 }
 
-__device__ __host__ double GPU::ClonalParasitePopulation::get_log10_infectious_density() const {
+double GPU::ClonalParasitePopulation::get_log10_infectious_density() const {
   if (NumberHelpers::is_equal(last_update_log10_parasite_density_, LOG_ZERO_PARASITE_DENSITY)
       || NumberHelpers::is_equal(gametocyte_level_, 0.0))
     return LOG_ZERO_PARASITE_DENSITY;

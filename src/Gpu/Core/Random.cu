@@ -14,7 +14,6 @@
 
 GPU::Random::Random() {
     d_states = nullptr;
-    n_threads = 1024;
 }
 
 GPU::Random::~Random() {
@@ -24,7 +23,7 @@ GPU::Random::~Random() {
 __global__ void setup(int num,curandState *state, long seed)
 {
     auto id = threadIdx.x + blockIdx.x * blockDim.x;
-    if(id < num) curand_init(seed, id, 0, &state[id]);
+    if(id < num) curand_init(seed + id, 0, 0, &state[id]);
 }
 
 struct setupCurandStates
@@ -46,17 +45,81 @@ void GPU::Random::init_curand_states(ThrustTVectorDevice<curandState> &d_curand_
                       setupCurandStates(seed));
 }
 
-void GPU::Random::init(int n, unsigned long seed) {
-    LOG(INFO) << "GPU Random initializing with seed: " << seed;
-    cudaMalloc((void **) &d_states, sizeof(curandState) * n);
-    n_blocks = (n + n_threads + 1) / n_threads;
-    setup<<<n_blocks,n_threads>>>(n,d_states, seed);
-    cudaDeviceSynchronize();
+void GPU::Random::init(int n, unsigned long seed, int n_threads, bool debug) {
+    free();
+    check_cuda_error(cudaMalloc((void **) &d_states, sizeof(curandState) * n));
+    int n_threads_ = (Model::CONFIG == nullptr || n_threads != -1) ? n_threads : Model::CONFIG->gpu_config().n_threads;
+    int n_blocks = (n + n_threads - 1) / n_threads_;
+    if(n_threads > 0)
+        LOG_IF(debug,INFO) << "GPU Random initializing " << n_threads_ << " threads with seed: " << seed;
+    else
+        LOG_IF(debug,INFO) << "GPU Random initializing default threads with seed: " << seed;
+    setup<<<n_blocks,n_threads_>>>(n,d_states, seed);
+    check_cuda_error(cudaDeviceSynchronize());
     check_cuda_error(cudaPeekAtLastError());
 }
 
 void GPU::Random::free() {
     cudaFree(d_states);
+}
+
+/*
+ * curand_uniform (curandState_t *state) - (0.0, 1.0]
+ * Have to convert to [0.0,1.0) like GSL
+ * */
+__device__ double curand_uniform_gsl_double(double rand, double min, double max){
+    return min + ((rand - 1.0e-6) * (max - min));
+}
+
+__device__ int curand_uniform_gsl_int(double rand, int min, int max){
+    return int(min + ((rand - 1.0e-6) * (max - min)));
+}
+
+__device__ double curand_uniform_double_min_max(double rand,double min, double max){
+    return min + (curand_uniform_gsl_double(rand,0.0,1.0) * (max - min));
+}
+
+__device__ int curand_uniform_int_min_max(double rand,int min, int max){
+    return int(min + (curand_uniform_gsl_double(rand,0.0,1.0) * (max - min)));
+}
+
+__global__ void random_uniform_kernel_double(curandState *d_state, int n, double *d_randoms, double from, double to){
+    int thread_index = blockIdx.x * blockDim.x + threadIdx.x;
+    int stride = blockDim.x * gridDim.x;
+    curandState local_state = d_state[thread_index];
+    for(int index = thread_index; index < n; index += stride){
+        d_randoms[index] = curand_uniform_double_min_max(curand_uniform_double(&local_state),from,to);
+    }
+    d_state[thread_index] = local_state;
+}
+
+__global__ void random_uniform_kernel_int(curandState *d_state, int n, int *d_randoms, int from, int to){
+    int thread_index = blockIdx.x * blockDim.x + threadIdx.x;
+    int stride = blockDim.x * gridDim.x;
+    curandState local_state = d_state[thread_index];
+    for(int index = thread_index; index < n; index += stride){
+        d_randoms[index] = curand_uniform_int_min_max(curand_uniform_double(&local_state),from,to);
+    }
+    d_state[thread_index] = local_state;
+}
+
+/*
+ * Random unifrom from [min,max) like GSL
+ * */
+ThrustTVectorDevice<double> GPU::Random::random_uniform_double_min_max(int size, double from, double to){
+    ThrustTVectorDevice<double> d_randoms(size);
+    int n_threads = Model::CONFIG == nullptr ? 1024 : Model::CONFIG->gpu_config().n_threads;
+    int n_blocks = (size + n_threads + 1) / n_threads;
+    random_uniform_kernel_double<<<n_blocks, n_threads>>>(d_states, size, thrust::raw_pointer_cast(d_randoms.data()), from, to);
+    return d_randoms;
+}
+
+ThrustTVectorDevice<int> GPU::Random::random_uniform_int_min_max(int size, int from, int to){
+    ThrustTVectorDevice<int> d_randoms(size);
+    int n_threads = Model::CONFIG == nullptr ? 1024 : Model::CONFIG->gpu_config().n_threads;
+    int n_blocks = (size + n_threads + 1) / n_threads;
+    random_uniform_kernel_int<<<n_blocks, n_threads>>>(d_states, size, thrust::raw_pointer_cast(d_randoms.data()), from, to);
+    return d_randoms;
 }
 
 /*
@@ -169,7 +232,7 @@ void GPU::Random::random_multinomial(int n_locations, int n_samples_each_locatio
                                                 thrust::raw_pointer_cast(d_norm.data()),
                                                 thrust::raw_pointer_cast(d_sum_p.data()),
                                                 thrust::raw_pointer_cast(d_sum_n.data()));
-    cudaDeviceSynchronize();
+    check_cuda_error(cudaDeviceSynchronize());
     check_cuda_error(cudaPeekAtLastError());
     d_norm.clear();
     d_sum_p.clear();
@@ -394,7 +457,7 @@ TVector<T*> GPU::Random::roulette_sampling(int n_locations, int n_samples_each_l
                                                    n_samples_each_location,
                                                    thrust::raw_pointer_cast(d_sum_distribution_all_locations.data()),
                                                    thrust::raw_pointer_cast(d_uniform_sampling.data()));
-    cudaDeviceSynchronize();
+    check_cuda_error(cudaDeviceSynchronize());
     check_cuda_error(cudaPeekAtLastError());
 
 //    thrust::copy(d_uniform_sampling.begin(), d_uniform_sampling.end(), std::ostream_iterator<double>(std::cout, "\n"));
@@ -426,7 +489,7 @@ TVector<T*> GPU::Random::roulette_sampling(int n_locations, int n_samples_each_l
                                                       thrust::raw_pointer_cast(d_uniform_sampling.data()),
                                                       thrust::raw_pointer_cast(d_uniform_sampling_index.data()),
                                                       thrust::raw_pointer_cast(d_sample_index.data()));
-    cudaDeviceSynchronize();
+    check_cuda_error(cudaDeviceSynchronize());
     check_cuda_error(cudaPeekAtLastError());
 
 //    thrust::copy(d_sample_index.begin(), d_sample_index.end(), std::ostream_iterator<int>(std::cout, "\n"));

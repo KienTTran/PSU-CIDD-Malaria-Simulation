@@ -15,13 +15,11 @@ namespace GPU{
 class GPU::Random {
 public:
     curandState *d_states;
-    int n_threads;
-    int n_blocks;
 public:
     Random();
     ~Random();
 
-    void init(int n, unsigned long seed);
+    void init(int n, unsigned long seed, int n_threads = -1,bool debug = false);
     void init_curand_states(ThrustTVectorDevice<curandState> &d_curand_states, int size, long seed);
     void free();
     void random_multinomial(int n_locations, int n_samples_each_location,
@@ -40,6 +38,8 @@ public:
                                      TVector<T*> all_objects,
                                      ThrustTVectorDevice<double> &d_sum_distribution_all_locations,
                                      bool is_shuffled);
+    ThrustTVectorDevice<double> random_uniform_double_min_max(int size, double from, double to);
+    ThrustTVectorDevice<int> random_uniform_int_min_max(int size, int from, int to);
 };
 
 

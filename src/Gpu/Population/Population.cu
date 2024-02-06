@@ -346,15 +346,14 @@ void GPU::Population::initial_infection(GPU::Person* person, GPU::Genotype* para
 //  assert(person->id() == pi->h_persons()[p_index]->id());
 //  assert(person->index() == pi->h_persons()[p_index]->index());
 
-    if(person->index() >= 1040 && person->index() <= 1045){
-        for(auto *parasite: *person->all_clonal_parasite_populations()->parasites()){
-            printf("%d GPU::Population::initial_infection %d %d %s %f\n",
-                   person->index(),
-                   parasite->index(),
-                   parasite->update_function()->type(),
-                   parasite->genotype()->aa_sequence.c_str(),
-                   parasite->last_update_log10_parasite_density());
-        }
+    for(auto *parasite: *person->all_clonal_parasite_populations()->parasites()){
+        LOG_IF(person->index() >= 1040 && person->index() <= 1045,INFO)
+            << fmt::format("{} GPU::Population::initial_infection {} {} {} {}",
+               person->index(),
+               parasite->index(),
+               parasite->update_function()->type(),
+               parasite->genotype()->aa_sequence.c_str(),
+               parasite->last_update_log10_parasite_density());
     }
 }
 
@@ -428,7 +427,7 @@ void GPU::Population::generate_individual(int location, int age_class) {
 
   auto immune_value = Model::RANDOM->random_beta(Model::CONFIG->immune_system_information().alpha_immune,
                                                  Model::CONFIG->immune_system_information().beta_immune);
-  p->immune_system()->immune_component()->set_latest_value(immune_value);
+  p->immune_system()->set_latest_immune_value(immune_value);
   p->immune_system()->set_increase(false);
   //                    p->draw_random_immune();
 

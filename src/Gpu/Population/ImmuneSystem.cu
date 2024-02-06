@@ -8,12 +8,13 @@
 #include "ImmuneSystem.cuh"
 #include "ImmuneComponent.cuh"
 #include "Person.cuh"
+#include "Properties/PersonIndexGPU.cuh"
 #include "Model.h"
 #include "Core/Config/Config.h"
 #include <cmath>
 #include "Helpers/ObjectHelpers.h"
 
-__device__ __host__ GPU::ImmuneSystem::ImmuneSystem(GPU::Person *p) : person_(p), increase_(false), immune_component_(nullptr) {
+GPU::ImmuneSystem::ImmuneSystem(GPU::Person *p) : person_(p), increase_(false), immune_component_(nullptr) {
   //    immune_components_ = new ImmuneComponentPtrVector();
 
 }
@@ -39,6 +40,9 @@ void GPU::ImmuneSystem::set_immune_component(ImmuneComponent *value) {
 
     immune_component_ = value;
     immune_component_->set_immune_system(this);
+    if(person_->person_index_gpu->h_person_update_info().size() > 0 && person_->index() != -1){
+        person_->person_index_gpu->h_person_update_info()[person_->index()].immune_system_component_type = value->type();
+    }
   }
 }
 
@@ -46,19 +50,22 @@ void GPU::ImmuneSystem::draw_random_immune(double value) {
   immune_component_->draw_random_immune(value);
 }
 
-__device__ __host__ double GPU::ImmuneSystem::get_lastest_immune_value() const {
+double GPU::ImmuneSystem::get_lastest_immune_value() const {
   return immune_component_->latest_value();
 }
 
 void GPU::ImmuneSystem::set_latest_immune_value(double value) {
   immune_component_->set_latest_value(value);
+  if(person_->person_index_gpu->h_person_update_info().size() > 0 && person_->index() != -1){
+      person_->person_index_gpu->h_person_update_info()[person_->index()].immune_system_component_latest_value = value;
+  }
 }
 
-__device__ __host__ double GPU::ImmuneSystem::get_current_value(ImmuneSystemInformation h_immune_system_information,int latest_update_time,int current_time) const {
+double GPU::ImmuneSystem::get_current_value(ImmuneSystemInformation h_immune_system_information,int latest_update_time,int current_time) const {
   return immune_component_->get_current_value(h_immune_system_information,latest_update_time,current_time);
 }
 
-__host__ double GPU::ImmuneSystem::get_parasite_size_after_t_days(const int &duration, const double &originalSize,
+double GPU::ImmuneSystem::get_parasite_size_after_t_days(const int &duration, const double &originalSize,
                                                     const double &fitness) const {
 
   const auto last_immune_level = get_lastest_immune_value();
@@ -72,7 +79,7 @@ __host__ double GPU::ImmuneSystem::get_parasite_size_after_t_days(const int &dur
 
 }
 
-__device__ __host__ double GPU::ImmuneSystem::get_parasite_size_after_t_days_gpu(ImmuneSystemInformation* immunity_system_info,
+double GPU::ImmuneSystem::get_parasite_size_after_t_days_gpu(ImmuneSystemInformation* immunity_system_info,
                                                                         const int &duration, const double &originalSize,
                                                                         const double &fitness) const {
     printf("GPU::ImmuneSystem::get_parasite_size_after_t_days_gpu %d %f %f %f %f %f\n",
@@ -85,7 +92,7 @@ __device__ __host__ double GPU::ImmuneSystem::get_parasite_size_after_t_days_gpu
 }
 
 
-__device__ __host__ double GPU::ImmuneSystem::get_clinical_progression_probability(ImmuneSystemInformation h_immune_system_information,int latest_update_time,int current_time) const {
+double GPU::ImmuneSystem::get_clinical_progression_probability(ImmuneSystemInformation h_immune_system_information,int latest_update_time,int current_time) const {
   const auto immune = get_current_value(h_immune_system_information,latest_update_time,current_time);
   //    double PClinical = (isf.min_clinical_probability - isf.max_clinical_probability) * pow(immune, isf.immune_effect_on_progression_to_clinical) + isf.max_clinical_probability;
 
@@ -99,6 +106,17 @@ __device__ __host__ double GPU::ImmuneSystem::get_clinical_progression_probabili
   return p_clinical;
 }
 
-__device__ __host__ void GPU::ImmuneSystem::update(ImmuneSystemInformation h_immune_system_information,int latest_update_time,int current_time) {
+void GPU::ImmuneSystem::update(ImmuneSystemInformation h_immune_system_information,int latest_update_time,int current_time) {
   immune_component_->update(h_immune_system_information,latest_update_time,current_time);
+}
+
+void GPU::ImmuneSystem::set_increase(const bool &value) {
+  increase_ = value;
+  if(person_->person_index_gpu->h_person_update_info().size() > 0 && person_->index() != -1){
+      person_->person_index_gpu->h_person_update_info()[person_->index()].immune_system_is_increased = value;
+  }
+}
+
+bool GPU::ImmuneSystem::increase() const {
+  return increase_;
 }

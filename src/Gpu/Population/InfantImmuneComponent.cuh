@@ -16,17 +16,20 @@ namespace GPU {
 
 class GPU::InfantImmuneComponent : public GPU::ImmuneComponent {
  public:
-  explicit __device__ __host__ InfantImmuneComponent(GPU::ImmuneSystem *immune_system = nullptr);
+  explicit InfantImmuneComponent(GPU::ImmuneSystem *immune_system = nullptr);
 
   // InfantImmuneComponent(const InfantImmuneComponent& orig);
   virtual ~InfantImmuneComponent();
 
-    __device__ __host__ double get_decay_rate(ImmuneSystemInformation h_immune_system_information,const int &age) const override;
+    double get_decay_rate(ImmuneSystemInformation h_immune_system_information,const int &age) const override;
 
-    __device__ __host__ double get_acquire_rate(ImmuneSystemInformation h_immune_system_information,int latest_update_time,const int &age) const override;
+    double get_acquire_rate(ImmuneSystemInformation h_immune_system_information,int latest_update_time,const int &age) const override;
 
-    __device__ __host__ double get_current_value(ImmuneSystemInformation h_immune_system_information,int latest_update_time,int current_time) override;
+    double get_current_value(ImmuneSystemInformation h_immune_system_information,int latest_update_time,int current_time) override;
 
+    virtual int type() const {
+        return 1;
+    }
 };
 
 #endif    /* INFANTIMMUNECOMPONENT_CUH */

@@ -264,7 +264,7 @@ void Model::initialize() {
 
   LOG(INFO) << "Initializing GPU::Random";
   //Random always init with max population size
-  gpu_random_->init(Model::CONFIG->n_people_init()*Model::CONFIG->gpu_config().pre_allocated_mem_ratio,initial_seed_number_);
+  gpu_random_->init(ceil(Model::CONFIG->n_people_init()*Model::CONFIG->gpu_config().pre_allocated_mem_ratio),initial_seed_number_);
 
   LOG(INFO) << "Initializing GPU::Utils";
   gpu_utils_->init();
@@ -385,9 +385,24 @@ void Model::begin_time_step() {
 
 void Model::daily_update() {
   LOG(INFO) << "Update all individuals on CPU " << Model::GPU_SCHEDULER->current_time();
+  auto start = std::chrono::high_resolution_clock::now();
   gpu_population_->update_all_individuals();
+  auto lapse = std::chrono::high_resolution_clock::now() - start;
+  if(Model::CONFIG->debug_config().enable_debug_text){
+    LOG_IF(Model::GPU_SCHEDULER->current_time(), INFO)
+      << "[Model] Update all individuals on CPU time: "
+      << std::chrono::duration_cast<std::chrono::milliseconds>(lapse).count() << " ms";
+  }
   LOG(INFO) << "Update all individuals on GPU " << Model::GPU_SCHEDULER->current_time();
+  start = std::chrono::high_resolution_clock::now();
   gpu_population_kernel_->update_all_individuals();
+  lapse = std::chrono::high_resolution_clock::now() - start;
+  if(Model::CONFIG->debug_config().enable_debug_text){
+    LOG_IF(Model::GPU_SCHEDULER->current_time(), INFO)
+      << "[Model] Update all individuals on GPU time: "
+      << std::chrono::duration_cast<std::chrono::milliseconds>(lapse).count() << " ms";
+  }
+
 //
 //  // for safety remove all dead by calling perform_death_event
   gpu_population_->perform_death_event();

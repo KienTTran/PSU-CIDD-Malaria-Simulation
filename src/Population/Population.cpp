@@ -288,7 +288,7 @@ void Population::initialize() {
 
           auto immune_value = Model::RANDOM->random_beta(Model::CONFIG->immune_system_information().alpha_immune,
                                                          Model::CONFIG->immune_system_information().beta_immune);
-          p->immune_system()->immune_component()->set_latest_value(immune_value);
+          p->immune_system()->set_latest_immune_value(immune_value);
           p->immune_system()->set_increase(false);
           //                    p->draw_random_immune();
 
