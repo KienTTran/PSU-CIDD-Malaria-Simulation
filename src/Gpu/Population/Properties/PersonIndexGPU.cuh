@@ -14,8 +14,6 @@
 #define MAX_DRUG_PER_ACT 3
 #define MAX_GENOTYPE_LOCUS 38
 
-
-
 namespace GPU{
     class PersonIndexGPU;
     class Person;
@@ -80,6 +78,7 @@ namespace GPU{
     };
 }
 
+
 class GPU::PersonIndexGPU : public GPU::PersonIndex {
 DISALLOW_COPY_AND_ASSIGN(PersonIndexGPU)
 
@@ -88,7 +87,7 @@ public:
     PROPERTY_REF(TVector<glm::mat4>, h_person_models);
     PROPERTY_REF(TVector<glm::vec4>, h_person_colors);
     PROPERTY_REF(TVector<int>, h_person_residence_locations);
-    PROPERTY_REF(TVector<GPU::PersonUpdateInfo>, h_person_update_info);
+    PROPERTY_REF(ThrustTVectorHostPinned<GPU::PersonUpdateInfo>, h_person_update_info);
 
     //on DEVICE CUDA
     PROPERTY_REF(ThrustTVectorDevice<glm::mat4>,buffer_person_models);

@@ -52,6 +52,9 @@ public:
     char* d_gen_mutation_mask;
     ImmuneSystemInformation *d_immune_system_information;
     GPU::PersonIndexGPU *pi;
+    ThrustTVectorDevice<GPU::PersonUpdateInfo> d_buffer_person_update_info;
+    GPU::PersonUpdateInfo *d_buffer_person_update_info_stream;
+    cudaStream_t *d_streams;
 public:
     PopulationKernel();
     ~PopulationKernel() = default;

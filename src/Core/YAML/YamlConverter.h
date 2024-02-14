@@ -57,9 +57,9 @@ struct convert<GPUConfig> {
     }
     static bool decode(const Node& node, GPUConfig& gcfd) {
         gcfd.n_threads = node["n_threads"].as<int>();
-        gcfd.people_1_batch = node["people_1_batch"].as<int>();
+        gcfd.n_streams = node["n_streams"].as<int>();
+        gcfd.n_people_1_batch = node["n_people_1_batch"].as<int>();
         gcfd.pre_allocated_mem_ratio = node["pre_allocated_mem_ratio"].as<double>();
-        gcfd.n_parasites_per_person = node["n_parasites_per_person"].as<int>();
         return true;
     }
 };
