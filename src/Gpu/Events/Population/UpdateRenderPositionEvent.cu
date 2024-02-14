@@ -90,8 +90,8 @@ void GPU::UpdateRenderPositionEvent::execute() {
         tp_start = std::chrono::high_resolution_clock::now();
 
         //Update person position
-        batch_size = (pi->h_persons().size() < Model::CONFIG->gpu_config().people_1_batch)
-                     ? pi->h_persons().size() : Model::CONFIG->gpu_config().people_1_batch;
+        batch_size = (pi->h_persons().size() < Model::CONFIG->gpu_config().n_people_1_batch)
+                     ? pi->h_persons().size() : Model::CONFIG->gpu_config().n_people_1_batch;
         //This is to make sure threads fit all people in population
         n_threads = (batch_size < n_threads) ? batch_size : n_threads;
         for (int remain = pi->h_persons().size(); remain > 0; remain -= batch_size) {

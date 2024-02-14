@@ -9,10 +9,10 @@
 # ---------------------------------------------------------------
 
 gpu_config:
-  n_threads: 1024
-  people_1_batch: 102400000
+  n_threads: 768
+  n_streams: 8
+  people_1_batch: 1000000
   pre_allocated_mem_ratio: 1.1 #1.0 will turn off displaying GUI as well
-  n_parasites_per_person: 1
 
 render_config:
   window_width: 1280

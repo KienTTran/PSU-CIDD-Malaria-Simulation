@@ -64,7 +64,7 @@ CMD ["./MaSim", "-i", "/root/MaSimGPU/input/input_pfcrt_avg_crs_raster_gpu_dev.y
 
 #build cmd
 #docker build -t ktt878/masim_gpu .
-#docker build -t ktt878/masim_gpu .
+#docker push ktt878/masim_gpu
 
 #run cmd
 #docker pull ktt878/masim_gpu
@@ -72,4 +72,6 @@ CMD ["./MaSim", "-i", "/root/MaSimGPU/input/input_pfcrt_avg_crs_raster_gpu_dev.y
 #docker run --gpus all user/image:tag bash
 #docker exec -it container_id nvidia-smi
 #sudo docker run --rm --runtime=nvidia --gpus all -it ktt878/masim_gpu bash
+#sudo docker run --rm --runtime=nvidia --gpus all -it ktt878/masim_gpu ./MaSim -i /root/MaSimGPU/input/input_pfcrt_avg_crs_raster_gpu_rwa.yml -r ValidationReporter -o /root/MaSimGPU/build/output/ --v=1
+#sudo docker run --rm --runtime=nvidia --gpus all -it ktt878/masim_gpu ./MaSim -i /root/MaSimGPU/input/input_pfcrt_avg_crs_raster_gpu_bfa.yml -r ValidationReporter -o /root/MaSimGPU/build/output/ --v=1
 #sudo docker run --rm --runtime=nvidia --gpus all ktt878/masim_gpu

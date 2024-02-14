@@ -63,8 +63,8 @@ void GPU::UpdateRenderOGLEvent::execute() {
     auto tp_start = std::chrono::high_resolution_clock::now();
 
     int n_threads = Model::CONFIG->gpu_config().n_threads;
-    int batch_size = (pi->h_persons().size() < Model::CONFIG->gpu_config().people_1_batch)
-                     ? pi->h_persons().size() : Model::CONFIG->gpu_config().people_1_batch;
+    int batch_size = (pi->h_persons().size() < Model::CONFIG->gpu_config().n_people_1_batch)
+                     ? pi->h_persons().size() : Model::CONFIG->gpu_config().n_people_1_batch;
     //This is to make sure threads fit all people in population
     n_threads = (batch_size < n_threads) ? batch_size : n_threads;
     for (int remain = pi->h_persons().size(); remain > 0; remain -= batch_size) {

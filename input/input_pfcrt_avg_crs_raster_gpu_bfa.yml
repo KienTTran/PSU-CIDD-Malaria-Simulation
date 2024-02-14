@@ -8,16 +8,19 @@
 #
 # ---------------------------------------------------------------
 
+# n_people_1_batch must be > n_threads * n_streams
+# set pre_allocated_mem_ratio to 1.0 will turn off displaying GUI as well
 gpu_config:
-  n_threads: 1024
-  people_1_batch: 102400000
-  pre_allocated_mem_ratio: 1.1 #1.0 will turn off displaying GUI as well
-  n_parasites_per_person: 1
+  n_threads: 768
+  n_streams: 8
+  n_people_1_batch: 1000000
+  pre_allocated_mem_ratio: 1.0
 
+#in order to display GUI, display_gui is true and pre_allocated_mem_ratio must be set to > 1.0
 render_config:
   window_width: 1280
   window_height: 720
-  display_gui: false #in order to displaying GUI, pre_allocated_mem_ratio must be set to > 1.0
+  display_gui: false
   close_window_on_finish: true
   point_coord: 0.075
   shaders:

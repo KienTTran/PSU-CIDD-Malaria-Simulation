@@ -154,12 +154,15 @@ using TVector2 = std::vector<TVector<T>>;
 template <typename T>
 using TVector3 = std::vector<TVector2<T>>;
 
+template<class T>
+using ThrustTVectorHostPinned = thrust::host_vector<T, thrust::mr::stateless_resource_allocator<T,
+        thrust::system::cuda::universal_host_pinned_memory_resource>>;
 
 struct GPUConfig{
-    int n_threads;
-    int people_1_batch;
-    double pre_allocated_mem_ratio;
-    int n_parasites_per_person;
+    int n_threads {1024};
+    int n_streams {8};
+    int n_people_1_batch {1000000};
+    double pre_allocated_mem_ratio {1.0};
     friend std::ostream &operator<<(std::ostream &os, const GPUConfig &mcf) {
         os << "gpu_config";
         return os;
