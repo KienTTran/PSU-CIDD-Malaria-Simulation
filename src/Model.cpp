@@ -142,14 +142,12 @@ Model::~Model() {
 
 void Model::set_treatment_strategy(const int& strategy_id) {
   treatment_strategy_ = strategy_id == -1 ? nullptr : config_->strategy_db()[strategy_id];
+  treatment_strategy_->adjust_started_time_point(Model::GPU_SCHEDULER->current_time());
   TREATMENT_STRATEGY = treatment_strategy_;
 
-  treatment_strategy_->adjust_started_time_point(Model::GPU_SCHEDULER->current_time());
-
   gpu_treatment_strategy_ = strategy_id == -1 ? nullptr : config_->gpu_strategy_db()[strategy_id];
-  GPU_TREATMENT_STRATEGY = gpu_treatment_strategy_;
-
   gpu_treatment_strategy_->adjust_started_time_point(Model::GPU_SCHEDULER->current_time());
+  GPU_TREATMENT_STRATEGY = gpu_treatment_strategy_;
 
   //
   // if (treatment_strategy_->get_type() == IStrategy::NestedSwitching) {
@@ -244,6 +242,9 @@ void Model::initialize() {
   // initialize Population
   gpu_population_->initialize();
 
+  LOG(INFO) << "Initializing GPU::PopulationKernel";
+  gpu_population_kernel_->init();
+
   LOG(INFO) << "Initializing movement model...";
   config_->spatial_model()->prepare();
 
@@ -259,9 +260,6 @@ void Model::initialize() {
   // initialize infected_cases
   gpu_population_->introduce_initial_cases();
 
-  LOG(INFO) << "Initializing GPU::PopulationKernel";
-  gpu_population_kernel_->init();
-
   LOG(INFO) << "Initializing GPU::Random";
   //Random always init with max population size
   gpu_random_->init(ceil(Model::CONFIG->n_people_init()*Model::CONFIG->gpu_config().pre_allocated_mem_ratio),initial_seed_number_);
@@ -276,7 +274,7 @@ void Model::initialize() {
   gpu_renderer_->init(gpu_render_entity_);
 
   LOG(INFO) << "Schedule for population event (if configured)";
-  for (auto* event : config_->preconfig_population_events()) {
+  for (auto* event : config_->gpu_preconfig_population_events()) {
     gpu_scheduler_->schedule_population_event(event);
   }
 }
@@ -384,40 +382,25 @@ void Model::begin_time_step() {
 }
 
 void Model::daily_update() {
-  LOG(INFO) << "Update all individuals on CPU " << Model::GPU_SCHEDULER->current_time();
-  auto start = std::chrono::high_resolution_clock::now();
   gpu_population_->update_all_individuals();
-  auto lapse = std::chrono::high_resolution_clock::now() - start;
-  if(Model::CONFIG->debug_config().enable_debug_text){
-    LOG_IF(Model::GPU_SCHEDULER->current_time(), INFO)
-      << "[Model] Update all individuals on CPU time: "
-      << std::chrono::duration_cast<std::chrono::milliseconds>(lapse).count() << " ms";
-  }
-  LOG(INFO) << "Update all individuals on GPU " << Model::GPU_SCHEDULER->current_time();
-  start = std::chrono::high_resolution_clock::now();
   gpu_population_kernel_->update_all_individuals();
-  lapse = std::chrono::high_resolution_clock::now() - start;
-  if(Model::CONFIG->debug_config().enable_debug_text){
-    LOG_IF(Model::GPU_SCHEDULER->current_time(), INFO)
-      << "[Model] Update all individuals on GPU time: "
-      << std::chrono::duration_cast<std::chrono::milliseconds>(lapse).count() << " ms";
-  }
 
 //
 //  // for safety remove all dead by calling perform_death_event
   gpu_population_->perform_death_event();
   gpu_population_->perform_birth_event();
-//
+
 //  // update current foi should be call after perform death, birth event
 //  // in order to obtain the right all alive individuals,
 //  // infection event will use pre-calculated individual relative biting rate to infect new infections
 //  // circulation event will use pre-calculated individual relative moving rate to migrate individual to new location
   gpu_population_->update_current_foi();
-//
+  gpu_population_kernel_->update_current_foi();
+
   gpu_population_->perform_infection_event();
   gpu_population_->perform_circulation_event();
 //  gpu_population_kernel_->perform_circulation_event();
-//
+
 //  // infect new mosquito cohort in prmc must be run after population perform infection event and update current foi
 //  // because the prmc at the tracking index will be overridden with new cohort to use N days later and
 //  // infection event used the prmc at the tracking index for the today infection

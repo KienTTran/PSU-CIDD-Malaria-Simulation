@@ -147,7 +147,9 @@ public:
 
   CUSTOM_CONFIG_ITEM(initial_parasite_info, std::vector<InitialParasiteInfo>())
 
-  CUSTOM_CONFIG_ITEM(preconfig_population_events, std::vector<GPU::Event *>())
+  CUSTOM_CONFIG_ITEM(preconfig_population_events, std::vector<Event *>())
+
+  CUSTOM_CONFIG_ITEM(gpu_preconfig_population_events, std::vector<GPU::Event *>())
 
   CUSTOM_CONFIG_ITEM(moving_level_generator, MultinomialDistributionGenerator())
 

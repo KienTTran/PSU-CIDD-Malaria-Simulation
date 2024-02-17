@@ -35,6 +35,9 @@ namespace GPU{
         int person_moving_level;
         double person_innate_relative_biting_rate;
         double person_current_relative_biting_rate;
+        double person_current_relative_moving_rate;
+        double person_current_relative_infectivity;
+        double person_current_foi;
         bool person_using_age_dependent_biting_level;
         int person_latest_update_time;
         char person_liver_parasite_genotype[MAX_GENOTYPE_LOCUS+1];

@@ -30,14 +30,14 @@ public:
     ThrustTVectorDevice<int> d_ce_all_location_from_indices;
     ThrustTVectorDevice<int> d_ce_all_location_target_indices;
     ThrustTVectorDevice<int> d_ce_all_moving_levels;
+
     /*
-     * Variables for infection
+     * Variables for update individuals
      * */
     TVector<GPU::DrugType::ResistantAALocation> h_drug_res_aa_loc;
     ThrustTVectorDevice<GPU::DrugType::ResistantAALocation> d_drug_res_aa_loc;
     TVector<int> h_drug_res_aa_loc_index;
     ThrustTVectorDevice<int> d_drug_res_aa_loc_index;
-
     TVector<int> h_gen_gene_size;
     ThrustTVectorDevice<int> d_gen_gene_size;
     TVector<int> h_gen_max_copies;
@@ -49,19 +49,29 @@ public:
     ThrustTVectorDevice<int> d_gen_aa_int;
     TVector<int> h_gen_aa_int_start_index;
     ThrustTVectorDevice<int> d_gen_aa_int_start_index;
-    char* d_gen_mutation_mask;
-    ImmuneSystemInformation *d_immune_system_information;
-    GPU::PersonIndexGPU *pi;
+    char* d_gen_mutation_mask{};
+    ImmuneSystemInformation *d_immune_system_information{};
+    GPU::PersonIndexGPU *pi{};
     ThrustTVectorDevice<GPU::PersonUpdateInfo> d_buffer_person_update_info;
-    GPU::PersonUpdateInfo *d_buffer_person_update_info_stream;
-    cudaStream_t *d_streams;
+    GPU::PersonUpdateInfo *d_buffer_person_update_info_stream{};
+    cudaStream_t *d_streams{};
+    cudaEvent_t start_event{}, stop_event{};
+    float elapsed_time{};
+
+    /*
+     * Variables for update FOI
+     * */
+    /* This vector store relative biting, moving and foi of all people by location */
+    ThrustTVectorDevice<ThrustTuple4<int,double,double,double>> d_sum_biting_moving_foi_by_loc;
+    TVector<ThrustTuple4<int,double,double,double>> h_sum_biting_moving_foi_by_loc;
+    TVector<TVector<double>> force_of_infection_for_N_days_by_location;
+
 public:
     PopulationKernel();
     ~PopulationKernel() = default;
 public:
     void init();
 
-    void update_current_foi();
     /*
      * for circulations
      * */
@@ -82,6 +92,7 @@ public:
                                           ThrustTVectorDevice<int> &d_n_person_bitten_today_all_locations);
     void perform_infection_event();
     void update_all_individuals();
+    void update_current_foi();
 };
 
 

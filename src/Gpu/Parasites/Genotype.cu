@@ -11,7 +11,7 @@
 #include "Gpu/Therapies/DrugDatabase.cuh"
 #include "Gpu/Therapies/SCTherapy.cuh"
 
-__device__ __host__ GPU::Genotype::Genotype(const std::string &in_aa_sequence) : aa_sequence { in_aa_sequence } {
+GPU::Genotype::Genotype(const std::string &in_aa_sequence) : aa_sequence { in_aa_sequence } {
   // create aa structure
   std::string chromosome_str;
   std::istringstream tokenStream(in_aa_sequence);

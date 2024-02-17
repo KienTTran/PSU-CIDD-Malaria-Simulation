@@ -454,21 +454,45 @@ class preconfig_population_events : public IConfigItem {
  DISALLOW_MOVE(preconfig_population_events)
 
  public:
-  std::vector<GPU::Event *> value_;
+  std::vector<Event *> value_;
  public:
   //constructor
-  explicit preconfig_population_events(const std::string &name, std::vector<GPU::Event *> default_value,
+  explicit preconfig_population_events(const std::string &name, std::vector<Event *> default_value,
                                        Config *config = nullptr) : IConfigItem(config, name),
                                                                    value_{std::move(default_value)} {}
 
   // destructor
   virtual ~preconfig_population_events() = default;
 
-  virtual std::vector<GPU::Event *> &operator()() {
+  virtual std::vector<Event *> &operator()() {
     return value_;
   }
 
   void set_value(const YAML::Node &node) override;
+};
+
+
+class gpu_preconfig_population_events : public IConfigItem {
+DISALLOW_COPY_AND_ASSIGN(gpu_preconfig_population_events)
+
+DISALLOW_MOVE(gpu_preconfig_population_events)
+
+public:
+    std::vector<GPU::Event *> value_;
+public:
+    //constructor
+    explicit gpu_preconfig_population_events(const std::string &name, std::vector<GPU::Event *> default_value,
+                                         Config *config = nullptr) : IConfigItem(config, name),
+                                                                     value_{std::move(default_value)} {}
+
+    // destructor
+    virtual ~gpu_preconfig_population_events() = default;
+
+    virtual std::vector<GPU::Event *> &operator()() {
+      return value_;
+    }
+
+    void set_value(const YAML::Node &node) override;
 };
 
 class start_of_comparison_period : public ConfigItem<int> {

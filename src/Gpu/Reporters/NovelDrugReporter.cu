@@ -54,15 +54,15 @@ void GPU::NovelDrugReporter::monthly_report() {
   output_genotype_frequency_3(Model::CONFIG->gpu_genotype_db.size(),
                               Model::GPU_POPULATION->get_person_index<PersonIndexByLocationStateAgeClass>());
 
-  ss << (dynamic_cast<NovelDrugIntroductionStrategy*>(Model::TREATMENT_STRATEGY)->is_switched ? 1 : 0) << sep;
+  ss << (dynamic_cast<NovelDrugIntroductionStrategy*>(Model::GPU_TREATMENT_STRATEGY)->is_switched ? 1 : 0) << sep;
   for (const auto& tf_by_therapy : Model::GPU_DATA_COLLECTOR->current_tf_by_therapy()) {
     ss << tf_by_therapy << sep;
   }
 
   ss << Model::GPU_DATA_COLLECTOR->current_TF_by_location()[0] << sep;
 
-  ss << dynamic_cast<NestedMFTStrategy*>(Model::TREATMENT_STRATEGY)->distribution[0] << sep;
-  ss << dynamic_cast<NestedMFTStrategy*>(Model::TREATMENT_STRATEGY)->distribution[1];
+  ss << dynamic_cast<NestedMFTStrategy*>(Model::GPU_TREATMENT_STRATEGY)->distribution[0] << sep;
+  ss << dynamic_cast<NestedMFTStrategy*>(Model::GPU_TREATMENT_STRATEGY)->distribution[1];
 
   CLOG(INFO, "monthly_reporter") << ss.str();
   ss.str("");
@@ -82,12 +82,12 @@ void GPU::NovelDrugReporter::after_run() {
     ss << Model::GPU_DATA_COLLECTOR->cumulative_TF_by_location()[loc] << sep;
     ss << Model::GPU_DATA_COLLECTOR->cumulative_clinical_episodes_by_location()[loc] << sep;
     ss << std::to_string(
-        dynamic_cast<NovelDrugIntroductionStrategy*>(Model::TREATMENT_STRATEGY)->newly_introduced_strategy_id)
+        dynamic_cast<NovelDrugIntroductionStrategy*>(Model::GPU_TREATMENT_STRATEGY)->newly_introduced_strategy_id)
        << sep;
-    ss << std::to_string(dynamic_cast<NovelDrugIntroductionStrategy*>(Model::TREATMENT_STRATEGY)->tf_threshold) << sep;
-    ss << std::to_string(dynamic_cast<NovelDrugIntroductionStrategy*>(Model::TREATMENT_STRATEGY)->replacement_fraction)
+    ss << std::to_string(dynamic_cast<NovelDrugIntroductionStrategy*>(Model::GPU_TREATMENT_STRATEGY)->tf_threshold) << sep;
+    ss << std::to_string(dynamic_cast<NovelDrugIntroductionStrategy*>(Model::GPU_TREATMENT_STRATEGY)->replacement_fraction)
        << sep;
-    ss << std::to_string(dynamic_cast<NovelDrugIntroductionStrategy*>(Model::TREATMENT_STRATEGY)->replacement_duration)
+    ss << std::to_string(dynamic_cast<NovelDrugIntroductionStrategy*>(Model::GPU_TREATMENT_STRATEGY)->replacement_duration)
        << sep;
     ss << "FLT" << sep;
     ss << "importation" << sep;

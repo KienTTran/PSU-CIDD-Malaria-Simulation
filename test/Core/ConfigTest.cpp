@@ -17,8 +17,8 @@ TEST(ConfigTest, ReadFromDefaultInputFile) {
   Config c;
   c.read_from_file("input.yml");
 
-  ASSERT_EQ(c.starting_date(), date::year_month_day { date::year { 1990 } / 1 / 1 });
-  ASSERT_EQ(c.ending_date(), date::year_month_day { date::year { 1991 } / 1 / 1 });
+  ASSERT_EQ(c.starting_date(), date::year_month_day{date::year{1990} / 1 / 1});
+  ASSERT_EQ(c.ending_date(), date::year_month_day{date::year{1991} / 1 / 1});
 
   ASSERT_EQ(c.total_time(), 365);
 
@@ -118,9 +118,9 @@ TEST(ConfigTest, ReadFromDefaultInputFile) {
 
 //  ASSERT_EQ(c.seasonal_info().A, DoubleVector(9, 1.0));
 
-  ASSERT_NE(dynamic_cast<Spatial::WesolowskiSM*>(c.spatial_model()), nullptr);
-  ASSERT_EQ(dynamic_cast<Spatial::WesolowskiSM*>(c.spatial_model())->kappa(), 0.01093251);
-  ASSERT_EQ(dynamic_cast<Spatial::BarabasiSM*>(c.spatial_model()), nullptr);
+  ASSERT_NE(dynamic_cast<Spatial::WesolowskiSM *>(c.spatial_model()), nullptr);
+  ASSERT_EQ(dynamic_cast<Spatial::WesolowskiSM *>(c.spatial_model())->kappa(), 0.01093251);
+  ASSERT_EQ(dynamic_cast<Spatial::BarabasiSM *>(c.spatial_model()), nullptr);
 
   ASSERT_EQ(c.immune_system_information().acquire_rate, 0.00125);
   ASSERT_EQ(c.immune_system_information().decay_rate, 0.0025);
@@ -131,12 +131,12 @@ TEST(ConfigTest, ReadFromDefaultInputFile) {
 
   ASSERT_EQ(c.therapy_db().size(), 13);
   ASSERT_EQ(c.therapy_db()[0]->drug_ids.size(), 1);
-  ASSERT_EQ(c.therapy_db()[0]->drug_ids, IntVector { 0 });
-  ASSERT_EQ(((SCTherapy*)c.therapy_db()[0])->dosing_day[0], 3);
+  ASSERT_EQ(c.therapy_db()[0]->drug_ids, IntVector{0});
+  ASSERT_EQ(((SCTherapy *) c.therapy_db()[0])->dosing_day[0], 3);
 
   ASSERT_EQ(c.therapy_db()[11]->drug_ids.size(), 3);
   // ASSERT_EQ(c.therapy_db()[11]->drug_ids, IntVector{0, 1, 2});
-  ASSERT_EQ(((SCTherapy*)c.therapy_db()[11])->dosing_day[0], 3);
+  ASSERT_EQ(((SCTherapy *) c.therapy_db()[11])->dosing_day[0], 3);
 
   ASSERT_EQ(c.strategy_db().size(), 15);
   ASSERT_EQ(c.strategy_db()[0]->name, "SP-AQ-CQ-AL-MFTStrategy");
@@ -168,13 +168,13 @@ TEST(ConfigTest, ReadFromDefaultInputFile) {
   ASSERT_EQ(c.preconfig_population_events()[11]->time, 244);
   ASSERT_EQ(c.preconfig_population_events()[12]->time, 10957);
 
-  ASSERT_EQ(dynamic_cast<SingleRoundMDAEvent*>(c.preconfig_population_events()[12])->fraction_population_targeted[0],
+  ASSERT_EQ(dynamic_cast<SingleRoundMDAEvent *>(c.preconfig_population_events()[12])->fraction_population_targeted[0],
             1);
-  ASSERT_EQ(dynamic_cast<SingleRoundMDAEvent*>(c.preconfig_population_events()[12])->fraction_population_targeted[1],
+  ASSERT_EQ(dynamic_cast<SingleRoundMDAEvent *>(c.preconfig_population_events()[12])->fraction_population_targeted[1],
             1);
-  ASSERT_EQ(dynamic_cast<SingleRoundMDAEvent*>(c.preconfig_population_events()[12])->fraction_population_targeted[2],
+  ASSERT_EQ(dynamic_cast<SingleRoundMDAEvent *>(c.preconfig_population_events()[12])->fraction_population_targeted[2],
             1);
-  ASSERT_EQ(dynamic_cast<SingleRoundMDAEvent*>(c.preconfig_population_events()[12])->days_to_complete_all_treatments,
+  ASSERT_EQ(dynamic_cast<SingleRoundMDAEvent *>(c.preconfig_population_events()[12])->days_to_complete_all_treatments,
             14);
 
   ASSERT_EQ(c.preconfig_population_events()[13]->time, 10995);

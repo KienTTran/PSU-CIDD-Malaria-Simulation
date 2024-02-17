@@ -288,7 +288,7 @@ double GPU::Person::relative_infectivity(const double& log10_parasite_density) {
   // this sigma has already taken 'ln' and 'log10' into account
   const auto d_n = log10_parasite_density * Model::CONFIG->relative_infectivity().sigma
                    + Model::CONFIG->relative_infectivity().ro_star;
-  const auto p = Model::RANDOM->cdf_standard_normal_distribution(d_n);
+  const auto p = 0.001; //Model::RANDOM->cdf_standard_normal_distribution(d_n);
 
   return p * p + 0.01;
 }

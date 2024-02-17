@@ -24,6 +24,7 @@
 #include "Gpu/Strategies/IStrategy.cuh"
 #include "Gpu/Strategies/StrategyBuilder.cuh"
 #include "Gpu/Events/Population/PopulationEventBuilder.cuh"
+#include "Events/Population/PopulationEventBuilder.h"
 
 void total_time::set_value(const YAML::Node &node) {
   value_ = (date::sys_days { config_->ending_date() } - date::sys_days(config_->starting_date())).count();
@@ -510,6 +511,13 @@ void moving_level_generator::set_value(const YAML::Node &node) {
 }
 
 void preconfig_population_events::set_value(const YAML::Node &node) {
+  for (std::size_t i = 0; i < node["events"].size(); ++i) {
+    auto events = PopulationEventBuilder::build(node["events"][i], config_);
+    value_.insert(value_.end(), events.begin(), events.end());
+  }
+}
+
+void gpu_preconfig_population_events::set_value(const YAML::Node &node) {
   for (std::size_t i = 0; i < node["events"].size(); ++i) {
     auto events = GPU::PopulationEventBuilder::build(node["events"][i], config_);
     value_.insert(value_.end(), events.begin(), events.end());

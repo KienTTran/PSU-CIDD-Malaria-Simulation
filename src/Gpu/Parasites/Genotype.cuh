@@ -39,7 +39,7 @@ public:
   std::vector<double> EC50_power_n {};
 
 public:
-  explicit __device__ __host__ Genotype(const std::string& aa_sequence);
+  explicit Genotype(const std::string& aa_sequence);
 
   virtual ~Genotype();
 

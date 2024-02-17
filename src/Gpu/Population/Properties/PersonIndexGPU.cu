@@ -34,13 +34,16 @@ GPU::PersonUpdateInfo GPU::PersonIndexGPU::init_person_update_info(GPU::Person *
     person_update_info.person_moving_level = p->moving_level();
     person_update_info.person_innate_relative_biting_rate = p->innate_relative_biting_rate;
     person_update_info.person_current_relative_biting_rate = p->current_relative_biting_rate;
+    person_update_info.person_current_relative_moving_rate = Model::CONFIG->circulation_info().v_moving_level_value[p->moving_level()];
+    person_update_info.person_current_relative_infectivity = 0.0;
+    person_update_info.person_current_foi = 0.0;
     person_update_info.person_using_age_dependent_biting_level = Model::CONFIG->using_age_dependent_bitting_level();
     person_update_info.person_latest_update_time = p->latest_update_time();
     person_update_info.person_has_drug_in_blood = false;
     /* for parasite update */
     person_update_info.limit_epsilon = std::numeric_limits<double>::epsilon(); //For device use
     person_update_info.LOG_ZERO_PARASITE_DENSITY = GPU::ClonalParasitePopulation::LOG_ZERO_PARASITE_DENSITY;
-    person_update_info.parasites_size = -1;
+    person_update_info.parasites_size = 0;
     person_update_info.parasites_current_index = -1;
     for(int i = 0; i < MAX_PARASITE_PER_PERSON; i++){
         person_update_info.parasite_id[i] = -1;
@@ -191,6 +194,7 @@ void GPU::PersonIndexGPU::notify_change(GPU::Person *p, const GPU::Person::Prope
 //            printf("GPU::PersonIndexGPU::notify_change MOVING_LEVEL\n");
             p->moving_level_ = *(int *) newValue;
             p->person_index_gpu->h_person_update_info_[p->index_].person_moving_level = *(int *) newValue;
+            p->person_index_gpu->h_person_update_info_[p->index_].person_current_relative_moving_rate = Model::CONFIG->circulation_info().v_moving_level_value[*(int *) newValue];
             h_persons_[p->GPU::PersonIndexGPUHandler::index()]->moving_level_ = *(int *) newValue;
             break;
         }

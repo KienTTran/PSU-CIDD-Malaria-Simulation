@@ -88,7 +88,7 @@ void GPU::MonthlyReporter::after_run() {
 
   ss << group_sep;
   // output last strategy information
-  ss << Model::TREATMENT_STRATEGY->id << sep;
+  ss << Model::GPU_TREATMENT_STRATEGY->id << sep;
 
   // output NTF
   const auto total_time_in_years = (Model::GPU_SCHEDULER->current_time() - Model::CONFIG->start_of_comparison_period())

@@ -34,10 +34,10 @@ debug_config:
   enable_debug_text: true
   enable_debug_render: false
   enable_debug_render_text: false
-  log_interval: 5
+  log_interval: 1
 
 #set 0 to randomize seed using clock
-initial_seed_number: 0 #123456789
+initial_seed_number: 123456789
 
 # starting time point of the simulation (in yyyy/m/d format)
 # which is day 0 in the simulation
@@ -45,7 +45,7 @@ initial_seed_number: 0 #123456789
 starting_date: 2000/1/1
 
 # ending time point of the simulation (in yyyy/m/d format)
-ending_date: 2000/1/30
+ending_date: 2000/1/5
 
 # the day at which the simulation's reporting functionality begins collecting data for
 # EIR, # of clinical episodes, # death , # of treatment, #TF by location,...

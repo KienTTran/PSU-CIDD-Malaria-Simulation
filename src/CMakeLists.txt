@@ -108,6 +108,10 @@ target_link_libraries(MaSimCore PRIVATE GSL::gsl GSL::gslcblas)
 find_package(args CONFIG REQUIRED)
 target_link_libraries(MaSimCore PRIVATE taywee::args)
 
+#CLI11
+find_package(CLI11 CONFIG REQUIRED)
+target_link_libraries(MaSimCore PRIVATE CLI11::CLI11)
+
 if(WIN32)
     message(STATUS "Build in Windows")
     target_include_directories(MaSimCore PUBLIC "D:/SDK/vcpkg/installed/x64-windows/include")

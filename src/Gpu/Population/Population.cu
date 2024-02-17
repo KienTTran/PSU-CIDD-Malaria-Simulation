@@ -33,6 +33,7 @@
 #include "Gpu/Population/InfantImmuneComponent.cuh"
 #include "Gpu/Population/NonInfantImmuneComponent.cuh"
 #include "Gpu/Population/Person.cuh"
+#include "Gpu/Population/PopulationKernel.cuh"
 #include "Gpu/Core/Scheduler.cuh"
 
 
@@ -211,7 +212,7 @@ void GPU::Population::perform_infection_event() {
   auto lapse = std::chrono::high_resolution_clock::now() - start;
   if(Model::CONFIG->debug_config().enable_debug_text){
       LOG_IF(Model::GPU_SCHEDULER->current_time() % Model::CONFIG->debug_config().log_interval == 0, INFO)
-      << "[Population] Update population infection event time: "
+      << "[Population] Update population infection CPU time: "
       << std::chrono::duration_cast<std::chrono::milliseconds>(lapse).count() << " ms";
   }
 }
@@ -292,6 +293,7 @@ void GPU::Population::introduce_initial_cases() {
     }
     // update current foi
     update_current_foi();
+    Model::GPU_POPULATION_KERNEL->update_current_foi();
 
     // update force of infection for N days
     for (auto d = 0; d < Model::CONFIG->number_of_tracking_days(); d++) {
@@ -301,7 +303,7 @@ void GPU::Population::introduce_initial_cases() {
       Model::GPU_MOSQUITO->infect_new_cohort_in_PRMC(Model::CONFIG, Model::RANDOM, this, d);
     }
     auto lapse = std::chrono::high_resolution_clock::now() - start;
-    LOG(INFO) << fmt::format("[Population] introduce_parasite event time: {} ms",
+    LOG(INFO) << fmt::format("[Population] introduce_parasite CPU time: {} ms",
                              std::chrono::duration_cast<std::chrono::milliseconds>(lapse).count());
   }
 }
@@ -377,7 +379,7 @@ void GPU::Population::perform_birth_event() {
     auto lapse = std::chrono::high_resolution_clock::now() - tp_start;
     auto *pi = get_person_index<GPU::PersonIndexGPU>();
     LOG_IF(Model::GPU_SCHEDULER->current_time() % Model::CONFIG->debug_config().log_interval == 0, INFO)
-    << "[Population] Update population birth (" << birth_sum << " " << pi->h_persons().size() << ") event time: "
+    << "[Population] Update population birth (" << birth_sum << " " << pi->h_persons().size() << ") CPU time: "
     << std::chrono::duration_cast<std::chrono::milliseconds>(lapse).count() << " ms";
   }
 }
@@ -545,7 +547,7 @@ void GPU::Population::perform_death_event() {
     auto lapse = std::chrono::high_resolution_clock::now() - tp_start;
     auto *pi = get_person_index<GPU::PersonIndexGPU>();
     LOG_IF(Model::GPU_SCHEDULER->current_time() % Model::CONFIG->debug_config().log_interval == 0, INFO)
-    << "[Population] Update population death (" << dead_sum << " " << pi->h_persons().size() << ") event time: "
+    << "[Population] Update population death (" << dead_sum << " " << pi->h_persons().size() << ") CPU time: "
             << std::chrono::duration_cast<std::chrono::milliseconds>(lapse).count() << " ms";
   }
 }
@@ -628,7 +630,7 @@ void GPU::Population::perform_circulation_event() {
   auto lapse = std::chrono::high_resolution_clock::now() - tp_start;
   if(Model::CONFIG->debug_config().enable_debug_text){
     LOG_IF(Model::GPU_SCHEDULER->current_time() % Model::CONFIG->debug_config().log_interval == 0, INFO)
-    << "[Population] Update population circulation CPU event time: "
+    << "[Population] Update population circulation CPU time: "
             << std::chrono::duration_cast<std::chrono::milliseconds>(lapse).count() << " ms";
   }
 }
@@ -693,11 +695,22 @@ void GPU::Population::update_all_individuals() {
     }
   }
   auto lapse = std::chrono::high_resolution_clock::now() - start;
-    if(Model::CONFIG->debug_config().enable_debug_text){
-        LOG_IF(Model::GPU_SCHEDULER->current_time() % Model::CONFIG->debug_config().log_interval == 0, INFO)
-        << "[Population] Update population all individuals event time: "
-                << std::chrono::duration_cast<std::chrono::milliseconds>(lapse).count() << " ms";
-    }
+  if(Model::CONFIG->debug_config().enable_debug_text){
+      LOG_IF(Model::GPU_SCHEDULER->current_time() % Model::CONFIG->debug_config().log_interval == 0, INFO)
+      << "[Population] Update population all individuals CPU time: "
+              << std::chrono::duration_cast<std::chrono::milliseconds>(lapse).count() << " ms";
+  }
+//  auto *pi2 = Model::GPU_POPULATION->get_person_index<GPU::PersonIndexGPU>();
+//  for(int i = pi2->h_persons().size() - 5; i < pi2->h_persons().size(); i++){
+//    LOG_IF(Model::CONFIG->debug_config().enable_debug_text,INFO)
+//      << fmt::format("[PopulationKernel update_all_individuals] CPU Person {} last update time {} parasites_size {}"
+//                     " person_biting {} person_moving {}",
+//                     i,
+//                     pi2->h_persons()[i]->latest_update_time(),
+//                     pi2->h_persons()[i]->all_clonal_parasite_populations()->size(),
+//                     pi2->h_persons()[i]->current_relative_biting_rate,
+//                     Model::CONFIG->circulation_info().v_moving_level_value[pi2->h_persons()[i]->moving_level()]);
+//  }
 }
 
 void GPU::Population::persist_current_force_of_infection_to_use_N_days_later() {
@@ -710,12 +723,23 @@ void GPU::Population::persist_current_force_of_infection_to_use_N_days_later() {
   auto lapse = std::chrono::high_resolution_clock::now() - start;
   if(Model::CONFIG->debug_config().enable_debug_text){
     LOG_IF(Model::GPU_SCHEDULER->current_time() % Model::CONFIG->debug_config().log_interval == 0, INFO)
-      << "[Mosquito] Update FOI event time: "
+      << "[Mosquito] Update FOI N days CPU time: "
       << std::chrono::duration_cast<std::chrono::milliseconds>(lapse).count() << " ms";
   }
 }
 
 void GPU::Population::update_current_foi() {
+  auto *pi2 = Model::GPU_POPULATION->get_person_index<GPU::PersonIndexGPU>();
+//  for(int i = pi2->h_persons().size() - 5; i < pi2->h_persons().size(); i++){
+//    LOG_IF(Model::CONFIG->debug_config().enable_debug_text,INFO)
+//      << fmt::format("[Population update_current_foi] CPU BEFORE Person {} last update time {} parasites_size {}"
+//                     " person_biting {} person_moving {}",
+//                     i,
+//                     pi2->h_persons()[i]->latest_update_time(),
+//                     pi2->h_persons()[i]->all_clonal_parasite_populations()->size(),
+//                     pi2->h_persons()[i]->current_relative_biting_rate,
+//                     Model::CONFIG->circulation_info().v_moving_level_value[pi2->h_persons()[i]->moving_level()]);
+//  }
   auto start = std::chrono::high_resolution_clock::now();
   auto pi = get_person_index<GPU::PersonIndexByLocationStateAgeClass>();
   for (int loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
@@ -740,25 +764,41 @@ void GPU::Population::update_current_foi() {
                                     ? 0.0
                                     : person->current_relative_biting_rate
                                           * GPU::Person::relative_infectivity(log_10_total_infectious_density);
-
           individual_foi_by_location[loc].push_back(individual_foi);
           individual_relative_biting_by_location[loc].push_back(person->current_relative_biting_rate);
           individual_relative_moving_by_location[loc].push_back(
               Model::CONFIG->circulation_info().v_moving_level_value[person->moving_level()]);
 
           sum_relative_biting_by_location[loc] += person->current_relative_biting_rate;
-          sum_relative_moving_by_location[loc] +=
-              Model::CONFIG->circulation_info().v_moving_level_value[person->moving_level()];
+          sum_relative_moving_by_location[loc] += Model::CONFIG->circulation_info().v_moving_level_value[person->moving_level()];
           current_force_of_infection_by_location[loc] += individual_foi;
           all_alive_persons_by_location[loc].push_back(person);
         }
       }
     }
+//    printf("%d CPU sum_relative_biting_by_location[%d] biting %f\n",Model::GPU_SCHEDULER->current_time(),loc,sum_relative_biting_by_location[loc]);
+//    printf("%d CPU sum_relative_moving_by_location[%d] moving %f\n",Model::GPU_SCHEDULER->current_time(),loc,sum_relative_moving_by_location[loc]);
+//    printf("%d CPU sum_relative_moving_by_location[%d] foi %f\n",Model::GPU_SCHEDULER->current_time(),loc,current_force_of_infection_by_location[loc]);
   }
   auto lapse = std::chrono::high_resolution_clock::now() - start;
   if(Model::CONFIG->debug_config().enable_debug_text){
       LOG_IF(Model::GPU_SCHEDULER->current_time() % Model::CONFIG->debug_config().log_interval == 0, INFO)
-      << "[Population] Update population current foi event time: "
+      << "[Population] Update population current foi CPU time: "
               << std::chrono::duration_cast<std::chrono::milliseconds>(lapse).count() << " ms";
+  }
+//  for(int i = pi2->h_persons().size() - 5; i < pi2->h_persons().size(); i++){
+//    LOG_IF(Model::CONFIG->debug_config().enable_debug_text,INFO)
+//      << fmt::format("[Population update_current_foi] CPU AFTER Person {} last update time {} parasites_size {}"
+//                     " person_biting {} person_moving {}",
+//                     i,
+//                     pi2->h_persons()[i]->latest_update_time(),
+//                     pi2->h_persons()[i]->all_clonal_parasite_populations()->size(),
+//                     pi2->h_persons()[i]->current_relative_biting_rate,
+//                     Model::CONFIG->circulation_info().v_moving_level_value[pi2->h_persons()[i]->moving_level()]);
+//  }
+  for (int loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
+    printf("%d CPU sum_relative_biting_by_location[%d] biting %f\n",Model::GPU_SCHEDULER->current_time(),loc,sum_relative_biting_by_location[loc]);
+    printf("%d CPU sum_relative_moving_by_location[%d] moving %f\n",Model::GPU_SCHEDULER->current_time(),loc,sum_relative_moving_by_location[loc]);
+    printf("%d CPU sum_relative_moving_by_location[%d] foi %f\n",Model::GPU_SCHEDULER->current_time(),loc,current_force_of_infection_by_location[loc]);
   }
 }

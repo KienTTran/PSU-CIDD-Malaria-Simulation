@@ -123,7 +123,7 @@ void GPU::Scheduler::run() {
   current_time_ = 0;
 
   for (current_time_ = 0; !can_stop(); current_time_++) {
-    LOG_IF(current_time_ % 100 == 0, INFO) << "Day: " << current_time_;
+    LOG_IF(current_time_ % Model::CONFIG->debug_config().log_interval == 0, INFO) << "Day: " << current_time_;
     begin_time_step();
 
     daily_update();

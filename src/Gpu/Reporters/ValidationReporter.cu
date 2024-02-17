@@ -13,6 +13,7 @@
 #include "Model.h"
 #include "Gpu/Population/Population.cuh"
 #include "Gpu/Population/Properties/PersonIndexByLocationStateAgeClass.cuh"
+#include "Gpu/Strategies/IStrategy.cuh"
 #include "ReporterUtils.cuh"
 #include "easylogging++.h"
 
@@ -181,7 +182,7 @@ void GPU::ValidationReporter::after_run() {
     print_EIR_PfPR_by_location(ss);
     ss << group_sep;//10
     // output last strategy information
-    ss << Model::TREATMENT_STRATEGY->id << sep;//11
+    ss << Model::GPU_TREATMENT_STRATEGY->id << sep;//11
     // output NTF
     const auto total_time_in_years = (Model::GPU_SCHEDULER->current_time() - Model::CONFIG->start_of_comparison_period())
                                      / static_cast<double>(Constants::DAYS_IN_YEAR());

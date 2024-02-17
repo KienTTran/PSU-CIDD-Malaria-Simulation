@@ -9,6 +9,7 @@
 #include <thrust/sort.h>
 #include "Random.cuh"
 #include "Gpu/Utils/Utils.cuh"
+#include "Gaussian.cuh"
 #include "Model.h"
 #include "Core/Config/Config.h"
 
@@ -67,20 +68,24 @@ void GPU::Random::free() {
  * curand_uniform (curandState_t *state) - (0.0, 1.0]
  * Have to convert to [0.0,1.0) like GSL
  * */
-__device__ double curand_uniform_gsl_double(double rand, double min, double max){
+__device__ double curand_gsl_uniform_double(double rand, double min, double max){
     return min + ((rand - 1.0e-6) * (max - min));
 }
 
-__device__ int curand_uniform_gsl_int(double rand, int min, int max){
+__device__ int curand_gsl_uniform_int(double rand, int min, int max){
     return int(min + ((rand - 1.0e-6) * (max - min)));
 }
 
 __device__ double curand_uniform_double_min_max(double rand,double min, double max){
-    return min + (curand_uniform_gsl_double(rand,0.0,1.0) * (max - min));
+    return min + (curand_gsl_uniform_double(rand,0.0,1.0) * (max - min));
 }
 
 __device__ int curand_uniform_int_min_max(double rand,int min, int max){
-    return int(min + (curand_uniform_gsl_double(rand,0.0,1.0) * (max - min)));
+    return int(min + (curand_gsl_uniform_double(rand,0.0,1.0) * (max - min)));
+}
+
+__device__ double curand_gsl_cdf_ugaussian_P(double x){
+    return gsl_cdf_ugaussian_P_(x);
 }
 
 __global__ void random_uniform_kernel_double(curandState *d_state, int n, double *d_randoms, double from, double to){

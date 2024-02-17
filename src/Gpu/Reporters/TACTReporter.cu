@@ -64,9 +64,9 @@ void GPU::TACTReporter::monthly_report() {
 
   ss << Model::GPU_DATA_COLLECTOR->current_TF_by_location()[0] << sep;
 
-  if (Model::TREATMENT_STRATEGY->get_type() == GPU::IStrategy::NestedMFT) {
-    ss << dynamic_cast<GPU::NestedMFTStrategy*>(Model::TREATMENT_STRATEGY)->distribution[0] << sep;
-    ss << dynamic_cast<GPU::NestedMFTStrategy*>(Model::TREATMENT_STRATEGY)->distribution[1];
+  if (Model::GPU_TREATMENT_STRATEGY->get_type() == GPU::IStrategy::NestedMFT) {
+    ss << dynamic_cast<GPU::NestedMFTStrategy*>(Model::GPU_TREATMENT_STRATEGY)->distribution[0] << sep;
+    ss << dynamic_cast<GPU::NestedMFTStrategy*>(Model::GPU_TREATMENT_STRATEGY)->distribution[1];
   }
 
   CLOG(INFO, "monthly_reporter") << ss.str();

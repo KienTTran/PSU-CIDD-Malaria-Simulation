@@ -144,7 +144,7 @@ void GPU::Mosquito::infect_new_cohort_in_PRMC(Config *config, ::Random *random, 
   auto lapse = std::chrono::system_clock::now() - start;
   if(Model::CONFIG->debug_config().enable_debug_text){
     LOG_IF(Model::GPU_SCHEDULER->current_time() % Model::CONFIG->debug_config().log_interval == 0, INFO)
-      << "[Mosquito] Update mosquito event time: "
+      << "[Mosquito] Update mosquito CPU time: "
       << std::chrono::duration_cast<std::chrono::milliseconds>(lapse).count() << " ms";
   }
 }

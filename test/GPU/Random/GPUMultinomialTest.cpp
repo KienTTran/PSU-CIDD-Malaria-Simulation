@@ -9,20 +9,20 @@
 #include "Core/TypeDef.h"
 #include "Core/Random.h"
 #include "Core/Config/Config.h"
-#include "Population/Person.h"
-#include "GPU/Core/Random.cuh"
+#include "Gpu/Population/Person.cuh"
+#include "Gpu/Core/Random.cuh"
 #include "gtest/gtest.h"
 
 class GPUMultinomialTest : public ::testing::Test {
 protected:
-    Random r;
+    ::Random r;
     GPU::Random gr;
     int n_location{10};
     int n_person{1000};
     int n_sample{200};
     int n_repeat{0};
 
-    std::vector<Person *> all_person;
+    std::vector<GPU::Person *> all_person;
     std::vector<double> distribution;
     std::vector<double> sum_distribution;
     std::vector<double> sum_distribution_neg;
@@ -38,7 +38,7 @@ protected:
         sum_distribution_neg.resize(n_location);
         for(int loc = 0; loc < n_location; loc++){
             for (int i = 0; i < n_person; ++i) {
-                auto *p = new Person();
+                auto *p = new GPU::Person();
                 p->set_last_therapy_id(i);
                 all_person.push_back(p);
                 distribution[loc*n_person+i] = r.random_uniform();
@@ -73,7 +73,7 @@ TEST_F(GPUMultinomialTest, Sampling_with_sum_distribution_0) {
     }
     ThrustTVectorDevice<double> d_distribution = distribution;
     ThrustTVectorDevice<double> d_sum_distribution = sum_distribution;
-    auto results = gr.multinomial_sampling<Person>(n_location, n_sample, d_distribution, all_person, d_sum_distribution,false);
+    auto results = gr.multinomial_sampling<GPU::Person>(n_location, n_sample, d_distribution, all_person, d_sum_distribution,false);
 
     EXPECT_EQ(results.size(), n_location*n_sample);
     EXPECT_EQ(results[0], nullptr);
@@ -95,7 +95,7 @@ TEST_F(GPUMultinomialTest, Sampling_with_no_sum_distribution) {
     ThrustTVectorDevice<double> d_sum_distribution = sum_distribution;
     ThrustTVectorDevice<double> d_sum_distribution_neg = sum_distribution_neg;
     for (int n = 0; n < n_repeat; ++n) {
-        auto results = gr.multinomial_sampling<Person>(n_location, n_sample, d_distribution, all_person, d_sum_distribution_neg,false);
+        auto results = gr.multinomial_sampling<GPU::Person>(n_location, n_sample, d_distribution, all_person, d_sum_distribution_neg,false);
 
         EXPECT_EQ(results.size(), n_location*n_sample);
 
@@ -122,7 +122,7 @@ TEST_F(GPUMultinomialTest, Sampling_with_one_in_all) {
     ThrustTVectorDevice<double> d_distribution = distribution;
     ThrustTVectorDevice<double> d_sum_distribution = sum_distribution;
     for (int n = 0; n < 10; ++n) {
-        auto results = gr.multinomial_sampling<Person>(n_location, n_sample, d_distribution, all_person, d_sum_distribution, true);
+        auto results = gr.multinomial_sampling<GPU::Person>(n_location, n_sample, d_distribution, all_person, d_sum_distribution, true);
 
         EXPECT_EQ(results.size(), n_location*n_sample);
 
@@ -150,7 +150,7 @@ TEST_F(GPUMultinomialTest, Sampling_with_2_in_all) {
     ThrustTVectorDevice<double> d_distribution = distribution;
     ThrustTVectorDevice<double> d_sum_distribution = sum_distribution;
     for (int n = 0; n < n_repeat; ++n) {
-        auto results = gr.multinomial_sampling<Person>(n_location, n_sample, d_distribution, all_person,
+        auto results = gr.multinomial_sampling<GPU::Person>(n_location, n_sample, d_distribution, all_person,
                                                     d_sum_distribution, false);
 
         EXPECT_EQ(results.size(), n_location*n_sample);
@@ -205,7 +205,7 @@ TEST_F(GPUMultinomialTest, Sampling_with_4_in_all) {
     ThrustTVectorDevice<double> d_distribution = distribution;
     ThrustTVectorDevice<double> d_sum_distribution = sum_distribution;
     for (int n = 0; n < n_repeat; ++n) {
-        auto results = gr.multinomial_sampling<Person>(n_location, n_sample, d_distribution, all_person, d_sum_distribution, true);
+        auto results = gr.multinomial_sampling<GPU::Person>(n_location, n_sample, d_distribution, all_person, d_sum_distribution, true);
 
         EXPECT_EQ(results.size(), n_location*n_sample);
 
@@ -251,7 +251,7 @@ TEST_F(GPUMultinomialTest, compare_with_roulette) {
     ThrustTVectorDevice<double> d_distribution = distribution;
     ThrustTVectorDevice<double> d_sum_distribution = sum_distribution;
     for (int n = 0; n < n_repeat; ++n) {
-        auto results = gr.roulette_sampling<Person>(n_location, n_sample, d_distribution, all_person, d_sum_distribution, true);
+        auto results = gr.roulette_sampling<GPU::Person>(n_location, n_sample, d_distribution, all_person, d_sum_distribution, true);
 
         EXPECT_EQ(results.size(), n_location*n_sample);
     }
@@ -264,7 +264,7 @@ TEST_F(GPUMultinomialTest, compare_with_roulette) {
     // ==================== multinomial sampling ===========================
     start = std::chrono::high_resolution_clock::now();
     for (int n = 0; n < n_repeat; ++n) {
-        auto results = gr.multinomial_sampling<Person>(n_location, n_sample, d_distribution, all_person, d_sum_distribution, true);
+        auto results = gr.multinomial_sampling<GPU::Person>(n_location, n_sample, d_distribution, all_person, d_sum_distribution, true);
 
         EXPECT_EQ(results.size(), n_location*n_sample);
     }
