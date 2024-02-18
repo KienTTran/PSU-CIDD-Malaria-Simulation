@@ -30,9 +30,10 @@ public:
 public:
     template<typename T,typename T2>
     ThrustTuple2Vector<T,T2> sum_value_by_1key(TVector<T> input_keys, TVector<T2> input_values, int size);
-    std::vector<thrust::tuple<int,double,double,double>> host_sum_biting_moving_foi_by_loc_vector(thrust::device_vector<GPU::PersonUpdateInfo> device_values);
-//    TVector<ThrustTuple4<int,double,double,double>> host_sum_biting_moving_foi_by_loc_pointer(GPU::PersonUpdateInfo* d_values, int offset, int size);
-//    ThrustTVectorDevice<ThrustTuple4<int, double, double, double>> device_sum_biting_moving_foi_by_loc_pointer(GPU::PersonUpdateInfo* d_values, int offset, int size);
+    TVector<ThrustTuple4<int,double,double,double>> host_sum_biting_moving_foi_by_loc_vector(ThrustTVectorDevice<GPU::PersonUpdateInfo> device_values);
+    TVector<ThrustTuple4<int,double,double,double>> host_sum_biting_moving_foi_by_loc_pointer(GPU::PersonUpdateInfo* d_values, int offset, int size);
+    ThrustTVectorDevice<ThrustTuple4<int, double, double, double>> device_sum_biting_moving_foi_by_loc_pointer(GPU::PersonUpdateInfo* d_values, int offset, int size);
+    TVector<ThrustTuple4<int,double,double,double>> host_reduce_vector(ThrustTVectorDevice<ThrustTuple4<int,double,double,double>> device_keys_values);
     template<typename T>
     TVector<T> count_by_1key(TVector<T> input_keys, int size);
 public:

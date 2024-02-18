@@ -62,8 +62,8 @@ public:
      * Variables for update FOI
      * */
     /* This vector store relative biting, moving and foi of all people by location */
-    ThrustTVectorDevice<ThrustTuple4<int,double,double,double>> d_sum_biting_moving_foi_by_loc;
     TVector<ThrustTuple4<int,double,double,double>> h_sum_biting_moving_foi_by_loc;
+    ThrustTVectorDevice<ThrustTuple4<int,double,double,double>> d_sum_biting_moving_foi_by_loc;
     TVector<TVector<double>> force_of_infection_for_N_days_by_location;
 
 public:

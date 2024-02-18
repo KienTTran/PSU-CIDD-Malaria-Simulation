@@ -76,7 +76,7 @@ set(TEST_SRC_FILES
   Mosquito/MosquitoTest.cpp
   GPU/Random/GPUMultinomialTest.cpp
   GPU/Random/GPURouletteTest.cpp
-  GPU/Utils/GPUUtilsTest.cpp
+  GPU/Utils/GPUUtilsTest.cu
   )
 
 set(MAIN_TEST masim_test)

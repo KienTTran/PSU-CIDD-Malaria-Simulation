@@ -9,7 +9,7 @@
 #include <thrust/sequence.h>
 #include <thrust/count.h>
 #include <thrust/sort.h>
-#include <thrust/unique.h>
+#include <thrust/iterator/discard_iterator.h>
 #include "PopulationKernel.cuh"
 #include "Population.cuh"
 #include "Model.h"
@@ -1177,18 +1177,34 @@ __global__ void update_current_foi_kernel_stream(int offset,
   }
 }
 
-
-struct SumTuple {
-  __host__ __device__
-  thrust::tuple<int, double, double, double> operator()(thrust::tuple<int, double, double, double> a,
-                                                        thrust::tuple<int, double, double, double> b) {
-    if(thrust::get<0>(a) == thrust::get<0>(b)){
-      return thrust::make_tuple(thrust::get<0>(a),
-                                thrust::get<1>(a) + thrust::get<1>(b),
-                                thrust::get<2>(a) + thrust::get<2>(b),
-                                thrust::get<3>(a) + thrust::get<3>(b));
+struct LocationLessThan {
+    __host__ __device__
+    bool operator()(thrust::tuple<int, double, double, double> t0, thrust::tuple<int, double, double, double> t1) {
+      if (thrust::get<0>(t0) < thrust::get<0>(t1))
+        return true;
+      if (thrust::get<0>(t0) > thrust::get<0>(t1))
+        return false;
+      return thrust::get<0>(t0) < thrust::get<0>(t1);
     }
-  }
+
+};
+
+struct CheckKeyTuple {
+    __host__ __device__
+    bool operator()(ThrustTuple4<int, double, double, double> t0, ThrustTuple4<int, double, double, double> t1) {
+      if (thrust::get<0>(t0) == thrust::get<0>(t1)) return true;
+      else return false;
+    }
+};
+
+struct SumValueTuple {
+    __host__ __device__
+    ThrustTuple4<int, double, double, double> operator()(ThrustTuple4<int, double, double, double> t0, ThrustTuple4<int, double, double, double> t1) {
+      if(thrust::get<0>(t0) == thrust::get<0>(t1)){
+        return thrust::make_tuple(thrust::get<0>(t0), thrust::get<1>(t0) + thrust::get<1>(t1),
+                                  thrust::get<2>(t0) + thrust::get<2>(t1), thrust::get<3>(t0) + thrust::get<3>(t1));
+      }
+    }
 };
 
 void GPU::PopulationKernel::update_current_foi() {
@@ -1204,14 +1220,7 @@ void GPU::PopulationKernel::update_current_foi() {
 //                     pi->h_person_update_info()[i].person_current_relative_moving_rate);
 //  }
   check_cuda_error(cudaEventRecord(start_event, 0));
-  h_sum_biting_moving_foi_by_loc.resize(Model::CONFIG->number_of_locations());
-  thrust::fill(h_sum_biting_moving_foi_by_loc.begin(),
-               h_sum_biting_moving_foi_by_loc.end(),
-               thrust::make_tuple(0,0.0,0.0,0.0));
-  d_sum_biting_moving_foi_by_loc.resize(Model::CONFIG->number_of_locations());
-  thrust::fill(d_sum_biting_moving_foi_by_loc.begin(),
-               d_sum_biting_moving_foi_by_loc.end(),
-               thrust::make_tuple(0,0.0,0.0,0.0));
+  d_sum_biting_moving_foi_by_loc.resize(0);
   int batch_size = (pi->h_person_update_info().size() < Model::CONFIG->gpu_config().n_people_1_batch)
                    ? pi->h_person_update_info().size() : Model::CONFIG->gpu_config().n_people_1_batch;
   int batch_offset = 0;
@@ -1221,17 +1230,17 @@ void GPU::PopulationKernel::update_current_foi() {
     int batch_to = batch_from + batch_size;
     const int batch_bytes = batch_size * sizeof(GPU::PersonUpdateInfo);
     check_cuda_error(cudaMalloc((void **) &d_buffer_person_update_info_stream, batch_bytes));
-    LOG_IF(Model::CONFIG->debug_config().enable_debug_text
-           && Model::GPU_SCHEDULER->current_time() % Model::CONFIG->debug_config().log_interval == 0,INFO)
-      << fmt::format("[PopulationKernel update_current_foi] Work batch size {} remain {}, from {} to {} (of {})",
-                     batch_size, batch_remain, batch_from, batch_to,
-                     pi->h_person_update_info().size());
+//    LOG_IF(Model::CONFIG->debug_config().enable_debug_text
+//           && Model::GPU_SCHEDULER->current_time() % Model::CONFIG->debug_config().log_interval == 0,INFO)
+//      << fmt::format("[PopulationKernel update_current_foi] Work batch size {} remain {}, from {} to {} (of {})",
+//                     batch_size, batch_remain, batch_from, batch_to,
+//                     pi->h_person_update_info().size());
     /*
      * Check if batch_size > Model::CONFIG->gpu_config().n_people_1_batch / 2
      * If true, then use streams
      * */
     if(batch_size > (Model::CONFIG->gpu_config().n_people_1_batch / 2)){
-      printf("########### BATCH %d STREAMS ###########\n",b_index);
+//      printf("########### BATCH %d STREAMS ###########\n",b_index);
       int stream_size = batch_size / Model::CONFIG->gpu_config().n_streams;
       int stream_offset = 0;
       for (auto [stream_remain, s_index] = std::tuple{batch_size, 0}; stream_remain > 0; stream_remain -= stream_size, s_index++) {
@@ -1276,7 +1285,7 @@ void GPU::PopulationKernel::update_current_foi() {
       }
     }
     else{
-      printf("########### LAST BATCH %d ###########\n",b_index);
+//      printf("########### LAST BATCH %d ###########\n",b_index);
       const int n_threads = (batch_size < Model::CONFIG->gpu_config().n_threads) ? batch_size : Model::CONFIG->gpu_config().n_threads;
       const int n_blocks = (batch_size + n_threads - 1) / n_threads;
       int s_index = 0;
@@ -1313,33 +1322,13 @@ void GPU::PopulationKernel::update_current_foi() {
       check_cuda_error(cudaGetLastError());
       batch_offset += batch_size;
     }
-//    auto result = Model::GPU_UTILS->device_sum_biting_moving_foi_by_loc_pointer(d_buffer_person_update_info_stream,0,batch_size);
-//    TVector<ThrustTuple4<int, double, double, double>> h_result(result.size());
-//    thrust::copy(result.begin(),result.end(),h_result.begin());
-//    for(int r_index = 0; r_index < h_result.size(); r_index++){
-//      for (int loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
-//        if(loc == r_index){
-//          printf("%d GPU h_result[%d] biting %f\n",Model::GPU_SCHEDULER->current_time(),h_result[loc].get<0>(),h_result[loc].get<1>());
-//          printf("%d GPU h_result[%d] moving %f\n",Model::GPU_SCHEDULER->current_time(),h_result[loc].get<0>(),h_result[loc].get<2>());
-//          printf("%d GPU h_result[%d] foi %f\n",Model::GPU_SCHEDULER->current_time(),h_result[loc].get<0>(),h_result[loc].get<3>());
-//        }
-//      }
-//    }
-//    thrust::transform(thrust::device,
-//                      d_sum_biting_moving_foi_by_loc.begin(),
-//                      d_sum_biting_moving_foi_by_loc.end(),
-//                      result.begin(),
-//                      d_sum_biting_moving_foi_by_loc.begin(),
-//                      SumTuple());
-//    check_cuda_error(cudaDeviceSynchronize());
-//    thrust::copy(d_sum_biting_moving_foi_by_loc.begin(),
-//                 d_sum_biting_moving_foi_by_loc.end(),
-//                 h_sum_biting_moving_foi_by_loc.begin());
-//    check_cuda_error(cudaGetLastError());
+    auto result = Model::GPU_UTILS->device_sum_biting_moving_foi_by_loc_pointer(d_buffer_person_update_info_stream,0,batch_size);
+    d_sum_biting_moving_foi_by_loc.reserve(Model::CONFIG->number_of_locations() + Model::CONFIG->number_of_locations());
+    d_sum_biting_moving_foi_by_loc.insert(d_sum_biting_moving_foi_by_loc.end(),result.begin(),result.begin()+Model::CONFIG->number_of_locations());
+    h_sum_biting_moving_foi_by_loc = Model::GPU_UTILS->host_reduce_vector(d_sum_biting_moving_foi_by_loc);
+    check_cuda_error(cudaGetLastError());
     check_cuda_error(cudaFree(d_buffer_person_update_info_stream));
   }
-//  d_vector_person_update_info_stream = pi->h_person_update_info();
-//  h_sum_biting_moving_foi_by_loc = Model::GPU_UTILS->sum_biting_moving_foi_by_loc_vector(d_vector_person_update_info_stream);
   check_cuda_error(cudaDeviceSynchronize());
   check_cuda_error(cudaEventRecord (stop_event, 0));
   check_cuda_error(cudaEventSynchronize (stop_event));
@@ -1357,7 +1346,7 @@ void GPU::PopulationKernel::update_current_foi() {
 //                     pi->h_person_update_info()[i].person_current_relative_biting_rate,
 //                     pi->h_person_update_info()[i].person_current_relative_moving_rate);
 //  }
-  for (int loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
+  for (int loc = Model::CONFIG->number_of_locations() - 5; loc < Model::CONFIG->number_of_locations(); loc++) {
     printf("%d GPU sum_relative_biting_by_location[%d] biting %f\n",Model::GPU_SCHEDULER->current_time(),
            h_sum_biting_moving_foi_by_loc[loc].get<0>(),h_sum_biting_moving_foi_by_loc[loc].get<1>());
     printf("%d GPU sum_relative_moving_by_location[%d] moving %f\n",Model::GPU_SCHEDULER->current_time(),
