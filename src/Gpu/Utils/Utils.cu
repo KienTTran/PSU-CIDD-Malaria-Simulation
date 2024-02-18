@@ -224,7 +224,6 @@ ThrustTVectorDevice<ThrustTuple4<int, double, double, double>> GPU::Utils::devic
   return device_output_values;
 }
 
-
 TVector<ThrustTuple4<int,double,double,double>> GPU::Utils::host_reduce_vector(ThrustTVectorDevice<ThrustTuple4<int,double,double,double>> device_keys_values) {
   thrust::sort_by_key(thrust::device, device_keys_values.begin(), device_keys_values.end(), device_keys_values.begin(), LocationLessThan());
 
@@ -243,6 +242,22 @@ TVector<ThrustTuple4<int,double,double,double>> GPU::Utils::host_reduce_vector(T
   thrust::copy(device_output_values.begin(), device_output_values.begin() + output_length, host_output_values.begin());
 //    thrust::remove_if(host_output_values.begin(), host_output_values.end(), IsTupleValueZero());
   return host_output_values;
+}
+
+ThrustTVectorDevice<ThrustTuple4<int,double,double,double>> GPU::Utils::device_reduce_vector(ThrustTVectorDevice<ThrustTuple4<int,double,double,double>> device_keys_values) {
+  thrust::sort_by_key(thrust::device, device_keys_values.begin(), device_keys_values.end(), device_keys_values.begin(), LocationLessThan());
+
+  thrust::device_vector<thrust::tuple<int, double, double, double>> device_output_values(device_keys_values.size());
+
+  thrust::reduce_by_key(thrust::device,
+                        device_keys_values.begin(),
+                        device_keys_values.end(),
+                        device_keys_values.begin(),
+                        thrust::make_discard_iterator(),
+                        device_output_values.begin(),
+                        CheckKeyTuple(),
+                        SumValueTuple());
+  return device_output_values;
 }
 
 template<typename T>

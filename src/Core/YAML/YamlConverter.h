@@ -95,7 +95,7 @@ struct convert<DebugConfig> {
         dgbcfd.enable_debug_render = node["enable_debug_render"].as<bool>();
         dgbcfd.enable_debug_text = node["enable_debug_text"].as<bool>();
         dgbcfd.enable_debug_render_text = node["enable_debug_render_text"].as<bool>();
-        dgbcfd.enable_update = node["enable_update"].as<bool>();
+        dgbcfd.enable_random_position_update = node["enable_random_position_update"].as<bool>();
         dgbcfd.height = node["height"].as<int>();
         dgbcfd.width = node["width"].as<int>();
         dgbcfd.width = node["width"].as<int>();

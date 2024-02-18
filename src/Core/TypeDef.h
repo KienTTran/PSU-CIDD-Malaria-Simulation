@@ -186,7 +186,7 @@ struct RenderConfig{
 struct DebugConfig{
     int width;
     int height;
-    bool enable_update;
+    bool enable_random_position_update;
     bool enable_debug_text;
     bool enable_debug_render;
     bool enable_debug_render_text;

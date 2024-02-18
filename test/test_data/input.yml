@@ -27,7 +27,7 @@ render_config:
 debug_config:
   width: 0
   height: 0
-  enable_update: true
+  enable_random_position_update: true
   enable_debug_text: true
   enable_debug_render: false
   enable_debug_render_text: false

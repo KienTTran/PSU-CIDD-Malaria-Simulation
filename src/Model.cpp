@@ -409,6 +409,7 @@ void Model::daily_update() {
 //
 //  // this function must be called after mosquito infect new cohort in prmc
   gpu_population_->persist_current_force_of_infection_to_use_N_days_later();
+//  gpu_population_kernel_->persist_current_force_of_infection_to_use_N_days_later();
 
 }
 

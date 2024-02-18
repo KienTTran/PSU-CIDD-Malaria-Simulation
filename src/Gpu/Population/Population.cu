@@ -723,23 +723,12 @@ void GPU::Population::persist_current_force_of_infection_to_use_N_days_later() {
   auto lapse = std::chrono::high_resolution_clock::now() - start;
   if(Model::CONFIG->debug_config().enable_debug_text){
     LOG_IF(Model::GPU_SCHEDULER->current_time() % Model::CONFIG->debug_config().log_interval == 0, INFO)
-      << "[Mosquito] Update FOI N days CPU time: "
+      << "[Population] Update FOI N days CPU time: "
       << std::chrono::duration_cast<std::chrono::milliseconds>(lapse).count() << " ms";
   }
 }
 
 void GPU::Population::update_current_foi() {
-  auto *pi2 = Model::GPU_POPULATION->get_person_index<GPU::PersonIndexGPU>();
-//  for(int i = pi2->h_persons().size() - 5; i < pi2->h_persons().size(); i++){
-//    LOG_IF(Model::CONFIG->debug_config().enable_debug_text,INFO)
-//      << fmt::format("[Population update_current_foi] CPU BEFORE Person {} last update time {} parasites_size {}"
-//                     " person_biting {} person_moving {}",
-//                     i,
-//                     pi2->h_persons()[i]->latest_update_time(),
-//                     pi2->h_persons()[i]->all_clonal_parasite_populations()->size(),
-//                     pi2->h_persons()[i]->current_relative_biting_rate,
-//                     Model::CONFIG->circulation_info().v_moving_level_value[pi2->h_persons()[i]->moving_level()]);
-//  }
   auto start = std::chrono::high_resolution_clock::now();
   auto pi = get_person_index<GPU::PersonIndexByLocationStateAgeClass>();
   for (int loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
@@ -776,9 +765,6 @@ void GPU::Population::update_current_foi() {
         }
       }
     }
-//    printf("%d CPU sum_relative_biting_by_location[%d] biting %f\n",Model::GPU_SCHEDULER->current_time(),loc,sum_relative_biting_by_location[loc]);
-//    printf("%d CPU sum_relative_moving_by_location[%d] moving %f\n",Model::GPU_SCHEDULER->current_time(),loc,sum_relative_moving_by_location[loc]);
-//    printf("%d CPU sum_relative_moving_by_location[%d] foi %f\n",Model::GPU_SCHEDULER->current_time(),loc,current_force_of_infection_by_location[loc]);
   }
   auto lapse = std::chrono::high_resolution_clock::now() - start;
   if(Model::CONFIG->debug_config().enable_debug_text){
@@ -786,19 +772,11 @@ void GPU::Population::update_current_foi() {
       << "[Population] Update population current foi CPU time: "
               << std::chrono::duration_cast<std::chrono::milliseconds>(lapse).count() << " ms";
   }
-//  for(int i = pi2->h_persons().size() - 5; i < pi2->h_persons().size(); i++){
-//    LOG_IF(Model::CONFIG->debug_config().enable_debug_text,INFO)
-//      << fmt::format("[Population update_current_foi] CPU AFTER Person {} last update time {} parasites_size {}"
-//                     " person_biting {} person_moving {}",
-//                     i,
-//                     pi2->h_persons()[i]->latest_update_time(),
-//                     pi2->h_persons()[i]->all_clonal_parasite_populations()->size(),
-//                     pi2->h_persons()[i]->current_relative_biting_rate,
-//                     Model::CONFIG->circulation_info().v_moving_level_value[pi2->h_persons()[i]->moving_level()]);
-//  }
-  for (int loc = Model::CONFIG->number_of_locations() - 5; loc < Model::CONFIG->number_of_locations(); loc++) {
-    printf("%d CPU sum_relative_biting_by_location[%d] biting %f\n",Model::GPU_SCHEDULER->current_time(),loc,sum_relative_biting_by_location[loc]);
-    printf("%d CPU sum_relative_moving_by_location[%d] moving %f\n",Model::GPU_SCHEDULER->current_time(),loc,sum_relative_moving_by_location[loc]);
-    printf("%d CPU sum_relative_moving_by_location[%d] foi %f\n",Model::GPU_SCHEDULER->current_time(),loc,current_force_of_infection_by_location[loc]);
+  if(Model::CONFIG->debug_config().enable_debug_text){
+    for (int loc = Model::CONFIG->number_of_locations() - 5; loc < Model::CONFIG->number_of_locations(); loc++) {
+      printf("%d CPU sum_relative_biting_by_location[%d] biting %f\n",Model::GPU_SCHEDULER->current_time(),loc,sum_relative_biting_by_location[loc]);
+      printf("%d CPU sum_relative_moving_by_location[%d] moving %f\n",Model::GPU_SCHEDULER->current_time(),loc,sum_relative_moving_by_location[loc]);
+      printf("%d CPU sum_relative_moving_by_location[%d] foi %f\n",Model::GPU_SCHEDULER->current_time(),loc,current_force_of_infection_by_location[loc]);
+    }
   }
 }

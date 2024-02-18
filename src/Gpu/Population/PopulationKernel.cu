@@ -100,9 +100,9 @@ void GPU::PopulationKernel::init() {
    * */
   start_index = 0;
   std::string gen_aa_test;
-  std::vector<int> gen_aa;
-  std::vector<int> gen_aa_size;
-  std::vector<int> gen_max_copies;
+  TVector<int> gen_aa;
+  TVector<int> gen_aa_size;
+  TVector<int> gen_max_copies;
   h_gen_aa_size = TVector<int>(Model::CONFIG->pf_genotype_info().chromosome_infos.size(), -1);
   h_gen_gene_size = TVector<int>(Model::CONFIG->pf_genotype_info().chromosome_infos.size(), -1);
   h_gen_max_copies = TVector<int>(Model::CONFIG->pf_genotype_info().chromosome_infos.size(), -1);
@@ -189,10 +189,13 @@ void GPU::PopulationKernel::init() {
   check_cuda_error(cudaEventCreate(&start_event));
   check_cuda_error(cudaEventCreate(&stop_event));
 
-  h_sum_biting_moving_foi_by_loc = std::vector<ThrustTuple4<int,double,double,double>>(Model::CONFIG->number_of_locations(),
+  h_sum_biting_moving_foi_by_loc = TVector<ThrustTuple4<int,double,double,double>>(Model::CONFIG->number_of_locations(),
       ThrustTuple4<int,double,double,double>(0,0.0,0.0,0.0));
-  force_of_infection_for_N_days_by_location = std::vector<std::vector<double>>(
-      Model::CONFIG->number_of_tracking_days(), std::vector<double>(Model::CONFIG->number_of_locations(), 0));
+  force_of_infection_for_N_days_by_location = TVector<TVector<double>>(
+      Model::CONFIG->number_of_tracking_days(), TVector<double>(Model::CONFIG->number_of_locations(), 0));
+  individual_relative_biting_by_location = TVector<TVector<double>>(Model::CONFIG->number_of_locations(), TVector<double>());
+  individual_relative_moving_by_location = TVector<TVector<double>>(Model::CONFIG->number_of_locations(), TVector<double>());
+  individual_foi_by_location = TVector<TVector<double>>(Model::CONFIG->number_of_locations(), TVector<double>());
 }
 
 /*
@@ -1156,7 +1159,7 @@ void GPU::PopulationKernel::update_all_individuals() {
 __global__ void update_current_foi_kernel_stream(int offset,
                                                  int size,
                                                  RelativeInfectivity h_relative_infectivity,
-                                                 GPU::PersonUpdateInfo *d_person_update_info){
+                                                 GPU::PersonUpdateInfo *d_person_update_info) {
   int index = offset + threadIdx.x + blockIdx.x * blockDim.x;
   if (index < offset + size) {
     /* relative infectivity and FOI */
@@ -1208,17 +1211,6 @@ struct SumValueTuple {
 };
 
 void GPU::PopulationKernel::update_current_foi() {
-//  for(int i = pi->h_person_update_info().size() - 5; i < pi->h_person_update_info().size(); i++){
-//    LOG_IF(Model::CONFIG->debug_config().enable_debug_text,INFO)
-//      << fmt::format("[PopulationKernel update_current_foi] BEFORE Person {} last update time {} parasites_size {} parasites_genotype_mutated_number {}"
-//                     " person_biting {} person_moving {}",
-//                     i,
-//                     pi->h_person_update_info()[i].person_latest_update_time,
-//                     pi->h_person_update_info()[i].parasites_size,
-//                     pi->h_person_update_info()[i].parasites_genotype_mutated_number,
-//                     pi->h_person_update_info()[i].person_current_relative_biting_rate,
-//                     pi->h_person_update_info()[i].person_current_relative_moving_rate);
-//  }
   check_cuda_error(cudaEventRecord(start_event, 0));
   d_sum_biting_moving_foi_by_loc.resize(0);
   int batch_size = (pi->h_person_update_info().size() < Model::CONFIG->gpu_config().n_people_1_batch)
@@ -1240,7 +1232,6 @@ void GPU::PopulationKernel::update_current_foi() {
      * If true, then use streams
      * */
     if(batch_size > (Model::CONFIG->gpu_config().n_people_1_batch / 2)){
-//      printf("########### BATCH %d STREAMS ###########\n",b_index);
       int stream_size = batch_size / Model::CONFIG->gpu_config().n_streams;
       int stream_offset = 0;
       for (auto [stream_remain, s_index] = std::tuple{batch_size, 0}; stream_remain > 0; stream_remain -= stream_size, s_index++) {
@@ -1285,7 +1276,6 @@ void GPU::PopulationKernel::update_current_foi() {
       }
     }
     else{
-//      printf("########### LAST BATCH %d ###########\n",b_index);
       const int n_threads = (batch_size < Model::CONFIG->gpu_config().n_threads) ? batch_size : Model::CONFIG->gpu_config().n_threads;
       const int n_blocks = (batch_size + n_threads - 1) / n_threads;
       int s_index = 0;
@@ -1301,10 +1291,6 @@ void GPU::PopulationKernel::update_current_foi() {
                                        batch_bytes,
                                        cudaMemcpyHostToDevice,
                                        d_streams[s_index]));
-//      check_cuda_error(cudaMemcpy(d_buffer_person_update_info_stream,
-//                                  thrust::raw_pointer_cast(pi->h_person_update_info().data()) + batch_offset,
-//                                  batch_bytes,
-//                                  cudaMemcpyHostToDevice));
       update_current_foi_kernel_stream<<<n_blocks, n_threads, 0, d_streams[s_index]>>>(0,
                                                                                 batch_size,
                                                                                 Model::CONFIG->relative_infectivity(),
@@ -1315,44 +1301,50 @@ void GPU::PopulationKernel::update_current_foi() {
                                        batch_bytes,
                                        cudaMemcpyDeviceToHost,
                                        d_streams[s_index]));
-//      check_cuda_error(cudaMemcpy(thrust::raw_pointer_cast(pi->h_person_update_info().data()) + batch_offset,
-//                                  d_buffer_person_update_info_stream,
-//                                  batch_bytes,
-//                                  cudaMemcpyDeviceToHost));
       check_cuda_error(cudaGetLastError());
       batch_offset += batch_size;
     }
+    /*
+     * Sum up biting, moving and foi by location after every batch
+     * The length of d_sum_biting_moving_foi_by_loc is 2*number_of_locations
+     * */
     auto result = Model::GPU_UTILS->device_sum_biting_moving_foi_by_loc_pointer(d_buffer_person_update_info_stream,0,batch_size);
-    d_sum_biting_moving_foi_by_loc.reserve(Model::CONFIG->number_of_locations() + Model::CONFIG->number_of_locations());
+    d_sum_biting_moving_foi_by_loc.reserve(Model::CONFIG->number_of_locations()*2);
     d_sum_biting_moving_foi_by_loc.insert(d_sum_biting_moving_foi_by_loc.end(),result.begin(),result.begin()+Model::CONFIG->number_of_locations());
     h_sum_biting_moving_foi_by_loc = Model::GPU_UTILS->host_reduce_vector(d_sum_biting_moving_foi_by_loc);
+    check_cuda_error(cudaDeviceSynchronize());
     check_cuda_error(cudaGetLastError());
     check_cuda_error(cudaFree(d_buffer_person_update_info_stream));
   }
-  check_cuda_error(cudaDeviceSynchronize());
   check_cuda_error(cudaEventRecord (stop_event, 0));
   check_cuda_error(cudaEventSynchronize (stop_event));
   check_cuda_error(cudaEventElapsedTime (&elapsed_time, start_event, stop_event));
   LOG_IF(Model::GPU_SCHEDULER->current_time() % Model::CONFIG->debug_config().log_interval == 0, INFO)
     << fmt::format("[PopulationKernel::update_current_foi] Update current FOI GPU time: {} ms", elapsed_time);
-//  for(int i = pi->h_person_update_info().size() - 5; i < pi->h_person_update_info().size(); i++){
-//    LOG_IF(Model::CONFIG->debug_config().enable_debug_text,INFO)
-//      << fmt::format("[PopulationKernel update_current_foi] AFTER Person {} last update time {} parasites_size {} parasites_genotype_mutated_number {}"
-//                     " person_biting {} person_moving {}",
-//                     i,
-//                     pi->h_person_update_info()[i].person_latest_update_time,
-//                     pi->h_person_update_info()[i].parasites_size,
-//                     pi->h_person_update_info()[i].parasites_genotype_mutated_number,
-//                     pi->h_person_update_info()[i].person_current_relative_biting_rate,
-//                     pi->h_person_update_info()[i].person_current_relative_moving_rate);
-//  }
-  for (int loc = Model::CONFIG->number_of_locations() - 5; loc < Model::CONFIG->number_of_locations(); loc++) {
-    printf("%d GPU sum_relative_biting_by_location[%d] biting %f\n",Model::GPU_SCHEDULER->current_time(),
-           h_sum_biting_moving_foi_by_loc[loc].get<0>(),h_sum_biting_moving_foi_by_loc[loc].get<1>());
-    printf("%d GPU sum_relative_moving_by_location[%d] moving %f\n",Model::GPU_SCHEDULER->current_time(),
-           h_sum_biting_moving_foi_by_loc[loc].get<0>(),h_sum_biting_moving_foi_by_loc[loc].get<2>());
-    printf("%d GPU sum_relative_moving_by_location[%d] foi %f\n",Model::GPU_SCHEDULER->current_time(),
-           h_sum_biting_moving_foi_by_loc[loc].get<0>(),h_sum_biting_moving_foi_by_loc[loc].get<3>());
+  if(Model::CONFIG->debug_config().enable_debug_text) {
+    for (int loc = Model::CONFIG->number_of_locations() - 5; loc < Model::CONFIG->number_of_locations(); loc++) {
+      printf("%d GPU sum_relative_biting_by_location[%d] biting %f\n", Model::GPU_SCHEDULER->current_time(),
+             h_sum_biting_moving_foi_by_loc[loc].get<0>(), h_sum_biting_moving_foi_by_loc[loc].get<1>());
+      printf("%d GPU sum_relative_moving_by_location[%d] moving %f\n", Model::GPU_SCHEDULER->current_time(),
+             h_sum_biting_moving_foi_by_loc[loc].get<0>(), h_sum_biting_moving_foi_by_loc[loc].get<2>());
+      printf("%d GPU sum_relative_moving_by_location[%d] foi %f\n", Model::GPU_SCHEDULER->current_time(),
+             h_sum_biting_moving_foi_by_loc[loc].get<0>(), h_sum_biting_moving_foi_by_loc[loc].get<3>());
+    }
+  }
+}
+
+void GPU::PopulationKernel::persist_current_force_of_infection_to_use_N_days_later() {
+  auto start = std::chrono::high_resolution_clock::now();
+  for (auto loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
+    force_of_infection_for_N_days_by_location[Model::GPU_SCHEDULER->current_time()
+                                              % Model::CONFIG->number_of_tracking_days()][loc] =
+    h_sum_biting_moving_foi_by_loc[loc].get<3>();
+  }
+  auto lapse = std::chrono::high_resolution_clock::now() - start;
+  if(Model::CONFIG->debug_config().enable_debug_text){
+    LOG_IF(Model::GPU_SCHEDULER->current_time() % Model::CONFIG->debug_config().log_interval == 0, INFO)
+      << "[PopulationKernel::persist_current_force_of_infection_to_use_N_days_later] Update FOI N days CPU time: "
+      << std::chrono::duration_cast<std::chrono::milliseconds>(lapse).count() << " ms";
   }
 }
 

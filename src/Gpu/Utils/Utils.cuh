@@ -34,6 +34,7 @@ public:
     TVector<ThrustTuple4<int,double,double,double>> host_sum_biting_moving_foi_by_loc_pointer(GPU::PersonUpdateInfo* d_values, int offset, int size);
     ThrustTVectorDevice<ThrustTuple4<int, double, double, double>> device_sum_biting_moving_foi_by_loc_pointer(GPU::PersonUpdateInfo* d_values, int offset, int size);
     TVector<ThrustTuple4<int,double,double,double>> host_reduce_vector(ThrustTVectorDevice<ThrustTuple4<int,double,double,double>> device_keys_values);
+    ThrustTVectorDevice<ThrustTuple4<int,double,double,double>> device_reduce_vector(ThrustTVectorDevice<ThrustTuple4<int,double,double,double>> device_keys_values);
     template<typename T>
     TVector<T> count_by_1key(TVector<T> input_keys, int size);
 public:

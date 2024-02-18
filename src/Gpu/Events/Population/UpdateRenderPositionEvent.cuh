@@ -2,8 +2,8 @@
 // Created by kient on 8/4/2023.
 //
 
-#ifndef PERSONUPDATERENDERPOSITIONEVENT_CUH
-#define PERSONUPDATERENDERPOSITIONEVENT_CUH
+#ifndef UPDATERENDERPOSITIONEVENT_CUH
+#define UPDATERENDERPOSITIONEVENT_CUH
 
 
 #include "Gpu/Events/Event.cuh"
@@ -27,9 +27,7 @@ public:
 
 private:
     void execute() override;
-
-
 };
 
 
-#endif //PERSONUPDATERENDERPOSITIONEVENT_CUH
+#endif //UPDATERENDERPOSITIONEVENT_CUH

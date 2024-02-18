@@ -52,8 +52,8 @@ public:
     char* d_gen_mutation_mask{};
     ImmuneSystemInformation *d_immune_system_information{};
     GPU::PersonIndexGPU *pi{};
-    ThrustTVectorDevice<GPU::PersonUpdateInfo> d_buffer_person_update_info;
     GPU::PersonUpdateInfo *d_buffer_person_update_info_stream{};
+    GPU::Person *d_buffer_person_stream{};
     cudaStream_t *d_streams{};
     cudaEvent_t start_event{}, stop_event{};
     float elapsed_time{};
@@ -64,6 +64,9 @@ public:
     /* This vector store relative biting, moving and foi of all people by location */
     TVector<ThrustTuple4<int,double,double,double>> h_sum_biting_moving_foi_by_loc;
     ThrustTVectorDevice<ThrustTuple4<int,double,double,double>> d_sum_biting_moving_foi_by_loc;
+    TVector<TVector<double>> individual_foi_by_location;
+    TVector<TVector<double>> individual_relative_biting_by_location;
+    TVector<TVector<double>> individual_relative_moving_by_location;
     TVector<TVector<double>> force_of_infection_for_N_days_by_location;
 
 public:
@@ -87,12 +90,13 @@ public:
     /*
      * for infection
      * */
-    void calculate_n_person_bitten_today(int n_locations,
-                                          ThrustTVectorDevice<double> &d_foi_all_locations,
-                                          ThrustTVectorDevice<int> &d_n_person_bitten_today_all_locations);
-    void perform_infection_event();
+//    void calculate_n_person_bitten_today(int n_locations,
+//                                          ThrustTVectorDevice<double> &d_foi_all_locations,
+//                                          ThrustTVectorDevice<int> &d_n_person_bitten_today_all_locations);
+//    void perform_infection_event();
     void update_all_individuals();
     void update_current_foi();
+    void persist_current_force_of_infection_to_use_N_days_later();
 };
 
 

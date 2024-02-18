@@ -14,13 +14,13 @@ gpu_config:
   n_threads: 768
   n_streams: 16
   n_people_1_batch: 1000000
-  pre_allocated_mem_ratio: 1.0
+  pre_allocated_mem_ratio: 1.5
 
 #in order to display GUI, display_gui is true and pre_allocated_mem_ratio must be set to > 1.0
 render_config:
   window_width: 1280
   window_height: 720
-  display_gui: false
+  display_gui: true
   close_window_on_finish: true
   point_coord: 0.075
   shaders:
@@ -30,7 +30,7 @@ render_config:
 debug_config:
   width: 0
   height: 0
-  enable_update: true
+  enable_random_position_update: true
   enable_debug_text: true
   enable_debug_render: false
   enable_debug_render_text: false
@@ -45,7 +45,7 @@ initial_seed_number: 123456789
 starting_date: 2000/1/1
 
 # ending time point of the simulation (in yyyy/m/d format)
-ending_date: 2000/1/3
+ending_date: 2000/2/1
 
 # the day at which the simulation's reporting functionality begins collecting data for
 # EIR, # of clinical episodes, # death , # of treatment, #TF by location,...
