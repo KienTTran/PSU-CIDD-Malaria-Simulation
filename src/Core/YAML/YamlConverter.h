@@ -74,6 +74,7 @@ struct convert<RenderConfig> {
     }
     static bool decode(const Node& node, RenderConfig& rcfd) {
         rcfd.display_gui = node["display_gui"].as<bool>();
+        rcfd.display_plot = node["display_plot"].as<bool>();
         rcfd.close_window_on_finish = node["close_window_on_finish"].as<bool>();
         rcfd.point_coord = node["point_coord"].as<double>();
         rcfd.window_width = node["window_width"].as<int>();

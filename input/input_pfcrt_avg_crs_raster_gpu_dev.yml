@@ -21,6 +21,7 @@ render_config:
   window_width: 1280
   window_height: 720
   display_gui: true
+  display_plot: true
   close_window_on_finish: true
   point_coord: 0.075
   shaders:
@@ -45,7 +46,7 @@ initial_seed_number: 123456789
 starting_date: 2000/1/1
 
 # ending time point of the simulation (in yyyy/m/d format)
-ending_date: 2000/12/5
+ending_date: 2010/1/1
 
 # the day at which the simulation's reporting functionality begins collecting data for
 # EIR, # of clinical episodes, # death , # of treatment, #TF by location,...

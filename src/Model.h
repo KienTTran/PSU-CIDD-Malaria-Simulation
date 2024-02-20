@@ -30,6 +30,7 @@ namespace GPU{
     class ModelDataCollector;
     class Reporter;
     class Scheduler;
+    class Plot;
 }
 
 class Mosquito;
@@ -104,6 +105,7 @@ POINTER_PROPERTY(GPU::ClinicalUpdateFunction, gpu_progress_to_clinical_update_fu
 POINTER_PROPERTY(GPU::ImmunityClearanceUpdateFunction, gpu_immunity_clearance_update_function)
 POINTER_PROPERTY(GPU::ImmunityClearanceUpdateFunction, gpu_having_drug_update_function)
 POINTER_PROPERTY(GPU::ImmunityClearanceUpdateFunction, gpu_clinical_update_function)
+POINTER_PROPERTY(GPU::Plot, gpu_plot)
  public:
   static Model *MODEL;
   static Config *CONFIG;
@@ -122,6 +124,7 @@ POINTER_PROPERTY(GPU::ImmunityClearanceUpdateFunction, gpu_clinical_update_funct
   static GPU::Utils *GPU_UTILS;
   static GPU::Random *GPU_RANDOM;
   static GPU::Mosquito *GPU_MOSQUITO;
+  static GPU::Plot *GPU_PLOT;
   bool model_finished = false;
 
   static IStrategy *TREATMENT_STRATEGY;

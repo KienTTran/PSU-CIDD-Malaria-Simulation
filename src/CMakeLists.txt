@@ -56,12 +56,17 @@ file(GLOB SRC_FILES *.cpp
         Gpu/Reporters/*.cuh
         Gpu/Utils/*.cu
         Gpu/Utils/*.cuh
+        Gpu/Utils/*.hpp
 )
 
 set(SRC_FILES ${SRC_FILES}
         ${EXT_PROJECTS_DIR}/easyloggingpp-9.97.0/easylogging++.h
         ${EXT_PROJECTS_DIR}/easyloggingpp-9.97.0/easylogging++.cc
-       )
+        Gpu/Renderer/Plot/Plot.cu
+        Gpu/Renderer/Plot/Plot.cuh
+        Gpu/Renderer/Plot/PlotLines.cu
+        Gpu/Renderer/Plot/PlotLines.cuh
+)
 
 add_library(MaSimCore STATIC ${SRC_FILES})
 
@@ -87,6 +92,10 @@ target_link_libraries(MaSimCore PRIVATE glm::glm)
 #IMGUI imgui[core,glfw-binding,opengl3-binding]
 find_package(imgui CONFIG REQUIRED)
 target_link_libraries(MaSimCore PRIVATE imgui::imgui)
+
+#IMPlot implot
+find_package(implot CONFIG REQUIRED)
+target_link_libraries(MaSimCore PRIVATE implot::implot)
 
 #Date date
 find_package(date CONFIG REQUIRED)

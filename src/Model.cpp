@@ -49,6 +49,7 @@
 #include "Gpu/Core/Scheduler.cuh"
 #include "Gpu/Strategies/IStrategy.cuh"
 #include "Gpu/MDC/ModelDataCollector.cuh"
+#include "Gpu/Renderer/Plot/PlotLines.cuh"
 
 Model* Model::MODEL = nullptr;
 Config* Model::CONFIG = nullptr;
@@ -70,6 +71,7 @@ GPU::Utils* Model::GPU_UTILS = nullptr;
 GPU::Mosquito* Model::GPU_MOSQUITO = nullptr;
 IStrategy* Model::TREATMENT_STRATEGY = nullptr;
 GPU::IStrategy* Model::GPU_TREATMENT_STRATEGY = nullptr;
+GPU::Plot* Model::GPU_PLOT = nullptr;
 
 Model::Model(const int& object_pool_size) {
   initialize_object_pool(object_pool_size);
@@ -89,6 +91,7 @@ Model::Model(const int& object_pool_size) {
   gpu_random_ = new GPU::Random();
   gpu_utils_ = new GPU::Utils();
   gpu_population_kernel_ = new GPU::PopulationKernel();
+  gpu_plot_ = new GPU::Plot();
 
   MODEL = this;
   CONFIG = config_;
@@ -107,6 +110,7 @@ Model::Model(const int& object_pool_size) {
   GPU_POPULATION = gpu_population_;
   GPU_POPULATION_KERNEL = gpu_population_kernel_;
   GPU_MOSQUITO = gpu_mosquito_;
+  GPU_PLOT = gpu_plot_;
 
   // LOGGER = spdlog::stdout_logger_mt("console");
 
@@ -272,6 +276,14 @@ void Model::initialize() {
 
   LOG(INFO) << "Initializing GPU::Renderer";
   gpu_renderer_->init(gpu_render_entity_);
+
+  if(Model::CONFIG->render_config().display_gui && Model::CONFIG->render_config().display_plot){
+    LOG(INFO) << "Initializing GPU::Plot";
+    gpu_plot_->init();
+    if (gpu_plot_->plots().empty()) {
+      gpu_plot_->add_plot(new GPU::PlotLines());
+    }
+  }
 
   LOG(INFO) << "Schedule for population event (if configured)";
   for (auto* event : config_->gpu_preconfig_population_events()) {
@@ -465,6 +477,7 @@ void Model::release() {
   ObjectHelpers::delete_pointer<GPU::Mosquito>(gpu_mosquito_);
   ObjectHelpers::delete_pointer<ModelDataCollector>(data_collector_);
   ObjectHelpers::delete_pointer<GPU::ModelDataCollector>(gpu_data_collector_);
+  ObjectHelpers::delete_pointer<GPU::Plot>(gpu_plot_);
 
   treatment_strategy_ = nullptr;
   gpu_treatment_strategy_ = nullptr;
@@ -496,6 +509,7 @@ void Model::release() {
   GPU_RANDOM = nullptr;
   GPU_UTILS = nullptr;
   GPU_MOSQUITO = nullptr;
+  GPU_PLOT = nullptr;
 
 }
 

@@ -9,9 +9,9 @@
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
 #include <iostream>
-#include <stdlib.h>
 #include "RenderEntity.cuh"
 #include "Gpu/Population/Population.cuh"
+#include "Gpu/Renderer/Plot/Plot.cuh"
 #include <GLFW/glfw3.h>
 #include <chrono>
 #include <thread>
@@ -20,6 +20,7 @@ class Model;
 
 namespace GPU {
     class Renderer;
+    class Plot;
 }
 
 class GPU::Renderer {
@@ -37,7 +38,7 @@ public:
     void start();
 
 private:
-    void render_gui();
+    void render_plot();
     void framebufferSizeCallbackImpl(GLFWwindow* window, int width, int height);
     void mouseCursorCallbackImpl(GLFWwindow* window, double x_pos_in, double y_pos_in);
     void mouseButtonCallbackImpl(GLFWwindow* window, int button, int action, int mods);
@@ -45,11 +46,13 @@ private:
     void keyCallbackImpl(GLFWwindow* window, int key, int scancode, int action, int mods);
     glm::dvec3 un_project( const glm::dvec3& win );
     glm::dvec2 un_project_plane( const glm::dvec2& win );
+public:
+    virtual void start_plot();
+    virtual void update_plot();
 
 public:
     Model* model_;
     GPU::RenderEntity *gpu_render_entity_;
-    Population* population_;
     int window_width;
     int window_height;
     std::thread render_thread;

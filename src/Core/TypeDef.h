@@ -173,6 +173,7 @@ struct RenderConfig{
     int window_width;
     int window_height;
     bool display_gui;
+    bool display_plot;
     bool close_window_on_finish;
     double point_coord;
     std::string vertex_shader_path;
