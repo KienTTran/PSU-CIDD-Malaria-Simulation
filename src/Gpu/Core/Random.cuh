@@ -19,7 +19,7 @@ public:
     Random();
     ~Random();
 
-    void init(int n, unsigned long seed, int n_threads = -1,bool debug = false);
+    void init(int n, unsigned long seed = -1, int n_threads = -1,bool debug = false);
     void init_curand_states(ThrustTVectorDevice<curandState> &d_curand_states, int size, long seed);
     void free();
     void random_multinomial(int n_locations, int n_samples_each_location,

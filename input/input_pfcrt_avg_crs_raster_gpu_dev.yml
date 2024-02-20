@@ -14,7 +14,7 @@ gpu_config:
   n_threads: 768
   n_streams: 16
   n_people_1_batch: 1000000
-  pre_allocated_mem_ratio: 1.5
+  pre_allocated_mem_ratio: 2.5
 
 #in order to display GUI, display_gui is true and pre_allocated_mem_ratio must be set to > 1.0
 render_config:
@@ -45,7 +45,7 @@ initial_seed_number: 123456789
 starting_date: 2000/1/1
 
 # ending time point of the simulation (in yyyy/m/d format)
-ending_date: 2000/2/1
+ending_date: 2000/12/5
 
 # the day at which the simulation's reporting functionality begins collecting data for
 # EIR, # of clinical episodes, # death , # of treatment, #TF by location,...

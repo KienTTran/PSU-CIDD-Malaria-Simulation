@@ -865,9 +865,7 @@ void GPU::Person::generate_render_entity(int location, bool is_circulate){
   float rand_y = Model::RANDOM->random_uniform_double(0.0,1.0);
   float x = rand_x*range_x + base_x_left;
   float y = height - (rand_y*range_y + base_y_bottom);//OGL from bottom to ptop, so invert Y axis only
-  glm::mat4 model = glm::mat4(1.0f);
-  model = glm::translate(model, glm::vec3(x, y, 0.0f));
-  model_ = model;
+  model_ = glm::translate(glm::mat4(1.0f), glm::vec3(x, y, 0.0f));
   color_ = Model::CONFIG->h_location_colors[location];
   if(is_circulate) color_ = glm::vec4(1.0f,1.0f,1.0f,1.0f);
 }

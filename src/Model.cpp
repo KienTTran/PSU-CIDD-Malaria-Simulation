@@ -395,11 +395,11 @@ void Model::daily_update() {
 //  // infection event will use pre-calculated individual relative biting rate to infect new infections
 //  // circulation event will use pre-calculated individual relative moving rate to migrate individual to new location
   gpu_population_->update_current_foi();
-  gpu_population_kernel_->update_current_foi();
+//  gpu_population_kernel_->update_current_foi();
 
   gpu_population_->perform_infection_event();
   gpu_population_->perform_circulation_event();
-//  gpu_population_kernel_->perform_circulation_event();
+  gpu_population_kernel_->perform_circulation_event();
 
 //  // infect new mosquito cohort in prmc must be run after population perform infection event and update current foi
 //  // because the prmc at the tracking index will be overridden with new cohort to use N days later and

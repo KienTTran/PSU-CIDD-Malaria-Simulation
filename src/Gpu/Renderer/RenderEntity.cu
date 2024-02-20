@@ -113,7 +113,7 @@ void GPU::RenderEntity::init_render_entity(int window_width, int window_height) 
     glGenBuffers(1, &SSBO[0]);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, SSBO[0]);
     glBufferData(GL_SHADER_STORAGE_BUFFER, pi->h_person_models().size() * sizeof(glm::mat4),
-                 pi->h_person_models().data(),GL_DYNAMIC_DRAW);
+                 thrust::raw_pointer_cast(pi->h_person_models().data()),GL_DYNAMIC_DRAW);
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, SSBO[0]);//binding 2 in shader.vert
 
     //SSBO[1]
@@ -121,7 +121,7 @@ void GPU::RenderEntity::init_render_entity(int window_width, int window_height) 
     glGenBuffers(1, &SSBO[1]);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, SSBO[1]);
     glBufferData(GL_SHADER_STORAGE_BUFFER, pi->h_person_colors().size() * sizeof(glm::vec4),
-                 pi->h_person_colors().data(),GL_DYNAMIC_DRAW);
+                 thrust::raw_pointer_cast(pi->h_person_colors().data()),GL_DYNAMIC_DRAW);
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, SSBO[1]);//binding 3 in shader.vert
 
     // map OpenGL buffer object for writing from CUDA

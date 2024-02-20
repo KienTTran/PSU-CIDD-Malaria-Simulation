@@ -55,6 +55,11 @@ void GPU::Random::init(int n, unsigned long seed, int n_threads, bool debug) {
         LOG_IF(debug,INFO) << "GPU Random initializing " << n_threads_ << " threads with seed: " << seed;
     else
         LOG_IF(debug,INFO) << "GPU Random initializing default threads with seed: " << seed;
+    if(seed == -1){
+        auto now = std::chrono::high_resolution_clock::now();
+        auto milliseconds = std::chrono::duration_cast<std::chrono::microseconds>(now.time_since_epoch());
+        seed = Model::CONFIG->initial_seed_number() <= 0 ? static_cast<unsigned long>(milliseconds.count()) : Model::CONFIG->initial_seed_number();
+    }
     setup<<<n_blocks,n_threads_>>>(n,d_states, seed);
     check_cuda_error(cudaDeviceSynchronize());
     check_cuda_error(cudaPeekAtLastError());
