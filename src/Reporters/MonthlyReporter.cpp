@@ -63,12 +63,14 @@ void MonthlyReporter::monthly_report() {
       Model::POPULATION->get_person_index<PersonIndexByLocationStateAgeClass>());
 
   ss << group_sep;
-
   for (auto tf_by_therapy : Model::DATA_COLLECTOR->current_tf_by_therapy()) {
     ss << tf_by_therapy << sep;
   }
-
-  ss << Model::DATA_COLLECTOR->current_TF_by_location()[0];
+  ss << group_sep;
+  for (auto loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
+    ss << Model::DATA_COLLECTOR->current_TF_by_location()[loc] << sep;
+  }
+  ss << group_sep;
 
   CLOG(INFO, "monthly_reporter") << ss.str();
   ss.str("");

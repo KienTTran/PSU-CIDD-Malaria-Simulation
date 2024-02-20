@@ -3,6 +3,7 @@
 //
 
 #include <vector>
+#include <fmt/format.h>
 #include <Core/Config/Config.h>
 #include "ReporterUtils.h"
 #include "Population/Properties/PersonIndexByLocationStateAgeClass.h"

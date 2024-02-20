@@ -327,18 +327,11 @@ void SingleHostClonalParasitePopulations::update_by_drugs(DrugsInBlood* drugs_in
     double percent_parasite_remove = 0;
     for (auto it = drugs_in_blood->drugs()->begin(); it != drugs_in_blood->drugs()->end(); ++it) {
       const auto drug = it->second;
-      const auto p = Model::RANDOM->random_flat(0.0, 1.0);
-
-      if (p < drug->get_mutation_probability()) {
-
-        // select all locus
-        //TODO: rework here to only allow x to mutate after intervention day
-        int mutation_locus = Model::RANDOM->random_uniform_int(0, new_genotype->gene_expression().size());
-
-        auto new_allele_value = blood_parasite->genotype()->select_mutation_allele(mutation_locus);
+      for(int mutation_locus = 0; mutation_locus < new_genotype->gene_expression().size(); mutation_locus++){
+        auto new_allele_value = blood_parasite->genotype()->select_mutation_allele(mutation_locus,
+                                                                                   drug->get_mutation_probability());
         //                std::cout << mutation_locus << "-" << bloodParasite->genotype()->gene_expression()[mutation_locus] << "-" << new_allele_value << std::endl;
         auto* mutation_genotype = new_genotype->combine_mutation_to(mutation_locus, new_allele_value);
-
         //                if (drug->drug_type()->id() == 3) {
         //                    std::cout << drug->getMutationProbability() << std::endl;
         //                }
@@ -351,8 +344,31 @@ void SingleHostClonalParasitePopulations::update_by_drugs(DrugsInBlood* drugs_in
           // }
           new_genotype = mutation_genotype;
         }
-
       }
+
+//      if (p < drug->get_mutation_probability()) {
+//
+//        // select all locus
+//        //TODO: rework here to only allow x to mutate after intervention day
+//        int mutation_locus = Model::RANDOM->random_uniform_int(0, new_genotype->gene_expression().size());
+//
+//        auto new_allele_value = blood_parasite->genotype()->select_mutation_allele(mutation_locus);
+//        //                std::cout << mutation_locus << "-" << bloodParasite->genotype()->gene_expression()[mutation_locus] << "-" << new_allele_value << std::endl;
+//        auto* mutation_genotype = new_genotype->combine_mutation_to(mutation_locus, new_allele_value);
+//
+//        //                if (drug->drug_type()->id() == 3) {
+//        //                    std::cout << drug->getMutationProbability() << std::endl;
+//        //                }
+//        if (mutation_genotype->get_EC50_power_n(drug->drug_type()) >
+//            new_genotype->get_EC50_power_n(drug->drug_type())) {
+//          //higher EC50^n means lower efficacy then allow mutation occur
+//          // if (mutation_locus == 3 && new_allele_value == 1) {
+//          //   std::cout << "Hello: " << Model::SCHEDULER->current_time() << " -- " << mutation_genotype->get_EC50_power_n(drug->drug_type()) << " - " << new_genotype->
+//          //     get_EC50_power_n(drug->drug_type()) << std::endl;
+//          // }
+//          new_genotype = mutation_genotype;
+//        }
+//      }
       if (new_genotype != blood_parasite->genotype()) {
         //mutation occurs
         Model::DATA_COLLECTOR->record_1_mutation(person_->location(), blood_parasite->genotype(), new_genotype);

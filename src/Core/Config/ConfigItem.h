@@ -3,9 +3,9 @@
 
 #include "IConfigItem.h"
 #include "Core/YAML/YamlConverter.h"
+//#include <fmt/format.h>
 #include "easylogging++.h"
 #include <yaml-cpp/yaml.h>
-#include <fmt/format.h>
 #include <utility>
 #include <vector>
 
@@ -132,7 +132,8 @@ void ConfigItem<std::vector<T>>::set_value(const YAML::Node &node) {
       sep = " , ";
     }
     ss << "]";
-    LOG(WARNING) << fmt::format("{} used default value of {}", this->name_, ss.str());
+//    LOG(WARNING) << fmt::format("{} used default value of {}", this->name_, ss.str());
+    LOG(WARNING) << this->name_ << " used default value of " << ss.str();
   }
 }
 

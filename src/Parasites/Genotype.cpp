@@ -30,13 +30,12 @@ Genotype::Genotype(const int &id, const GenotypeInfo &genotype_info, const IntVe
         1 - genotype_info.loci_vector[i].alleles[gene_expression_[i]].daily_cost_of_resistance;
   }
 
-//    std::cout << id << "-" << daily_fitness_multiple_infection_<<std::endl;
+  std::cout << "CRS: " << get_gene_string() << " - " << daily_fitness_multiple_infection_<<std::endl;
   //number_of_resistance_position (level)
   number_of_resistance_position_ = 0;
   for (auto i = 0; i < genotype_info.loci_vector.size(); i++) {
     number_of_resistance_position_ += genotype_info.loci_vector[i].alleles[gene_expression_[i]].mutation_level;
   }
-
 }
 
 Genotype::~Genotype() = default;
@@ -101,6 +100,24 @@ int Genotype::select_mutation_allele(const int &mutation_locus) {
                                                                                .mutation_values.size()));
   //    double t = 1.0 / affecting_loci_.size();
   return Model::CONFIG->genotype_info().loci_vector[mutation_locus].alleles[current_allele_value].mutation_values[pos];
+}
+
+
+int Genotype::select_mutation_allele(const int &mutation_locus, const double &mutation_probability) {
+  const auto current_allele_value = gene_expression()[mutation_locus];
+
+  int pos = 0;
+  if(Model::RANDOM->random_flat(0,1) < mutation_probability){
+    //pos is from 0 to size -1
+    pos = static_cast<const int>(Model::RANDOM->random_uniform_int(0,
+                                                                 Model::CONFIG->genotype_info()
+                                                                         .loci_vector[mutation_locus]
+                                                                         .alleles[current_allele_value]
+                                                                         .mutation_values.size()));
+  //    double t = 1.0 / affecting_loci_.size();
+  return Model::CONFIG->genotype_info().loci_vector[mutation_locus].alleles[current_allele_value].mutation_values[pos];
+  }
+  return Model::CONFIG->genotype_info().loci_vector[mutation_locus].alleles[current_allele_value].mutation_values[0];
 }
 
 std::ostream &operator<<(std::ostream &os, const Genotype &e) {
