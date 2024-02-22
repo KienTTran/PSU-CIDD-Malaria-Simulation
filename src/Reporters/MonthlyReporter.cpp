@@ -45,22 +45,22 @@ void MonthlyReporter::monthly_report()
   ss << group_sep;
 
   print_EIR_PfPR_by_location();
-  ss << group_sep;
+  ss << group_sep;//15
   for (auto loc = 0; loc < Model::CONFIG->number_of_locations(); loc++)
   {
     ss << Model::DATA_COLLECTOR->monthly_number_of_new_infections_by_location()[loc] << sep;
   }
-  ss << group_sep;
+  ss << group_sep;//17
   for (auto loc = 0; loc < Model::CONFIG->number_of_locations(); loc++)
   {
     ss << Model::DATA_COLLECTOR->monthly_number_of_treatment_by_location()[loc] << sep;
   }
-  ss << group_sep;
+  ss << group_sep;//19
   for (auto loc = 0; loc < Model::CONFIG->number_of_locations(); loc++)
   {
     ss << Model::DATA_COLLECTOR->monthly_number_of_clinical_episode_by_location()[loc] << sep;
   }
-  ss << group_sep;
+  ss << group_sep;//21
   // Eric MDR Paper: Output NTF by Month
   for (auto loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
     double change_in_NTF = 
@@ -68,7 +68,7 @@ void MonthlyReporter::monthly_report()
     ss << change_in_NTF << sep;
     last_reported_NTF_ = Model::DATA_COLLECTOR->cumulative_NTF_by_location()[loc];
   }
-  ss << group_sep;
+  ss << group_sep;//23
 
     for (auto loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
         ss << Model::DATA_COLLECTOR->cumulative_NTF_by_location()[loc] << sep;
@@ -76,11 +76,11 @@ void MonthlyReporter::monthly_report()
     for (auto loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
         ss << Model::DATA_COLLECTOR->cumulative_TF_by_location()[loc] << sep;
     }
-    ss << group_sep;
+    ss << group_sep;//26
     for (auto loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
         ss << Model::DATA_COLLECTOR->current_TF_by_location()[loc] << sep;
     }
-    ss << group_sep;
+    ss << group_sep;//28
     for (auto tf_by_therapy : Model::DATA_COLLECTOR->current_tf_by_therapy()) {
         ss << tf_by_therapy << sep;
     }
