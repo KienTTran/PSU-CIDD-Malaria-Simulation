@@ -1,5 +1,5 @@
 /*
- * File:   Drug.cpp
+ * File:   Drug.cu
  * Author: Merlin
  *
  * Created on July 31, 2013, 1:47 PM

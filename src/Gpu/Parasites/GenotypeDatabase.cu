@@ -1,5 +1,5 @@
 /*
- * File:   IntParasiteDatabase.cpp
+ * File:   IntParasiteDatabase.cu
  * Author: Merlin
  *
  * Created on March 18, 2014, 3:06 PM

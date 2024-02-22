@@ -1,5 +1,5 @@
 /* 
- * File:   PersonIndexByLocationMovingLevelHandler.h
+ * File:   PersonIndexByLocationMovingLevelHandler.cuh
  * Author: Merlin
  *
  * Created on August 1, 2013, 9:27 PM
@@ -26,5 +26,5 @@ class GPU::PersonIndexByLocationMovingLevelHandler : public GPU::IndexHandler {
 
 };
 
-#endif    /* PERSONINDEXBYLOCATIONMOVINGLEVELHANDLER_H */
+#endif    /* PERSONINDEXBYLOCATIONMOVINGLEVELHANDLER_CUH */
 

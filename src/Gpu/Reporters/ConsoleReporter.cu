@@ -1,5 +1,5 @@
 /* 
- * File:   ConsoleReporter.cpp
+ * File:   ConsoleReporter.cu
  * Author: Merlin
  *
  * Created on August 1, 2013, 12:15 PM
@@ -132,7 +132,7 @@ void GPU::ConsoleReporter::monthly_report() {
 
     std::cout << Model::GPU_SCHEDULER->current_time() << "\t";
 
-    auto* pi = Model::GPU_POPULATION->get_person_index<PersonIndexByLocationStateAgeClass>();
+    auto* pi = Model::GPU_POPULATION->get_person_index<GPU::PersonIndexByLocationStateAgeClass>();
 
     for (int location = 0; location < Model::CONFIG->number_of_locations(); location++) {
       std::cout << "||\t";

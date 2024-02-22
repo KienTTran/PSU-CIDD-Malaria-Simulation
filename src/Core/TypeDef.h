@@ -115,14 +115,11 @@ typedef std::vector<StringVector> StringVector2;
 typedef std::map<int, int> IntIntMap;
 
 typedef std::vector<Person *> PersonPtrVector;
-typedef PersonPtrVector::iterator PersonPtrVectorIterator;
 typedef std::vector<PersonPtrVector> PersonPtrVector2;
 typedef std::vector<PersonPtrVector2> PersonPtrVector3;
 typedef std::vector<PersonPtrVector3> PersonPtrVector4;
 
-
 typedef std::vector<GPU::Person *> GPUPersonPtrVector;
-typedef GPUPersonPtrVector::iterator GPUPersonPtrVectorIterator;
 typedef std::vector<GPUPersonPtrVector> GPUPersonPtrVector2;
 typedef std::vector<GPUPersonPtrVector2> GPUPersonPtrVector3;
 typedef std::vector<GPUPersonPtrVector3> GPUPersonPtrVector4;

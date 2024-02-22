@@ -1,5 +1,5 @@
 /*
- * File:   Scheduler.cpp
+ * File:   Scheduler.cu
  * Author: nguyentran
  *
  * Created on March 22, 2013, 2:27 PM
@@ -58,7 +58,7 @@ void GPU::Scheduler::clear_all_events(GPUEventPtrVector2& events_list) const {
       if (event->dispatcher != nullptr) {
         event->dispatcher->remove(event);
       }
-      ObjectHelpers::delete_pointer<Event>(event);
+      ObjectHelpers::delete_pointer<GPU::Event>(event);
     }
     timestep_events.clear();
   }
@@ -97,7 +97,7 @@ void GPU::Scheduler::schedule_event(GPUEventPtrVector& time_events, Event* event
         << " - total time: " << total_available_time_;
     VLOG(2) << "Cannot schedule event " << event->name() << " at " << event->time << ". Current_time: " << current_time_
             << " - total time: " << total_available_time_;
-    ObjectHelpers::delete_pointer<Event>(event);
+    ObjectHelpers::delete_pointer<GPU::Event>(event);
   } else {
     time_events.push_back(event);
     event->scheduler = this;
@@ -113,9 +113,9 @@ void GPU::Scheduler::execute_events_list(GPUEventPtrVector& events_list) const {
   for (auto& event : events_list) {
     // std::cout << event->name() << std::endl;
     event->perform_execute();
-    ObjectHelpers::delete_pointer<Event>(event);
+    ObjectHelpers::delete_pointer<GPU::Event>(event);
   }
-  ObjectHelpers::clear_vector_memory<Event>(events_list);
+  ObjectHelpers::clear_vector_memory<GPU::Event>(events_list);
 }
 
 void GPU::Scheduler::run() {
@@ -123,7 +123,8 @@ void GPU::Scheduler::run() {
   current_time_ = 0;
 
   for (current_time_ = 0; !can_stop(); current_time_++) {
-    LOG_IF(current_time_ % Model::CONFIG->debug_config().log_interval == 0, INFO) << "Day: " << current_time_;
+    LOG_IF(current_time_ % Model::CONFIG->debug_config().log_interval == 0, INFO)
+    << date::year_month_day{calendar_date} << " " << "Day: " << current_time_;
     begin_time_step();
 
     daily_update();

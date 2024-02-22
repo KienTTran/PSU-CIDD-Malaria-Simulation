@@ -1,5 +1,5 @@
 /*
- * File:   Statistic.cpp
+ * File:   Statistic.cu
  * Author: Merlin
  * 
  * Created on July 9, 2013, 2:28 PM

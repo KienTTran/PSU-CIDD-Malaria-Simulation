@@ -1,5 +1,5 @@
 /* 
- * File:   TestTreatmentFailureEvent.cpp
+ * File:   TestTreatmentFailureEvent.cu
  * Author: Merlin
  * 
  * Created on July 31, 2013, 11:36 AM

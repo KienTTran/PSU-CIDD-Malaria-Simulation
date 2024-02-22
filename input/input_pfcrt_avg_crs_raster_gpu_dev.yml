@@ -35,7 +35,7 @@ debug_config:
   enable_debug_text: true
   enable_debug_render: false
   enable_debug_render_text: false
-  log_interval: 1
+  log_interval: 30
 
 #set 0 to randomize seed using clock
 initial_seed_number: 123456789
@@ -54,7 +54,7 @@ ending_date: 2010/1/1
 start_collect_data_day: 365
 
 # the day at which the MDC will begin collecting NTF, AMU, UTL
-start_of_comparison_period: 2010/1/1
+start_of_comparison_period: 2001/1/1
 
 # number of days to keep track total number of parasites in population
 # in other words, the simulation stores 11 days of mosquitoes-biting-on-humans history
@@ -95,7 +95,7 @@ raster_db:
 
   p_treatment_for_less_than_5_by_location: [ 0.5 ]
   p_treatment_for_more_than_5_by_location: [ 0.5 ]
-  beta_by_location: [ 0.73 ]
+  beta_by_location: [ 10.21 ]
 
   cell_size: 5
   age_distribution_by_location: [[0.0449, 0.0449, 0.0449, 0.0449, 0.0315, 0.0315, 0.0315, 0.0315, 0.0315, 0.0268, 0.0268, 0.0268, 0.0268, 0.0268, 0.1990, 0.1251, 0.0855, 0.0560, 0.0346, 0.0289, 0.0000]]
@@ -1031,7 +1031,7 @@ gpu_strategy_db:
     type: SFT
     therapy_id: 13
 
-initial_strategy_id: 5
+initial_strategy_id: 16
 
 
 # this number use to detemine whether a therapy is "useful" or not and it is used to calculate
@@ -1162,22 +1162,30 @@ sd_prob_individual_present_at_mda: [ 0.3, 0.3, 0.3 ]
 #Mosquito
 mosquito_config:
   interrupted_feeding_rate: [0.19]
-  prmc_size: 200
+  prmc_size: 100
 
 within_host_induced_free_recombination: true
 
 events:
+  - name: change_treatment_strategy
+    info:
+      # 3 - Cycling, DHA-PPQ AS-AQ AL
+      # 4 - Adaptive Cycling, with 12-month delay
+      #     Line 632 to change delay
+      # 5 - MFT, same as above
+      - day: 2001/1/1
+        strategy_id: 4
   - name: change_treatment_coverage
     info:
       - type: SteadyTCM
-        day: 2000/1/1
+        day: 2001/1/1
         p_treatment_for_less_than_5_by_location: [0.750000]
         p_treatment_for_more_than_5_by_location: [0.750000]
-#  - name: change_mutation_probability_by_locus
-#    info:
-#      day: 2000/1/1
-#      value: 0.0
-#  - name: change_mutation_probability_by_locus
-#    info:
-#      day: 2010/1/1
-#      value: 0.001
+  - name: change_mutation_probability_by_locus
+    info:
+      day: 2001/1/1
+      value: 0.0
+  - name: change_mutation_probability_by_locus
+    info:
+      day: 2001/1/1
+      value: 0.001

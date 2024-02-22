@@ -1,5 +1,5 @@
 /* 
- * File:   ProgressToClinicalEvent.cpp
+ * File:   ProgressToClinicalEvent.cu
  * Author: Merlin
  * 
  * Created on July 30, 2013, 2:36 PM

@@ -1,5 +1,5 @@
 /* 
- * File:   SFTStrategy.cpp
+ * File:   SFTStrategy.cu
  * Author: nguyentran
  * 
  * Created on June 3, 2013, 8:00 PM

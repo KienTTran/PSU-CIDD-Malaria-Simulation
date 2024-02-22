@@ -7,23 +7,9 @@
 #include "Model.h"
 #include <fmt/format.h>
 
-#include "Constants.h"
 #include "Core/Config/Config.h"
 #include "Core/Random.h"
-#include "Gpu/Events/BirthdayEvent.cuh"
-#include "Gpu/Events/CirculateToTargetLocationNextDayEvent.cuh"
-#include "Gpu/Events/EndClinicalByNoTreatmentEvent.cuh"
-#include "Gpu/Events/EndClinicalDueToDrugResistanceEvent.cuh"
-#include "Gpu/Events/EndClinicalEvent.cuh"
-#include "Gpu/Events/MatureGametocyteEvent.cuh"
-#include "Gpu/Events/MoveParasiteToBloodEvent.cuh"
-#include "Gpu/Events/Population/ImportationEvent.cuh"
-#include "Gpu/Events/Population/ImportationPeriodicallyEvent.cuh"
-#include "Gpu/Events/ProgressToClinicalEvent.cuh"
 #include "Gpu/Events/ReturnToResidenceEvent.cuh"
-#include "Gpu/Events/SwitchImmuneComponentEvent.cuh"
-#include "Gpu/Events/TestTreatmentFailureEvent.cuh"
-#include "Gpu/Events/UpdateWhenDrugIsPresentEvent.cuh"
 #include "Helpers/ObjectHelpers.h"
 #include "Helpers/TimeHelpers.h"
 #include "MDC/ModelDataCollector.h"
@@ -41,7 +27,6 @@
 #include "Gpu/Population/Population.cuh"
 #include "Gpu/Population/PopulationKernel.cuh"
 #include "Gpu/Population/SingleHostClonalParasitePopulations.cuh"
-#include "Gpu/Population/ClonalParasitePopulation.cuh"
 #include "Gpu/Mosquito/Mosquito.cuh"
 #include "Gpu/Renderer/Renderer.cuh"
 #include "Gpu/Renderer/RenderEntity.cuh"
@@ -146,12 +131,15 @@ Model::~Model() {
 
 void Model::set_treatment_strategy(const int& strategy_id) {
   treatment_strategy_ = strategy_id == -1 ? nullptr : config_->strategy_db()[strategy_id];
-  treatment_strategy_->adjust_started_time_point(Model::GPU_SCHEDULER->current_time());
-  TREATMENT_STRATEGY = treatment_strategy_;
-
+  if(treatment_strategy_ != nullptr){
+    treatment_strategy_->adjust_started_time_point(Model::GPU_SCHEDULER->current_time());
+    TREATMENT_STRATEGY = treatment_strategy_;
+  }
   gpu_treatment_strategy_ = strategy_id == -1 ? nullptr : config_->gpu_strategy_db()[strategy_id];
-  gpu_treatment_strategy_->adjust_started_time_point(Model::GPU_SCHEDULER->current_time());
-  GPU_TREATMENT_STRATEGY = gpu_treatment_strategy_;
+  if(gpu_treatment_strategy_ != nullptr) {
+    gpu_treatment_strategy_->adjust_started_time_point(Model::GPU_SCHEDULER->current_time());
+    GPU_TREATMENT_STRATEGY = gpu_treatment_strategy_;
+  }
 
   //
   // if (treatment_strategy_->get_type() == IStrategy::NestedSwitching) {
@@ -395,7 +383,7 @@ void Model::begin_time_step() {
 
 void Model::daily_update() {
   gpu_population_->update_all_individuals();
-  gpu_population_kernel_->update_all_individuals();
+//  gpu_population_kernel_->update_all_individuals();
 
 //
 //  // for safety remove all dead by calling perform_death_event
@@ -410,7 +398,7 @@ void Model::daily_update() {
 //  gpu_population_kernel_->update_current_foi();
 
   gpu_population_->perform_infection_event();
-  gpu_population_->perform_circulation_event();
+//  gpu_population_->perform_circulation_event();
   gpu_population_kernel_->perform_circulation_event();
 
 //  // infect new mosquito cohort in prmc must be run after population perform infection event and update current foi
@@ -485,6 +473,7 @@ void Model::release() {
 
   ObjectHelpers::delete_pointer<Config>(config_);
   ObjectHelpers::delete_pointer<Random>(random_);
+  ObjectHelpers::delete_pointer<GPU::Random>(gpu_random_);
 
   for (GPU::Reporter* reporter : reporters_) {
     ObjectHelpers::delete_pointer<GPU::Reporter>(reporter);

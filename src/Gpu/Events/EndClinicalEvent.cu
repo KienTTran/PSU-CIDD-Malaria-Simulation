@@ -1,5 +1,5 @@
 /* 
- * File:   EndClinicalEvent.cpp
+ * File:   EndClinicalEvent.cu
  * Author: Merlin
  * 
  * Created on July 31, 2013, 12:27 PM

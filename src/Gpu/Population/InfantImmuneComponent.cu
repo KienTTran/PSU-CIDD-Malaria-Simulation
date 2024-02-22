@@ -1,5 +1,5 @@
 /* 
- * File:   InfantImmuneComponent.cpp
+ * File:   InfantImmuneComponent.cu
  * Author: nguyentran
  * 
  * Created on May 28, 2013, 11:06 AM

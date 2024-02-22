@@ -5,7 +5,7 @@
  */
 
 /* 
- * File:   TherapyBuilder.cpp
+ * File:   TherapyBuilder.cu
  * Author: Merlin
  * 
  * Created on August 23, 2017, 2:43 PM

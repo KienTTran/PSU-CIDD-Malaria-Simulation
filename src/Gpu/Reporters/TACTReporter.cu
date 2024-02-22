@@ -54,7 +54,7 @@ void GPU::TACTReporter::monthly_report() {
   }
 
   output_genotype_frequency_3(Model::CONFIG->gpu_genotype_db.size(),
-                              Model::GPU_POPULATION->get_person_index<PersonIndexByLocationStateAgeClass>());
+                              Model::GPU_POPULATION->get_person_index<GPU::PersonIndexByLocationStateAgeClass>());
 
   ss << group_sep;
 

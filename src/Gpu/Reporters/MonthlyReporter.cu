@@ -65,12 +65,12 @@ void GPU::MonthlyReporter::monthly_report() {
     ss << group_sep;
 
   // including total number of positive individuals
-  //  ReporterUtils::output_genotype_frequency3(ss, Model::CONFIG->gpu_genotype_db.size(),
-  //                                            Model::GPU_POPULATION->get_person_index<PersonIndexByLocationStateAgeClass>());
+  //  GPU::ReporterUtils::output_genotype_frequency3(ss, Model::CONFIG->gpu_genotype_db.size(),
+  //                                            Model::GPU_POPULATION->get_person_index<GPU::PersonIndexByLocationStateAgeClass>());
 
   std::stringstream gene_freq_ss;
-  ReporterUtils::output_genotype_frequency3(gene_freq_ss, Model::CONFIG->gpu_genotype_db.size(),
-                                            Model::GPU_POPULATION->get_person_index<PersonIndexByLocationStateAgeClass>());
+  GPU::ReporterUtils::output_genotype_frequency3(gene_freq_ss, Model::CONFIG->gpu_genotype_db.size(),
+                                            Model::GPU_POPULATION->get_person_index<GPU::PersonIndexByLocationStateAgeClass>());
 
   gene_freq_file << gene_freq_ss.str() << std::endl;
 

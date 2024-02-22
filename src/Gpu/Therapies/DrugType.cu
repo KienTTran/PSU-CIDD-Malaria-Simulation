@@ -1,5 +1,5 @@
 /*
- * File:   DrugType.cpp
+ * File:   DrugType.cu
  * Author: nguyentran
  *
  * Created on June 3, 2013, 10:59 AM

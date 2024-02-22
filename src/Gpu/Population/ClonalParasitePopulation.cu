@@ -1,5 +1,5 @@
 /*
- * File:   BloodParasite.cpp
+ * File:   BloodParasite.cu
  * Author: Merlin
  *
  * Created on July 11, 2013, 2:21 PM

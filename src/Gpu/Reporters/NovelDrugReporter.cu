@@ -52,7 +52,7 @@ void GPU::NovelDrugReporter::monthly_report() {
   }
 
   output_genotype_frequency_3(Model::CONFIG->gpu_genotype_db.size(),
-                              Model::GPU_POPULATION->get_person_index<PersonIndexByLocationStateAgeClass>());
+                              Model::GPU_POPULATION->get_person_index<GPU::PersonIndexByLocationStateAgeClass>());
 
   ss << (dynamic_cast<NovelDrugIntroductionStrategy*>(Model::GPU_TREATMENT_STRATEGY)->is_switched ? 1 : 0) << sep;
   for (const auto& tf_by_therapy : Model::GPU_DATA_COLLECTOR->current_tf_by_therapy()) {

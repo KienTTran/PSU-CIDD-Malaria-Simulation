@@ -105,15 +105,29 @@ void GPU::Renderer::start() {
   glDepthFunc(GL_LEQUAL);
   glEnable(GL_CULL_FACE);
 
+  // ImGui
+  IMGUI_CHECKVERSION();
+  ImGui::CreateContext();
+  ImGuiIO &io = ImGui::GetIO();
   if (Model::CONFIG->render_config().display_plot) {
-    // ImGui
-    IMGUI_CHECKVERSION();
-    ImGui::CreateContext();
-    ImPlot::CreateContext();
-    ImGui::StyleColorsDark();//ImGui::StyleColorsClassic();
-    ImGui_ImplGlfw_InitForOpenGL(renderer_window, true);
-    const char *glsl_version = "#version 130";
-    ImGui_ImplOpenGL3_Init(glsl_version);
+    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;         // Enable Docking
+    io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;       // Enable Multi-Viewport / Platform Windows
+  }
+  ImPlot::CreateContext();
+  ImGui::StyleColorsDark();
+  if (Model::CONFIG->render_config().display_plot) {
+    // When viewports are enabled we tweak WindowRounding/WindowBg so platform windows can look identical to regular ones.
+    ImGuiStyle &style = ImGui::GetStyle();
+    if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
+      style.WindowRounding = 0.0f;
+      style.Colors[ImGuiCol_WindowBg].w = 1.0f;
+    }
+  }
+
+  ImGui_ImplGlfw_InitForOpenGL(renderer_window, true);
+  const char *glsl_version = "#version 130";
+  ImGui_ImplOpenGL3_Init(glsl_version);
+  if (Model::CONFIG->render_config().display_plot) {
     start_plot();
   }
 
@@ -170,6 +184,12 @@ void GPU::Renderer::start() {
 
     if (Model::CONFIG->render_config().display_plot) {
       render_plot();
+      if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
+        GLFWwindow *backup_current_context = glfwGetCurrentContext();
+        ImGui::UpdatePlatformWindows();
+        ImGui::RenderPlatformWindowsDefault();
+        glfwMakeContextCurrent(backup_current_context);
+      }
     }
 
     glfwSwapBuffers(renderer_window);
@@ -185,6 +205,7 @@ void GPU::Renderer::start() {
   ImGui_ImplOpenGL3_Shutdown();
   ImGui_ImplGlfw_Shutdown();
   ImGui::DestroyContext();
+  glfwDestroyWindow(renderer_window);
   glfwTerminate();
 }
 

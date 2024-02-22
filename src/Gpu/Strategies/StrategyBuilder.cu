@@ -5,7 +5,7 @@
  */
 
 /* 
- * File:   StrategyBuilder.cpp
+ * File:   StrategyBuilder.cu
  * Author: Merlin
  * 
  * Created on August 23, 2017, 11:03 AM

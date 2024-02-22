@@ -1,5 +1,5 @@
 /* 
- * File:   Therapy.cpp
+ * File:   Therapy.cu
  * Author: nguyentran
  * 
  * Created on June 3, 2013, 7:50 PM

@@ -1,5 +1,5 @@
 /* 
-* File:   PersonIndexByLocationMovingLevel.cpp
+* File:   PersonIndexByLocationMovingLevel.cu
 * Author: Merlin
 * 
 * Created on August 1, 2013, 9:26 PM

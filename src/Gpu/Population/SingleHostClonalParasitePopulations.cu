@@ -1,5 +1,5 @@
 /*
- * File:   ParasitePopulation.cpp
+ * File:   ParasitePopulation.cu
  * Author: Merlin
  *
  * Created on July 11, 2013, 1:53 PM

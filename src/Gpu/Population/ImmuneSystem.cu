@@ -1,5 +1,5 @@
 /* 
- * File:   ImmuneSystem.cpp
+ * File:   ImmuneSystem.cu
  * Author: nguyentran
  * 
  * Created on May 27, 2013, 11:56 AM

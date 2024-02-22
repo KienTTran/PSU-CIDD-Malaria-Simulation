@@ -1,5 +1,5 @@
 /* 
- * File:   Reporter.cpp
+ * File:   Reporter.cu
  * Author: Merlin
  * 
  * Created on August 1, 2013, 12:05 PM

@@ -1,5 +1,5 @@
 /* 
- * File:   DrugDatabase.cpp
+ * File:   DrugDatabase.cu
  * Author: nguyentran
  * 
  * Created on June 3, 2013, 11:05 AM

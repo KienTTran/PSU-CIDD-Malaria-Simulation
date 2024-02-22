@@ -1,5 +1,5 @@
 /* 
- * File:   ParasiteUpdateFunction.cpp
+ * File:   ParasiteUpdateFunction.cu
  * Author: Merlin
  * 
  * Created on July 11, 2013, 2:51 PM

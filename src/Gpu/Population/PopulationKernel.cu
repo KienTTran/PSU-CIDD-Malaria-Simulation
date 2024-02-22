@@ -1321,16 +1321,16 @@ void GPU::PopulationKernel::update_current_foi() {
   check_cuda_error(cudaEventElapsedTime (&elapsed_time, start_event, stop_event));
   LOG_IF(Model::GPU_SCHEDULER->current_time() % Model::CONFIG->debug_config().log_interval == 0, INFO)
     << fmt::format("[PopulationKernel::update_current_foi] Update current FOI GPU time: {} ms", elapsed_time);
-  if(Model::CONFIG->debug_config().enable_debug_text) {
-    for (int loc = Model::CONFIG->number_of_locations() - 5; loc < Model::CONFIG->number_of_locations(); loc++) {
-      printf("%d GPU sum_relative_biting_by_location[%d] biting %f\n", Model::GPU_SCHEDULER->current_time(),
-             h_sum_biting_moving_foi_by_loc[loc].get<0>(), h_sum_biting_moving_foi_by_loc[loc].get<1>());
-      printf("%d GPU sum_relative_moving_by_location[%d] moving %f\n", Model::GPU_SCHEDULER->current_time(),
-             h_sum_biting_moving_foi_by_loc[loc].get<0>(), h_sum_biting_moving_foi_by_loc[loc].get<2>());
-      printf("%d GPU sum_relative_moving_by_location[%d] foi %f\n", Model::GPU_SCHEDULER->current_time(),
-             h_sum_biting_moving_foi_by_loc[loc].get<0>(), h_sum_biting_moving_foi_by_loc[loc].get<3>());
-    }
-  }
+//  if(Model::CONFIG->debug_config().enable_debug_text) {
+//    for (int loc = Model::CONFIG->number_of_locations() - 5; loc < Model::CONFIG->number_of_locations(); loc++) {
+//      printf("%d GPU sum_relative_biting_by_location[%d] biting %f\n", Model::GPU_SCHEDULER->current_time(),
+//             h_sum_biting_moving_foi_by_loc[loc].get<0>(), h_sum_biting_moving_foi_by_loc[loc].get<1>());
+//      printf("%d GPU sum_relative_moving_by_location[%d] moving %f\n", Model::GPU_SCHEDULER->current_time(),
+//             h_sum_biting_moving_foi_by_loc[loc].get<0>(), h_sum_biting_moving_foi_by_loc[loc].get<2>());
+//      printf("%d GPU sum_relative_moving_by_location[%d] foi %f\n", Model::GPU_SCHEDULER->current_time(),
+//             h_sum_biting_moving_foi_by_loc[loc].get<0>(), h_sum_biting_moving_foi_by_loc[loc].get<3>());
+//    }
+//  }
 }
 
 void GPU::PopulationKernel::persist_current_force_of_infection_to_use_N_days_later() {

@@ -1,5 +1,5 @@
 /* 
- * File:   PersonIndexAll.h
+ * File:   PersonIndexAll.cuh
  * Author: nguyentran
  *
  * Created on April 17, 2013, 10:15 AM

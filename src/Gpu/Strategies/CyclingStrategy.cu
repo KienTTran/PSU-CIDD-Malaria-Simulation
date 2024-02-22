@@ -1,5 +1,5 @@
 /* 
- * File:   CyclingStrategy.cpp
+ * File:   CyclingStrategy.cu
  * Author: nguyentran
  * 
  * Created on June 4, 2013, 11:10 AM

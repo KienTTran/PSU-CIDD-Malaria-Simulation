@@ -2,8 +2,8 @@
 // Created by kient on 6/16/2023.
 //
 
-#ifndef RENDERER_H
-#define RENDERER_H
+#ifndef RENDERER_CUH
+#define RENDERER_CUH
 
 #include "imgui.h" // version 1.78 and 1.60
 #include "imgui_impl_glfw.h"

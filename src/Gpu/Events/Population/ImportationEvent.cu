@@ -1,5 +1,5 @@
 /* 
- * File:   ImportationEvent.cpp
+ * File:   ImportationEvent.cu
  * Author: Merlin
  * 
  * Created on March 12, 2015, 12:23 PM

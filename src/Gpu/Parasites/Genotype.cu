@@ -1,5 +1,5 @@
 /*
- * File:   Genotype.cpp
+ * File:   Genotype.cu
  * Author: Merlin
  *
  * Created on March 17, 2014, 2:33 PM

@@ -1,5 +1,5 @@
 /* 
- * File:   ReturnToResidenceEvent.cpp
+ * File:   ReturnToResidenceEvent.cu
  * Author: Merlin
  * 
  * Created on August 2, 2013, 11:20 AM

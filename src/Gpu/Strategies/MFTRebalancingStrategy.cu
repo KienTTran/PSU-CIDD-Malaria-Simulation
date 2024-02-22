@@ -5,7 +5,7 @@
  */
 
 /* 
- * File:   SmartMFTStrategy.cpp
+ * File:   SmartMFTStrategy.cu
  * Author: Merlin
  * 
  * Created on August 25, 2017, 11:57 AM

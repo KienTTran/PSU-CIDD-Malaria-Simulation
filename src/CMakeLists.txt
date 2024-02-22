@@ -30,7 +30,6 @@ file(GLOB SRC_FILES *.cpp
         Gpu/*.cuh
         Gpu/Core/*.cu
         Gpu/Core/*.cuh
-        Gpu/Renderer/*.cpp
         Gpu/Renderer/*.cu
         Gpu/Renderer/*.cuh
         Gpu/Population/*.cu
@@ -89,7 +88,7 @@ target_link_libraries(MaSimCore PRIVATE GLEW::GLEW)
 find_package(glm CONFIG REQUIRED)
 target_link_libraries(MaSimCore PRIVATE glm::glm)
 
-#IMGUI imgui[core,glfw-binding,opengl3-binding]
+#IMGUI imgui[core,glfw-binding,opengl3-binding,docking-experimental]
 find_package(imgui CONFIG REQUIRED)
 target_link_libraries(MaSimCore PRIVATE imgui::imgui)
 

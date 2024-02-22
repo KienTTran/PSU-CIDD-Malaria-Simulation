@@ -118,8 +118,8 @@ std::vector<T *> Random::multinomial_sampling(int size, std::vector<double> &dis
   auto index = 0;
   for (auto i = 0; i < hit_per_object.size(); i++) {
     for (int j = 0; j < hit_per_object[i]; ++j) {
-      printf(" multinomial i %d j %d hit_per_object[%d] %d index %d sample[%d] = all_objects[%d]\n",
-             i,j,i,hit_per_object[i],index,index,i);
+//      printf(" multinomial i %d j %d hit_per_object[%d] %d index %d sample[%d] = all_objects[%d]\n",
+//             i,j,i,hit_per_object[i],index,index,i);
       samples[index] = all_objects[i];
       index++;
     }

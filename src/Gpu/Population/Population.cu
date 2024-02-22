@@ -1,5 +1,5 @@
 /*
- * File:   Population.cpp
+ * File:   Population.cu
  * Author: nguyentran
  *
  * Created on April 15, 2013, 10:49 AM
@@ -293,7 +293,7 @@ void GPU::Population::introduce_initial_cases() {
     }
     // update current foi
     update_current_foi();
-    Model::GPU_POPULATION_KERNEL->update_current_foi();
+//    Model::GPU_POPULATION_KERNEL->update_current_foi();
 
     // update force of infection for N days
     for (auto d = 0; d < Model::CONFIG->number_of_tracking_days(); d++) {
@@ -621,18 +621,17 @@ void GPU::Population::perform_circulation_event() {
     }
   }
 
-//  for (auto* p : today_circulations) {
-//    p->randomly_choose_target_location();
-//  }
-
-  today_circulations.clear();
+  for (auto* p : today_circulations) {
+    p->randomly_choose_target_location();
+  }
 
   auto lapse = std::chrono::high_resolution_clock::now() - tp_start;
   if(Model::CONFIG->debug_config().enable_debug_text){
     LOG_IF(Model::GPU_SCHEDULER->current_time() % Model::CONFIG->debug_config().log_interval == 0, INFO)
-    << "[Population] Update population circulation CPU time: "
+    << "[Population] Update population circulation CPU (" << today_circulations.size() << ") event time: "
             << std::chrono::duration_cast<std::chrono::milliseconds>(lapse).count() << " ms";
   }
+  today_circulations.clear();
 }
 
 void GPU::Population::perform_circulation_for_1_location(const int& from_location, const int& target_location,

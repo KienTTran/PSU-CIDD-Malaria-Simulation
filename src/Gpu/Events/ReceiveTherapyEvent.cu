@@ -1,5 +1,5 @@
 /* 
- * File:   ReceiveTherapyEvent.cpp
+ * File:   ReceiveTherapyEvent.cu
  * Author: Merlin
  * 
  * Created on November 4, 2014, 3:00 PM

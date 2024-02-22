@@ -1,5 +1,5 @@
 /* 
- * File:   ImmunityClearanceUpdateFunction.cpp
+ * File:   ImmunityClearanceUpdateFunction.cu
  * Author: Merlin
  * 
  * Created on July 29, 2013, 5:49 PM

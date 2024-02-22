@@ -1,5 +1,5 @@
 /* 
- * File:   AdaptiveCyclingStrategy.cpp
+ * File:   AdaptiveCyclingStrategy.cu
  * Author: nguyentran
  * 
  * Created on June 4, 2013, 11:10 AM

@@ -162,7 +162,6 @@ void GPU::PersonIndexGPU::notify_change(GPU::Person *p, const GPU::Person::Prope
                 } else {
                     p->generate_render_entity(*(int *) newValue);
                 }
-                p->generate_render_entity(p->location());
                 h_person_models_[p->GPU::PersonIndexGPUHandler::index()] = p->model();
                 h_person_colors_[p->GPU::PersonIndexGPUHandler::index()] = p->color();
             }

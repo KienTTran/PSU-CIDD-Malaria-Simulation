@@ -15,7 +15,7 @@ struct ScrollingBuffer {
     int MaxSize;
     int Offset;
     ImVector<ImVec2> Data;
-    ScrollingBuffer(int max_size = 7200) {
+    ScrollingBuffer(int max_size = 2000) {
       MaxSize = max_size;
       Offset  = 0;
       Data.reserve(MaxSize);
@@ -44,6 +44,9 @@ public:
     void update_plot() override;
 private:
     ImPlotRect limits;
+    ScrollingBuffer sdata1;
+    float t = 0;
+    double *xs1, *ys1, *ys2, *ys3;
 };
 
 

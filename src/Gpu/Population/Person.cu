@@ -1,5 +1,5 @@
 /*
- * File:   Person.cpp
+ * File:   Person.cu
  * Author: nguyentran
  *
  * Created on March 22, 2013, 2:25 PM

@@ -1,5 +1,5 @@
 /* 
- * File:   ImmuneComponent.cpp
+ * File:   ImmuneComponent.cu
  * Author: nguyentran
  * 
  * Created on May 27, 2013, 12:44 PM

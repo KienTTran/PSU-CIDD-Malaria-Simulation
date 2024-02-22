@@ -1,5 +1,5 @@
 /* 
- * File:   MoveParasiteToBloodEvent.cpp
+ * File:   MoveParasiteToBloodEvent.cu
  * Author: Merlin
  * 
  * Created on July 31, 2013, 11:14 PM

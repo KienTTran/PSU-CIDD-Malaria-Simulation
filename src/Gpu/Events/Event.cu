@@ -1,5 +1,5 @@
 /* 
- * File:   Event.cpp
+ * File:   Event.cu
  * Author: nguyentran
  * 
  * Created on May 3, 2013, 3:13 PM

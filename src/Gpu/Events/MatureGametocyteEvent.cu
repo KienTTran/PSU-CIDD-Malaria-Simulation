@@ -1,5 +1,5 @@
 /* 
- * File:   MatureGametocyteEvent.cpp
+ * File:   MatureGametocyteEvent.cu
  * Author: Merlin
  * 
  * Created on July 31, 2013, 11:38 PM

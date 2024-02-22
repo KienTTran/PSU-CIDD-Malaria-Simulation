@@ -39,7 +39,7 @@ std::vector<GPU::Event*> GPU::PopulationEventBuilder::build_introduce_parasite_e
         const auto starting_date = event_node["parasite_info"][j]["day"].as<date::year_month_day>();
         auto time = (date::sys_days { starting_date } - date::sys_days { config->starting_date() }).count();
 
-        auto* event = new ImportationEvent(location, time, genotype_id, num);
+        auto* event = new GPU::ImportationEvent(location, time, genotype_id, num);
         events.push_back(event);
       }
     }
@@ -66,7 +66,7 @@ std::vector<GPU::Event*> GPU::PopulationEventBuilder::build_introduce_parasites_
         const auto starting_date = event_node["parasite_info"][j]["start_day"].as<date::year_month_day>();
         auto time = (date::sys_days { starting_date } - date::sys_days { config->starting_date() }).count();
 
-        auto* event = new ImportationPeriodicallyEvent(loc, dur, genotype_id, num, time);
+        auto* event = new GPU::ImportationPeriodicallyEvent(loc, dur, genotype_id, num, time);
         events.push_back(event);
       }
     }
@@ -134,7 +134,7 @@ std::vector<GPU::Event*> GPU::PopulationEventBuilder::build_change_treatment_cov
   for (const auto& event_node : node) {
     auto* tcm = ITreatmentCoverageModel::build(event_node, config);
     // std::cout << tcm->starting_time << std::endl;
-    auto* e = new ChangeTreatmentCoverageEvent(tcm);
+    auto* e = new GPU::ChangeTreatmentCoverageEvent(tcm);
     events.push_back(e);
   }
   return events;
@@ -148,7 +148,7 @@ std::vector<GPU::Event*> GPU::PopulationEventBuilder::build_change_treatment_str
     auto time = (date::sys_days { starting_date } - date::sys_days { config->starting_date() }).count();
     auto strategy_id = event_node["strategy_id"].as<int>();
 
-    auto* e = new ChangeStrategyEvent(time, strategy_id);
+    auto* e = new GPU::ChangeStrategyEvent(time, strategy_id);
     events.push_back(e);
   }
 
@@ -160,7 +160,7 @@ std::vector<GPU::Event*> GPU::PopulationEventBuilder::build_single_round_mda_eve
   for (const auto& event_node : node) {
     const auto starting_date = event_node["day"].as<date::year_month_day>();
     auto time = (date::sys_days { starting_date } - date::sys_days { config->starting_date() }).count();
-    auto* e = new SingleRoundMDAEvent(time);
+    auto* e = new GPU::SingleRoundMDAEvent(time);
     for (std::size_t loc = 0; loc < config->number_of_locations(); loc++) {
       auto input_loc = event_node["fraction_population_targeted"].size() < config->number_of_locations() ? 0 : loc;
       e->fraction_population_targeted.push_back(event_node["fraction_population_targeted"][input_loc].as<double>());
@@ -181,7 +181,7 @@ std::vector<GPU::Event*> GPU::PopulationEventBuilder::build_modify_nested_mft_st
     auto time = (date::sys_days { starting_date } - date::sys_days { config->starting_date() }).count();
     auto strategy_id = event_node["strategy_id"].as<int>();
 
-    auto* e = new ModifyNestedMFTEvent(time, strategy_id);
+    auto* e = new GPU::ModifyNestedMFTEvent(time, strategy_id);
     events.push_back(e);
   }
 
@@ -196,7 +196,7 @@ std::vector<GPU::Event*> GPU::PopulationEventBuilder::build_turn_on_mutation_eve
     double mutation_probability = event_node["mutation_probability"] ? event_node["mutation_probability"].as<double>()
                                                                      : Model::CONFIG->mutation_probability_by_locus();
 
-    auto* e = new TurnOnMutationEvent(time, mutation_probability);
+    auto* e = new GPU::TurnOnMutationEvent(time, mutation_probability);
     events.push_back(e);
   }
 
@@ -208,7 +208,7 @@ std::vector<GPU::Event*> GPU::PopulationEventBuilder::build_turn_off_mutation_ev
   for (const auto& event_node : node) {
     const auto starting_date = event_node["day"].as<date::year_month_day>();
     auto time = (date::sys_days { starting_date } - date::sys_days { config->starting_date() }).count();
-    auto* e = new TurnOffMutationEvent(time);
+    auto* e = new GPU::TurnOffMutationEvent(time);
     events.push_back(e);
   }
 
@@ -226,7 +226,7 @@ std::vector<GPU::Event*> GPU::PopulationEventBuilder::build_introduce_plas2_para
       const auto starting_date = event_node["day"].as<date::year_month_day>();
       auto time = (date::sys_days { starting_date } - date::sys_days { config->starting_date() }).count();
 
-      auto* event = new IntroducePlas2CopyParasiteEvent(location, time, fraction);
+      auto* event = new GPU::IntroducePlas2CopyParasiteEvent(location, time, fraction);
       events.push_back(event);
     }
   }
@@ -243,7 +243,7 @@ std::vector<GPU::Event*> GPU::PopulationEventBuilder::build_introduce_580Y_mutan
       const auto starting_date = event_node["day"].as<date::year_month_day>();
       auto time = (date::sys_days { starting_date } - date::sys_days { config->starting_date() }).count();
 
-      auto* event = new Introduce580YMutantEvent(location, time, fraction);
+      auto* event = new GPU::Introduce580YMutantEvent(location, time, fraction);
       events.push_back(event);
     }
   }
@@ -261,7 +261,7 @@ std::vector<GPU::Event*> GPU::PopulationEventBuilder::build_introduce_aq_mutant_
       const auto starting_date = event_node["day"].as<date::year_month_day>();
       auto time = (date::sys_days { starting_date } - date::sys_days { config->starting_date() }).count();
 
-      auto* event = new IntroduceAQMutantEvent(location, time, fraction);
+      auto* event = new GPU::IntroduceAQMutantEvent(location, time, fraction);
       events.push_back(event);
     }
   }
@@ -279,7 +279,7 @@ std::vector<GPU::Event*> GPU::PopulationEventBuilder::build_introduce_lumefantri
       const auto starting_date = event_node["day"].as<date::year_month_day>();
       auto time = (date::sys_days { starting_date } - date::sys_days { config->starting_date() }).count();
 
-      auto* event = new IntroduceLumefantrineMutantEvent(location, time, fraction);
+      auto* event = new GPU::IntroduceLumefantrineMutantEvent(location, time, fraction);
       events.push_back(event);
     }
   }
@@ -297,7 +297,7 @@ std::vector<GPU::Event*> GPU::PopulationEventBuilder::build_introduce_triple_mut
       const auto starting_date = event_node["day"].as<date::year_month_day>();
       auto time = (date::sys_days { starting_date } - date::sys_days { config->starting_date() }).count();
 
-      auto* event = new IntroduceTrippleMutantToDPMEvent(location, time, fraction);
+      auto* event = new GPU::IntroduceTrippleMutantToDPMEvent(location, time, fraction);
       events.push_back(event);
     }
   }
@@ -313,7 +313,7 @@ std::vector<GPU::Event*> GPU::PopulationEventBuilder::build_change_interrupted_f
       const auto starting_date = event_node["day"].as<date::year_month_day>();
       auto time = (date::sys_days { starting_date } - date::sys_days { config->starting_date() }).count();
       auto ifr = event_node["rate"].as<double>();
-      auto* event = new ChangeInterruptedFeedingRateEvent(location, ifr, time);
+      auto* event = new GPU::ChangeInterruptedFeedingRateEvent(location, ifr, time);
       events.push_back(event);
     }
   }
@@ -326,7 +326,7 @@ std::vector<GPU::Event*> GPU::PopulationEventBuilder::build_change_within_host_i
   const auto starting_date = event_node["day"].as<date::year_month_day>();
   auto time = (date::sys_days { starting_date } - date::sys_days { config->starting_date() }).count();
   auto value = event_node["value"].as<bool>();
-  auto* event = new ChangeWithinHostInducedFreeRecombinationEvent(value, time);
+  auto* event = new GPU::ChangeWithinHostInducedFreeRecombinationEvent(value, time);
   events.push_back(event);
 
   return events;
@@ -338,7 +338,7 @@ std::vector<GPU::Event*> GPU::PopulationEventBuilder::build_change_mutation_prob
   const auto starting_date = event_node["day"].as<date::year_month_day>();
   auto time = (date::sys_days { starting_date } - date::sys_days { config->starting_date() }).count();
   auto value = event_node["value"].as<double>();
-  auto* event = new ChangeMutationProbabilityByLocusEvent(value, time);
+  auto* event = new GPU::ChangeMutationProbabilityByLocusEvent(value, time);
   events.push_back(event);
 
   return events;

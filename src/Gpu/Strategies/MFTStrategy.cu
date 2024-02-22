@@ -1,5 +1,5 @@
 /* 
- * File:   MFTStrategy.cpp
+ * File:   MFTStrategy.cu
  * Author: nguyentran
  * 
  * Created on June 4, 2013, 11:09 AM

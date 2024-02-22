@@ -1,5 +1,5 @@
 /* 
- * File:   CirculateToTargetLocationNextDayEvent.cpp
+ * File:   CirculateToTargetLocationNextDayEvent.cu
  * Author: Merlin
  * 
  * Created on August 2, 2013, 10:57 AM

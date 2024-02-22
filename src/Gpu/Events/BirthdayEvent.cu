@@ -1,5 +1,5 @@
 /* 
- * File:   BirthdayEvent.cpp
+ * File:   BirthdayEvent.cu
  * Author: nguyentran
  * 
  * Created on May 9, 2013, 2:42 PM

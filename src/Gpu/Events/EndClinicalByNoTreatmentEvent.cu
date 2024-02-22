@@ -1,5 +1,5 @@
 /* 
- * File:   EndClinicalByNoTreatmentEvent.cpp
+ * File:   EndClinicalByNoTreatmentEvent.cu
  * Author: Merlin
  * 
  * Created on July 31, 2013, 12:28 PM

@@ -1,5 +1,5 @@
 /* 
- * File:   SwitchImmuneComponentEvent.cpp
+ * File:   SwitchImmuneComponentEvent.cu
  * Author: Merlin
  * 
  * Created on July 3, 2013, 3:06 PM

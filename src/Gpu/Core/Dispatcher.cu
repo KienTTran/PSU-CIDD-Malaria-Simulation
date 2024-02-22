@@ -1,5 +1,5 @@
 /* 
- * File:   Dispatcher.cpp
+ * File:   Dispatcher.cu
  * Author: nguyentran
  * 
  * Created on May 3, 2013, 3:46 PM

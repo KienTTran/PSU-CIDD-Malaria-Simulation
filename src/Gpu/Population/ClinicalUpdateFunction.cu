@@ -1,5 +1,5 @@
 /* 
- * File:   ClinicalUpdateFunction.cpp
+ * File:   ClinicalUpdateFunction.cu
  * Author: Merlin
  * 
  * Created on July 29, 2013, 5:43 PM

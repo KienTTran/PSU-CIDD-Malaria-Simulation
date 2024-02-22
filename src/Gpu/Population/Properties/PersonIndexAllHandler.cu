@@ -1,5 +1,5 @@
 /* 
- * File:   PersonIndexAllHandler.cpp
+ * File:   PersonIndexAllHandler.cu
  * Author: nguyentran
  * 
  * Created on April 17, 2013, 10:21 AM

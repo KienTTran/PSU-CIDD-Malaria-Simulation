@@ -1,5 +1,5 @@
 /* 
- * File:   PersonIndexByLocationStateAgeClass.cpp
+ * File:   PersonIndexByLocationStateAgeClass.cu
  * Author: nguyentran
  * 
  * Created on May 2, 2013, 10:41 AM

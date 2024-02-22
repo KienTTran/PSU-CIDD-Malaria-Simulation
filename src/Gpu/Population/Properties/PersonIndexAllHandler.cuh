@@ -1,5 +1,5 @@
 /* 
- * File:   PersonIndexAllHandler.h
+ * File:   PersonIndexAllHandler.cuh
  * Author: nguyentran
  *
  * Created on April 17, 2013, 10:21 AM
@@ -24,5 +24,5 @@ class GPU::PersonIndexAllHandler : public GPU::IndexHandler {
 
 };
 
-#endif    /* PERSONINDEXALLHANDLER_H */
+#endif    /* PERSONINDEXALLHANDLER_CUH */
 

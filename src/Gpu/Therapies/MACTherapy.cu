@@ -1,5 +1,5 @@
 /* 
- * File:   MACTherapy.cpp
+ * File:   MACTherapy.cu
  * Author: Merlin
  * 
  * Created on November 4, 2014, 9:53 AM

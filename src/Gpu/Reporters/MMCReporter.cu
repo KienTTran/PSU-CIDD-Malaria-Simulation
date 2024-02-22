@@ -18,7 +18,7 @@
 GPU::MMCReporter::MMCReporter() = default;
 
 void GPU::MMCReporter::initialize() {
-  ReporterUtils::initialize_moi_file_logger();
+  GPU::ReporterUtils::initialize_moi_file_logger();
 
 }
 
@@ -72,10 +72,10 @@ void GPU::MMCReporter::monthly_report() {
   }
   ss << group_sep;
 
-  ReporterUtils::output_genotype_frequency3(
+  GPU::ReporterUtils::output_genotype_frequency3(
       ss,
       Model::CONFIG->gpu_genotype_db.size(),
-      Model::GPU_POPULATION->get_person_index<PersonIndexByLocationStateAgeClass>());
+      Model::GPU_POPULATION->get_person_index<GPU::PersonIndexByLocationStateAgeClass>());
 
   ss << group_sep;
   print_ntf_by_location();
@@ -127,7 +127,7 @@ void GPU::MMCReporter::after_run() {
   ss.str("");
 
   // Report MOI
-  ReporterUtils::output_moi(ss, Model::GPU_POPULATION->get_person_index<PersonIndexByLocationStateAgeClass>());
+  GPU::ReporterUtils::output_moi(ss, Model::GPU_POPULATION->get_person_index<GPU::PersonIndexByLocationStateAgeClass>());
 }
 
 void GPU::MMCReporter::print_EIR_PfPR_by_location() {

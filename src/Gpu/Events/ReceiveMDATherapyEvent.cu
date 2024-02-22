@@ -1,5 +1,5 @@
 /* 
- * File:   ReceiveMDADrugEvent.cpp
+ * File:   ReceiveMDADrugEvent.cu
  * Author: Merlin
  * 
  * Created on August 25, 2013, 10:20 PM
