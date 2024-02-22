@@ -117,6 +117,7 @@ int main(const int argc, char **argv) {
     }
     #endif
 
+    std::cout << "MaSim version 3.3" << std::endl;
     // Parse the CLI
     auto *m = new Model();
     handle_cli(m, argc, argv);
@@ -156,18 +157,18 @@ void handle_cli(Model *model, int argc, char **argv) {
     exit(EXIT_SUCCESS);
   }
   catch (const args::ParseError &e) {
-    LOG(ERROR) << fmt::format("{0} {1}", e.what(), parser);
+//    LOG(ERROR) << fmt::format("{0} {1}", e.what(), parser);
     exit(EXIT_FAILURE);
   }
   catch (const args::ValidationError &e) {
-    LOG(ERROR) << fmt::format("{0} {1}", e.what(), parser);
+//    LOG(ERROR) << fmt::format("{0} {1}", e.what(), parser);
     exit(EXIT_FAILURE);
   }
 
   // Check for the existence of the input file, exit if it doesn't exist.
   const auto input = input_file ? args::get(input_file) : "input.yml";
   if (!OsHelpers::file_exists(input)) {    
-    LOG(ERROR) << fmt::format("File {0} does not exists. Rerun with -h or --help for help.", input);
+//    LOG(ERROR) << fmt::format("File {0} does not exists. Rerun with -h or --help for help.", input);
     exit(EXIT_FAILURE);
   }
   model->set_config_filename(input);

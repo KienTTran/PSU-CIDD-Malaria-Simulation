@@ -70,6 +70,22 @@ void MonthlyReporter::monthly_report()
   }
   ss << group_sep;
 
+    for (auto loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
+        ss << Model::DATA_COLLECTOR->cumulative_NTF_by_location()[loc] << sep;
+    }
+    for (auto loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
+        ss << Model::DATA_COLLECTOR->cumulative_TF_by_location()[loc] << sep;
+    }
+    ss << group_sep;
+    for (auto loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
+        ss << Model::DATA_COLLECTOR->current_TF_by_location()[loc] << sep;
+    }
+    ss << group_sep;
+    for (auto tf_by_therapy : Model::DATA_COLLECTOR->current_tf_by_therapy()) {
+        ss << tf_by_therapy << sep;
+    }
+    ss << group_sep;
+
 // including total number of positive individuals
   ReporterUtils::output_genotype_frequency3(ss, Model::CONFIG->number_of_parasite_types(),
                                             Model::POPULATION->get_person_index<PersonIndexByLocationStateAgeClass>());
