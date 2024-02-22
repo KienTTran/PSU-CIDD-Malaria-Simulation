@@ -68,6 +68,10 @@ namespace Spatial {
               prepare_kernel();
             }
 
+            std::string name()  override {
+              return "Marshall";
+            }
+
             [[nodiscard]]
             DoubleVector get_v_relative_out_movement_to_destination(
                     const int &from_location, const int &number_of_locations,

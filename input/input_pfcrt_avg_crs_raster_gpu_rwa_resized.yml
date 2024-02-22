@@ -35,7 +35,7 @@ debug_config:
   enable_debug_text: true
   enable_debug_render: false
   enable_debug_render_text: false
-  log_interval: 1
+  log_interval: 30
 
 #set <0 to randomize seed using clock
 initial_seed_number: 123456789
@@ -78,7 +78,7 @@ initial_age_structure: [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 25, 
 artificial_rescaling_of_population_size: 1.0
 
 raster_db:
-  population_raster: "../../input/rwa/rwa_init_pop.asc"
+  population_raster: "../../input/rwa/rwa_init_pop_resized.asc"
   district_raster: "../../input/rwa/rwa_district.asc"
   travel_raster: "../../input/rwa/rwa_travel.asc"
 

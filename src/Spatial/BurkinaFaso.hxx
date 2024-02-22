@@ -112,6 +112,11 @@ namespace Spatial {
                 return {travel,travel+Model::CONFIG->number_of_locations()};
             }
 
+
+            std::string name()  override {
+              return "BurkinaFaso";
+            }
+
             [[nodiscard]]
             DoubleVector get_v_relative_out_movement_to_destination(
                     const int &from_location, const int &number_of_locations,

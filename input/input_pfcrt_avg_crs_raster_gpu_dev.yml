@@ -112,23 +112,23 @@ seasonal_info:
     phi:  [ 146, 155, 155]
 
 spatial_model:
-#  name: "Wesolowski"
 #  Barabasi:
 #    r_g_0: 5.8
 #    beta_r: 1.65
 #    kappa: 350
-#  Wesolowski:
-#    kappa: 0.01093251
-#    alpha: 0.22268982
-#    beta: 0.14319618
-#    gamma: 0.83741484
-  name: "BurkinaFaso"
-  BurkinaFaso:
-    alpha: 1.27
-    log_rho: 0.25
-    tau: 1.342
-    capital: 14
-    penalty: 12
+  name: "Wesolowski"
+  Wesolowski:
+    kappa: 0.01093251
+    alpha: 0.22268982
+    beta: 0.14319618
+    gamma: 0.83741484
+#  name: "BurkinaFaso"
+#  BurkinaFaso:
+#    alpha: 1.27
+#    log_rho: 0.25
+#    tau: 1.342
+#    capital: 14
+#    penalty: 12
 
 # below value indicates 37.25 births per 1000 individuals per year
 #birth_rate: 0.03725

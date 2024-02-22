@@ -41,10 +41,18 @@ namespace Spatial {
                 } else {
                     v_relative_number_of_circulation_by_location[target_location] = kappa_*
                         (pow(v_number_of_residents_by_location[from_location], alpha_) * 
-                         pow(v_number_of_residents_by_location[target_location], beta_)) / (pow(relative_distance_vector[target_location], gamma_));
+                         pow(v_number_of_residents_by_location[target_location], beta_))
+                         / (pow(relative_distance_vector[target_location], gamma_));
                 }
             }
             return v_relative_number_of_circulation_by_location;
+        }
+
+        DoubleVector getSpatialModelParameters() override {
+          return {kappa_,alpha_,beta_,gamma_};
+        }
+        std::string name()  override {
+          return "Wesolowski";
         }
     };
 }

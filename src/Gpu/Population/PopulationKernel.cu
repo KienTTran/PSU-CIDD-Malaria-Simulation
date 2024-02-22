@@ -203,7 +203,7 @@ void GPU::PopulationKernel::init() {
  * this if from poisson distribution with mean = popsize_residence_by_location * circulation_percent
  * d_n_circulations_from_locations is number of circulations from each location
  * */
-__global__ void calculate_circulation_number(int n_locations,
+__global__ void calculate_circulation_number_kernel(int n_locations,
                                              int *d_popsize_residence_by_location,
                                              double circulation_percent,
                                              curandState *d_state,
@@ -224,8 +224,15 @@ __global__ void calculate_circulation_number(int n_locations,
  * this is get_v_relative_out_movement_to_destination in CPU v4.0 version
  * Output is relative out movement from each location to each destination location
  * So 9 locations will have 9*9 = 81 values
+ * BurkinFaso:
+ * d_spatial_model_parameters[0] = tau
+ * d_spatial_model_parameters[1] = alpha
+ * d_spatial_model_parameters[2] = rho
+ * d_spatial_model_parameters[3] = captial
+ * d_spatial_model_parameters[4] = penalty
+ *
  * */
-__global__ void calculate_circulation_probabilities(int n_locations,
+__global__ void calculate_circulation_probabilities_bfa_kernel(int n_locations,
                                                     int *d_popsize_residence_by_location,
                                                     double *d_spatial_model_parameters,
                                                     double *d_spatial_model_travels,
@@ -254,6 +261,41 @@ __global__ void calculate_circulation_probabilities(int n_locations,
   }
 }
 
+
+/*
+ * Calculate relative out movement to destination locations
+ * this is get_v_relative_out_movement_to_destination in CPU v4.0 version
+ * Output is relative out movement from each location to each destination location
+ * So 9 locations will have 9*9 = 81 values
+ * Wosolowski:
+ * d_spatial_model_parameters[0] = kappa
+ * d_spatial_model_parameters[1] = alpha
+ * d_spatial_model_parameters[2] = beta
+ * d_spatial_model_parameters[3] = gamma
+ * */
+__global__ void calculate_circulation_probabilities_wesolowski_kernel(int n_locations,
+                                                               int *d_popsize_residence_by_location,
+                                                               double *d_spatial_model_parameters,
+                                                               double *d_distance_vector,
+                                                               double *d_relative_outmovement,
+                                                               int *d_from_indices,
+                                                               int *d_target_indices) {
+  int thread_index = threadIdx.x + blockIdx.x * blockDim.x;
+  int stride = blockDim.x * gridDim.x;
+  for (int index = thread_index; index < n_locations * n_locations; index += stride) {
+    int from_location = index / n_locations;
+    int target_location = index % n_locations;
+    if (d_distance_vector[from_location * n_locations + target_location] == 0.0) return;
+    double distance = d_distance_vector[from_location * n_locations + target_location];
+    double probability = d_spatial_model_parameters[0] * (pow(d_popsize_residence_by_location[from_location], d_spatial_model_parameters[1])
+                                                         * pow(d_popsize_residence_by_location[target_location], d_spatial_model_parameters[2]))
+                                                         / (pow(distance, d_spatial_model_parameters[3]));
+    d_relative_outmovement[index] = probability;
+    d_from_indices[index] = from_location;
+    d_target_indices[index] = target_location;
+  }
+}
+
 void GPU::PopulationKernel::calculate_circulate_locations(int n_locations, ThrustTVectorDevice<int> &d_n_circulations_from_locations,
                                                           ThrustTVectorDevice<double> &d_relative_outmovement_from_target_,
                                                           ThrustTVectorDevice<int> &d_all_location_from_indices,
@@ -261,8 +303,6 @@ void GPU::PopulationKernel::calculate_circulate_locations(int n_locations, Thrus
   //Has to get pointer to device otherwise it will copy vector from host to device
   d_ce_popsize_residence_by_location = Model::GPU_DATA_COLLECTOR->popsize_residence_by_location();
   d_ce_spatial_model_parameters = Model::CONFIG->spatial_model()->getSpatialModelParameters();
-  d_ce_spatial_model_travels = Model::CONFIG->spatial_model()->getSpatialModelTravels();
-  d_ce_spatial_districts = Model::CONFIG->h_spatial_districts;
   d_ce_spatial_distances = Model::CONFIG->h_spatial_distances;
 
   //All probabilities because thrust run all arrays at the same time. If use 1 array then values are overwritten.
@@ -271,7 +311,7 @@ void GPU::PopulationKernel::calculate_circulate_locations(int n_locations, Thrus
   //Get circulations by location
   int n_threads = Model::CONFIG->gpu_config().n_threads;
   int block_size = ceil((d_n_circulations_from_locations.size() + n_threads - 1) / n_threads);
-  calculate_circulation_number<<<block_size, n_threads>>>(n_locations,
+  calculate_circulation_number_kernel<<<block_size, n_threads>>>(n_locations,
                                                           thrust::raw_pointer_cast(d_ce_popsize_residence_by_location.data()),
                                                           Model::CONFIG->circulation_info().circulation_percent,
                                                           Model::GPU_RANDOM->d_states,
@@ -285,17 +325,30 @@ void GPU::PopulationKernel::calculate_circulate_locations(int n_locations, Thrus
   d_all_location_target_indices.resize(n_locations * n_locations, 0);
   n_threads = Model::CONFIG->gpu_config().n_threads;
   block_size = (d_relative_outmovement_from_target_.size() + n_threads - 1) / n_threads;
-  calculate_circulation_probabilities<<<block_size, n_threads>>>(Model::CONFIG->number_of_locations(),
-                                                                 thrust::raw_pointer_cast(d_ce_popsize_residence_by_location.data()),
-                                                                 thrust::raw_pointer_cast(d_ce_spatial_model_parameters.data()),
-                                                                 thrust::raw_pointer_cast(d_ce_spatial_model_travels.data()),
-                                                                 thrust::raw_pointer_cast(d_ce_spatial_districts.data()),
-                                                                 thrust::raw_pointer_cast(d_ce_spatial_distances.data()),
-                                                                 thrust::raw_pointer_cast(d_relative_outmovement_from_target_.data()),
-                                                                 thrust::raw_pointer_cast(d_all_location_from_indices.data()),
-                                                                 thrust::raw_pointer_cast(d_all_location_target_indices.data()));
-  check_cuda_error(cudaDeviceSynchronize());
-  check_cuda_error(cudaGetLastError());
+  if(Model::CONFIG->spatial_model()->name() == "BurkinaFaso"){
+    d_ce_spatial_model_travels = Model::CONFIG->spatial_model()->getSpatialModelTravels();
+    d_ce_spatial_districts = Model::CONFIG->h_spatial_districts;
+    calculate_circulation_probabilities_bfa_kernel<<<block_size, n_threads>>>(Model::CONFIG->number_of_locations(),
+                                                                              thrust::raw_pointer_cast(d_ce_popsize_residence_by_location.data()),
+                                                                              thrust::raw_pointer_cast(d_ce_spatial_model_parameters.data()),
+                                                                              thrust::raw_pointer_cast(d_ce_spatial_model_travels.data()),
+                                                                              thrust::raw_pointer_cast(d_ce_spatial_districts.data()),
+                                                                              thrust::raw_pointer_cast(d_ce_spatial_distances.data()),
+                                                                              thrust::raw_pointer_cast(d_relative_outmovement_from_target_.data()),
+                                                                              thrust::raw_pointer_cast(d_all_location_from_indices.data()),
+                                                                              thrust::raw_pointer_cast(d_all_location_target_indices.data()));
+    check_cuda_error(cudaDeviceSynchronize());
+    check_cuda_error(cudaGetLastError());
+  }
+  if(Model::CONFIG->spatial_model()->name() == "Wesolowski"){
+    calculate_circulation_probabilities_wesolowski_kernel<<<block_size, n_threads>>>(Model::CONFIG->number_of_locations(),
+                                                                                     thrust::raw_pointer_cast(d_ce_popsize_residence_by_location.data()),
+                                                                                     thrust::raw_pointer_cast(d_ce_spatial_model_parameters.data()),
+                                                                                     thrust::raw_pointer_cast(d_ce_spatial_distances.data()),
+                                                                                     thrust::raw_pointer_cast(d_relative_outmovement_from_target_.data()),
+                                                                                     thrust::raw_pointer_cast(d_all_location_from_indices.data()),
+                                                                                     thrust::raw_pointer_cast(d_all_location_target_indices.data()));
+  }
 }
 
 /*

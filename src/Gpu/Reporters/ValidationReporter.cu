@@ -158,16 +158,6 @@ void GPU::ValidationReporter::monthly_report() {
     }
     ss << group_sep;
 
-    for (auto loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
-        LOG_IF(Model::CONFIG->debug_config().enable_debug_text, INFO) << fmt::format("ValidationReporter::monthly_report: {} PfPR {}",
-                                                                                     loc,
-                                                                                     Model::GPU_DATA_COLLECTOR->blood_slide_prevalence_by_location()[loc] * 100.0f);
-    }
-    LOG_IF(Model::CONFIG->debug_config().enable_debug_text, INFO) << fmt::format("ValidationReporter::monthly_report: TF {} {} {}",
-                                                                                 Model::GPU_DATA_COLLECTOR->current_TF_by_location()[6],
-                                                                                 Model::GPU_DATA_COLLECTOR->current_TF_by_location()[7],
-                                                                                 Model::GPU_DATA_COLLECTOR->current_TF_by_location()[8]);
-
     monthly_data_file << ss.str() << std::endl;
 
     std::stringstream gene_freq_ss;

@@ -382,8 +382,8 @@ void Model::begin_time_step() {
 }
 
 void Model::daily_update() {
-  gpu_population_->update_all_individuals();
-//  gpu_population_kernel_->update_all_individuals();
+//  gpu_population_->update_all_individuals();
+  gpu_population_kernel_->update_all_individuals();
 
 //
 //  // for safety remove all dead by calling perform_death_event
