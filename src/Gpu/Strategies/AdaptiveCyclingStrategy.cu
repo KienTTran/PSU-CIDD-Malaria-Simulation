@@ -27,7 +27,7 @@ void GPU::AdaptiveCyclingStrategy::switch_therapy() {
   index %= therapy_list.size();
 
   Model::GPU_DATA_COLLECTOR->update_UTL_vector();
-  LOG(INFO) << date::year_month_day{Model::GPU_SCHEDULER->calendar_date}
+  LOG(INFO) << date::year_month_day{Model::GPU_SCHEDULER->calendar_date} << " " << Model::GPU_SCHEDULER->current_time()
             << ": Adaptive Cycling Strategy switch Therapy to: " << therapy_list[index]->id();
 }
 

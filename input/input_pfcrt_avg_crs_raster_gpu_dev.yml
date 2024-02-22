@@ -14,7 +14,7 @@ gpu_config:
   n_threads: 768
   n_streams: 16
   n_people_1_batch: 1000000
-  pre_allocated_mem_ratio: 2.5
+  pre_allocated_mem_ratio: 1.5
 
 #in order to display GUI, display_gui is true and pre_allocated_mem_ratio must be set to > 1.0
 render_config:

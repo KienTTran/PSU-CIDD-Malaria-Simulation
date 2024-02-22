@@ -27,7 +27,7 @@ void GPU::SwitchImmuneComponentEvent::execute() {
 void GPU::SwitchImmuneComponentEvent::schedule_for_switch_immune_component_event(Scheduler *scheduler, GPU::Person *p,
                                                                             const int &time) {
   if (scheduler!=nullptr) {
-    auto *e = new SwitchImmuneComponentEvent();
+    auto *e = new GPU::SwitchImmuneComponentEvent();
     e->dispatcher = p;
     e->time = time;
 

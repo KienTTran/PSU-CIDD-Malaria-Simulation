@@ -130,11 +130,11 @@ Model::~Model() {
 }
 
 void Model::set_treatment_strategy(const int& strategy_id) {
-  treatment_strategy_ = strategy_id == -1 ? nullptr : config_->strategy_db()[strategy_id];
-  if(treatment_strategy_ != nullptr){
-    treatment_strategy_->adjust_started_time_point(Model::GPU_SCHEDULER->current_time());
-    TREATMENT_STRATEGY = treatment_strategy_;
-  }
+//  treatment_strategy_ = strategy_id == -1 ? nullptr : config_->strategy_db()[strategy_id];
+//  if(treatment_strategy_ != nullptr){
+//    treatment_strategy_->adjust_started_time_point(Model::GPU_SCHEDULER->current_time());
+//    TREATMENT_STRATEGY = treatment_strategy_;
+//  }
   gpu_treatment_strategy_ = strategy_id == -1 ? nullptr : config_->gpu_strategy_db()[strategy_id];
   if(gpu_treatment_strategy_ != nullptr) {
     gpu_treatment_strategy_->adjust_started_time_point(Model::GPU_SCHEDULER->current_time());
@@ -410,7 +410,6 @@ void Model::daily_update() {
 //  // this function must be called after mosquito infect new cohort in prmc
   gpu_population_->persist_current_force_of_infection_to_use_N_days_later();
 //  gpu_population_kernel_->persist_current_force_of_infection_to_use_N_days_later();
-
 }
 
 void Model::monthly_update() {
@@ -420,7 +419,7 @@ void Model::monthly_update() {
 //  data_collector()->monthly_update();
   gpu_data_collector_->monthly_update();
 
-  treatment_strategy_->monthly_update();
+//  treatment_strategy_->monthly_update();
 
   gpu_treatment_strategy_->monthly_update();
 
@@ -439,7 +438,7 @@ void Model::end_time_step() {
   gpu_data_collector_->end_of_time_step();
 
   // check to switch strategy
-  treatment_strategy_->update_end_of_time_step();
+//  treatment_strategy_->update_end_of_time_step();
   gpu_treatment_strategy_->update_end_of_time_step();
 }
 

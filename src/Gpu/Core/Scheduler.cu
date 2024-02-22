@@ -130,6 +130,7 @@ void GPU::Scheduler::run() {
     daily_update();
 
     end_time_step();
+
     calendar_date += days { 1 };
   }
   Model::MODEL->model_finished = true;

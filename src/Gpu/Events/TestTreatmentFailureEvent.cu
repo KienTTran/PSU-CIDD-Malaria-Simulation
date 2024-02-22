@@ -31,7 +31,7 @@ void GPU::TestTreatmentFailureEvent::schedule_event(GPU::Scheduler *scheduler, G
     assert(false);
   }
   if (scheduler!=nullptr) {
-    auto *e = new TestTreatmentFailureEvent();
+    auto *e = new GPU::TestTreatmentFailureEvent();
     e->dispatcher = p;
     e->set_clinical_caused_parasite(clinical_caused_parasite);
     e->time = time;

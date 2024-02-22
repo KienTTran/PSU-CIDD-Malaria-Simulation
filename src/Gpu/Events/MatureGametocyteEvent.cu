@@ -20,7 +20,7 @@ GPU::MatureGametocyteEvent::~MatureGametocyteEvent() = default;
 void GPU::MatureGametocyteEvent::schedule_event(GPU::Scheduler *scheduler, GPU::Person *p, GPU::ClonalParasitePopulation *blood_parasite,
                                            const int &time) {
   if (scheduler!=nullptr) {
-    auto *e = new MatureGametocyteEvent();
+    auto *e = new GPU::MatureGametocyteEvent();
     e->dispatcher = p;
     e->set_blood_parasite(blood_parasite);
     e->time = time;

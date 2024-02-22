@@ -22,7 +22,7 @@ void GPU::EndClinicalDueToDrugResistanceEvent::schedule_event(GPU::Scheduler *sc
                                                          GPU::ClonalParasitePopulation *clinical_caused_parasite,
                                                          const int &time) {
   if (scheduler!=nullptr) {
-    auto *e = new EndClinicalDueToDrugResistanceEvent();
+    auto *e = new GPU::EndClinicalDueToDrugResistanceEvent();
     e->dispatcher = p;
     e->set_clinical_caused_parasite(clinical_caused_parasite);
     e->time = time;

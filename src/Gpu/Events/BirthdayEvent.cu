@@ -29,7 +29,7 @@ void GPU::BirthdayEvent::execute() {
 
 void GPU::BirthdayEvent::schedule_event(GPU::Scheduler *scheduler, GPU::Person *p, const int &time) {
   if (scheduler!=nullptr) {
-    auto *birthday_event = new BirthdayEvent();
+    auto *birthday_event = new GPU::BirthdayEvent();
     birthday_event->dispatcher = p;
     birthday_event->time = time;
 

@@ -13,6 +13,7 @@
 #include "Model.h"
 #include "Population/Population.h"
 #include "Population/Properties/PersonIndexByLocationStateAgeClass.h"
+#include "Strategies/IStrategy.h"
 #include "ReporterUtils.h"
 #include "easylogging++.h"
 

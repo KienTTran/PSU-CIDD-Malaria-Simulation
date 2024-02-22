@@ -24,7 +24,7 @@ void GPU::UpdateWhenDrugIsPresentEvent::schedule_event(GPU::Scheduler *scheduler
                                                   GPU::ClonalParasitePopulation *clinical_caused_parasite, const int &time) {
   if (scheduler!=nullptr) {
 
-    auto *e = new UpdateWhenDrugIsPresentEvent();
+    auto *e = new GPU::UpdateWhenDrugIsPresentEvent();
     e->dispatcher = p;
     e->set_clinical_caused_parasite(clinical_caused_parasite);
     e->time = time;

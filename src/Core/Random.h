@@ -15,7 +15,6 @@
 #include <tuple>
 
 #include "PropertyMacro.h"
-#include "Strategies/AdaptiveCyclingStrategy.h"
 #include "easylogging++.h"
 
 class Model;

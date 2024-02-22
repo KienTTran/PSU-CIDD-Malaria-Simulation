@@ -19,7 +19,7 @@ GPU::UpdateByLocationEvent::~UpdateByLocationEvent() = default;
 
 void GPU::UpdateByLocationEvent::schedule_event(GPU::Scheduler *scheduler, const int &time) {
     if (scheduler!=nullptr) {
-        auto *person_update_event = new UpdateByLocationEvent();
+        auto *person_update_event = new GPU::UpdateByLocationEvent();
         person_update_event->dispatcher = nullptr;
         person_update_event->time = time;
 

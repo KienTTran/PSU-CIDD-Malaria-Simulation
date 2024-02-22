@@ -27,7 +27,7 @@ GPU::UpdateRenderPositionEvent::~UpdateRenderPositionEvent() = default;
 
 void GPU::UpdateRenderPositionEvent::schedule_event(GPU::Scheduler *scheduler, const int &time) {
     if (scheduler!=nullptr) {
-        auto *person_update_event = new UpdateRenderPositionEvent();
+        auto *person_update_event = new GPU::UpdateRenderPositionEvent();
         person_update_event->dispatcher = nullptr;
         person_update_event->time = time;
 

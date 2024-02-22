@@ -139,9 +139,9 @@ public:
 
   CUSTOM_CONFIG_ITEM(therapy_db, TherapyPtrVector())
 
-  CUSTOM_CONFIG_ITEM(gpu_therapy_db, GPUTherapyPtrVector())
-
   CUSTOM_CONFIG_ITEM(strategy_db, StrategyPtrVector())
+
+  CUSTOM_CONFIG_ITEM(gpu_therapy_db, GPUTherapyPtrVector())
 
   CUSTOM_CONFIG_ITEM(gpu_strategy_db, GPUStrategyPtrVector())
 

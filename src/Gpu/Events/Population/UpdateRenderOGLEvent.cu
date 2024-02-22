@@ -24,7 +24,7 @@ GPU::UpdateRenderOGLEvent::~UpdateRenderOGLEvent() = default;
 
 void GPU::UpdateRenderOGLEvent::schedule_event(GPU::Scheduler *scheduler, const int &time) {
   if (scheduler != nullptr) {
-    auto *person_update_event = new UpdateRenderOGLEvent();
+    auto *person_update_event = new GPU::UpdateRenderOGLEvent();
     person_update_event->dispatcher = nullptr;
     person_update_event->time = time;
 

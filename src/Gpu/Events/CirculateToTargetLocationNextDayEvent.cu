@@ -20,7 +20,7 @@ GPU::CirculateToTargetLocationNextDayEvent::~CirculateToTargetLocationNextDayEve
 void GPU::CirculateToTargetLocationNextDayEvent::schedule_event(GPU::Scheduler *scheduler, GPU::Person *p, const int &target_location,
                                                            const int &time) {
   if (scheduler!=nullptr) {
-    auto *e = new CirculateToTargetLocationNextDayEvent();
+    auto *e = new GPU::CirculateToTargetLocationNextDayEvent();
     e->dispatcher = p;
     e->set_target_location(target_location);
     e->time = time;

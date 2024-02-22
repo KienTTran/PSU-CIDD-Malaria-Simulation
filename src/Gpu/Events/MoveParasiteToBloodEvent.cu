@@ -24,7 +24,7 @@ GPU::MoveParasiteToBloodEvent::~MoveParasiteToBloodEvent() {}
 void
 GPU::MoveParasiteToBloodEvent::schedule_event(GPU::Scheduler *scheduler, GPU::Person *p, GPU::Genotype *infection_type, const int &time) {
   if (scheduler!=nullptr) {
-    auto *e = new MoveParasiteToBloodEvent();
+    auto *e = new GPU::MoveParasiteToBloodEvent();
     e->dispatcher = p;
     e->set_infection_genotype(infection_type);
     e->time = time;

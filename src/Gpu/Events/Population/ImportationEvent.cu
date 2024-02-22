@@ -30,7 +30,7 @@ void GPU::ImportationEvent::schedule_event(GPU::Scheduler* scheduler, const int 
                                       const int &genotype_id,
                                       const int &number_of_cases) {
   if (scheduler!=nullptr) {
-    auto* e = new ImportationEvent(location, execute_at, genotype_id, number_of_cases);
+    auto* e = new GPU::ImportationEvent(location, execute_at, genotype_id, number_of_cases);
     e->dispatcher = nullptr;
     e->time = execute_at;
     scheduler->schedule_population_event(e);

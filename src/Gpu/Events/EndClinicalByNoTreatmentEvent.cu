@@ -23,7 +23,7 @@ void GPU::EndClinicalByNoTreatmentEvent::schedule_event(GPU::Scheduler *schedule
                                                    GPU::ClonalParasitePopulation *clinical_caused_parasite,
                                                    const int &time) {
   if (scheduler!=nullptr) {
-    auto *e = new EndClinicalByNoTreatmentEvent();
+    auto *e = new GPU::EndClinicalByNoTreatmentEvent();
     e->dispatcher = p;
     e->set_clinical_caused_parasite(clinical_caused_parasite);
     e->time = time;

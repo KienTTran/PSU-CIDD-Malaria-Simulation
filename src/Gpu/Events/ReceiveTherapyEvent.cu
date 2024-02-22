@@ -19,7 +19,7 @@ void GPU::ReceiveTherapyEvent::schedule_event(GPU::Scheduler *scheduler, GPU::Pe
                                          GPU::ClonalParasitePopulation *clinical_caused_parasite,
                                          bool is_part_of_MAC_therapy) {
   if (scheduler != nullptr) {
-    auto *e = new ReceiveTherapyEvent();
+    auto *e = new GPU::ReceiveTherapyEvent();
     e->dispatcher = p;
     e->set_received_therapy(therapy);
     e->time = time;

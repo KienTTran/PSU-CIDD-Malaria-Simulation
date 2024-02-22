@@ -31,7 +31,7 @@ void GPU::ImportationPeriodicallyEvent::schedule_event(GPU::Scheduler* scheduler
                                                   unsigned int genotype_id, const int& number_of_cases,
                                                   const int& start_day) {
   if (scheduler != nullptr) {
-    auto* e = new ImportationPeriodicallyEvent(location, duration, genotype_id, number_of_cases, start_day);
+    auto* e = new GPU::ImportationPeriodicallyEvent(location, duration, genotype_id, number_of_cases, start_day);
     e->dispatcher = nullptr;
     e->time = start_day;
     scheduler->schedule_population_event(e);

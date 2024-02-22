@@ -28,7 +28,7 @@ void AdaptiveCyclingStrategy::switch_therapy() {
 
   Model::DATA_COLLECTOR->update_UTL_vector();
   LOG(INFO) << date::year_month_day{Model::SCHEDULER->calendar_date}
-            << ": Adaptive Cycling Strategy switch Therapy to: " << therapy_list[index]->id();
+            << ": 2Adaptive Cycling Strategy switch Therapy to: " << therapy_list[index]->id();
 }
 
 Therapy *AdaptiveCyclingStrategy::get_therapy(Person *person) {

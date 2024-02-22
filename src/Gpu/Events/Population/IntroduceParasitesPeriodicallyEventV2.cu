@@ -35,7 +35,7 @@ void GPU::IntroduceParasitesPeriodicallyEventV2::schedule_event(
     Scheduler* scheduler, IntroduceParasitesPeriodicallyEventV2* old_event
 ) {
   if (scheduler != nullptr) {
-    auto* e = new IntroduceParasitesPeriodicallyEventV2(
+    auto* e = new GPU::IntroduceParasitesPeriodicallyEventV2(
         old_event->allele_distributions,
         old_event->location(), old_event->duration(),
         old_event->number_of_cases(), old_event->start_day, old_event->end_day

@@ -16,7 +16,7 @@ GPU::ReceiveMDATherapyEvent::~ReceiveMDATherapyEvent() = default;
 
 void GPU::ReceiveMDATherapyEvent::schedule_event(GPU::Scheduler *scheduler, GPU::Person *p, GPU::Therapy *therapy, const int &time) {
   if (scheduler!=nullptr) {
-    auto *e = new ReceiveMDATherapyEvent();
+    auto *e = new GPU::ReceiveMDATherapyEvent();
     e->dispatcher = p;
     e->set_received_therapy(therapy);
     e->time = time;

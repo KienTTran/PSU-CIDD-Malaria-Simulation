@@ -18,7 +18,7 @@ GPU::ReturnToResidenceEvent::~ReturnToResidenceEvent() = default;
 
 void GPU::ReturnToResidenceEvent::schedule_event(GPU::Scheduler *scheduler, GPU::Person *p, const int &time) {
   if (scheduler!=nullptr) {
-    auto *e = new ReturnToResidenceEvent();
+    auto *e = new GPU::ReturnToResidenceEvent();
     e->dispatcher = p;
     e->time = time;
     p->add(e);

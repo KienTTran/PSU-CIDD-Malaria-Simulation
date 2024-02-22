@@ -166,7 +166,7 @@ void GPU::ProgressToClinicalEvent::execute() {
 void GPU::ProgressToClinicalEvent::schedule_event(GPU::Scheduler *scheduler, GPU::Person *p,
                                              GPU::ClonalParasitePopulation *clinical_caused_parasite, const int &time) {
   if (scheduler!=nullptr) {
-    auto *e = new ProgressToClinicalEvent();
+    auto *e = new GPU::ProgressToClinicalEvent();
     e->dispatcher = p;
     e->set_clinical_caused_parasite(clinical_caused_parasite);
     e->time = time;
