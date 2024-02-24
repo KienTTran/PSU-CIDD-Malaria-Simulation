@@ -26,7 +26,7 @@ GPU::ProgressToClinicalEvent::~ProgressToClinicalEvent() = default;
 void GPU::ProgressToClinicalEvent::execute() {
   auto *person = dynamic_cast<GPU::Person *>(dispatcher);
   auto *pi = Model::GPU_POPULATION->get_person_index<GPU::PersonIndexGPU>();
-  LOG_IF(person->index() >= 1040 && person->index() <= 1045,INFO)
+  LOG_IF(person->index() >= 1000 && person->index() <= 1085,INFO)
     << fmt::format("GPU::ProgressToClinicalEvent::execute() {} {} {}",person->index(),
              clinical_caused_parasite_->index(),
              clinical_caused_parasite_->last_update_log10_parasite_density());
@@ -45,10 +45,11 @@ void GPU::ProgressToClinicalEvent::execute() {
     return;
   }
 
-  LOG_IF(person->index() >= 1040 && person->index() <= 1045,INFO)
-    << fmt::format("GPU::ProgressToClinicalEvent::execute() before density {} {} {}",person->index(),
+  LOG_IF(person->index() >= 1000 && person->index() <= 1085,INFO)
+    << fmt::format("GPU::ProgressToClinicalEvent::execute() before density {} {} {} ({})",person->index(),
            clinical_caused_parasite_->index(),
-           clinical_caused_parasite_->last_update_log10_parasite_density());
+           clinical_caused_parasite_->last_update_log10_parasite_density(),
+           person->person_index_gpu->h_person_update_info()[person->index()].parasite_last_update_log10_parasite_density[clinical_caused_parasite_->index()]);
 
   //    Model* model = person->population()->model();
   //    Random* random = model->random();
@@ -60,10 +61,11 @@ void GPU::ProgressToClinicalEvent::execute() {
 
   clinical_caused_parasite_->set_last_update_log10_parasite_density(density);
 
-  LOG_IF(person->index() >= 1040 && person->index() <= 1045,INFO)
-    << fmt::format("GPU::ProgressToClinicalEvent::execute() after density {} {} {}",person->index(),
+  LOG_IF(person->index() >= 1000 && person->index() <= 1085,INFO)
+    << fmt::format("GPU::ProgressToClinicalEvent::execute() after density {} {} {} ({})",person->index(),
            clinical_caused_parasite_->index(),
-           clinical_caused_parasite_->last_update_log10_parasite_density());
+           clinical_caused_parasite_->last_update_log10_parasite_density(),
+           person->person_index_gpu->h_person_update_info()[person->index()].parasite_last_update_log10_parasite_density[clinical_caused_parasite_->index()]);
 
   // Person change state to Clinical
   person->set_host_state(GPU::Person::CLINICAL);
@@ -81,11 +83,17 @@ void GPU::ProgressToClinicalEvent::execute() {
   //Statistic collect cumulative clinical episodes
   Model::GPU_DATA_COLLECTOR->collect_1_clinical_episode(person->location(), person->age(), person->age_class());
 
-  const auto p = Model::RANDOM->random_flat(0.0, 1.0);
-
-  const auto p_treatment = Model::TREATMENT_COVERAGE->get_probability_to_be_treated(
+//  const auto p = Model::RANDOM->random_flat(0.0, 1.0);
+//  const auto p_treatment = Model::TREATMENT_COVERAGE->get_probability_to_be_treated(
+//      person->location(), person->age());
+  auto p = Model::RANDOM->random_flat(0.0, 1.0);
+  auto p_treatment = Model::TREATMENT_COVERAGE->get_probability_to_be_treated(
       person->location(), person->age());
 
+  if(person->index() >= 1000 && person->index() <= 1085){
+    p = 0.01;
+    p_treatment = 0.1;
+  }
 //   std::cout << p_treatment << std::endl;
   if (p <= p_treatment) {
     auto *therapy = Model::GPU_TREATMENT_STRATEGY->get_therapy(person);
@@ -102,7 +110,7 @@ void GPU::ProgressToClinicalEvent::execute() {
     //        calculateEAMU(therapy);
     //
 
-    LOG_IF(person->index() >= 1040 && person->index() <= 1045,INFO)
+    LOG_IF(person->index() >= 1000 && person->index() <= 1085,INFO)
       << fmt::format("GPU::ProgressToClinicalEvent::execute() p <= p_treatment {} {} {}",person->index(),
              clinical_caused_parasite_->index(),
              clinical_caused_parasite_->last_update_log10_parasite_density());
@@ -123,7 +131,7 @@ void GPU::ProgressToClinicalEvent::execute() {
       Model::GPU_DATA_COLLECTOR->record_1_TF(person->location(), true);
       Model::GPU_DATA_COLLECTOR->record_1_treatment_failure_by_therapy(person->location(), person->age(),
                                                                    therapy->id());
-      LOG_IF(person->index() >= 1040 && person->index() <= 1045,INFO)
+      LOG_IF(person->index() >= 1000 && person->index() <= 1085,INFO)
         << fmt::format("GPU::ProgressToClinicalEvent::execute() p <= p_treatment to DEAD {} {} {}",person->index(),
                clinical_caused_parasite_->index(),
                clinical_caused_parasite_->last_update_log10_parasite_density());
@@ -144,14 +152,16 @@ void GPU::ProgressToClinicalEvent::execute() {
     Model::GPU_DATA_COLLECTOR->record_1_non_treated_case(person->location(), person->age());
 
     receive_no_treatment_routine(person);
-
-    LOG_IF(person->index() >= 1040 && person->index() <= 1045,INFO)
+    LOG_IF(person->index() >= 1000 && person->index() <= 1085,INFO)
       << fmt::format("GPU::ProgressToClinicalEvent::execute() after receive no treatment {} {} {}",
-             person->index(),
-             clinical_caused_parasite_->index(),
-             clinical_caused_parasite_->last_update_log10_parasite_density());
+                     person->index(),
+                     clinical_caused_parasite_->index(),
+                     clinical_caused_parasite_->last_update_log10_parasite_density());
 
     if (person->host_state()==GPU::Person::DEAD) {
+      LOG_IF(person->index() >= 1000 && person->index() <= 1085,INFO)
+        << fmt::format("GPU::ProgressToClinicalEvent::execute() receive no treatment and DEAD {}",
+                       person->index());
       Model::GPU_DATA_COLLECTOR->record_1_malaria_death(person->location(), person->age());
       return;
     }

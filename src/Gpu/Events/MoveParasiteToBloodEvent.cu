@@ -36,7 +36,7 @@ GPU::MoveParasiteToBloodEvent::schedule_event(GPU::Scheduler *scheduler, GPU::Pe
 
 void GPU::MoveParasiteToBloodEvent::execute() {
   auto *person = dynamic_cast<GPU::Person *>(dispatcher);
-  LOG_IF(person->index() >= 1040 && person->index() <= 1045,INFO)
+  LOG_IF(person->index() >= 1000 && person->index() <= 1085,INFO)
     << fmt::format("GPU::MoveParasiteToBloodEvent::execute() {}",person->index());
   auto *parasite_type = person->liver_parasite_type();
   person->set_liver_parasite_type(nullptr);

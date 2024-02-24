@@ -14,7 +14,7 @@ gpu_config:
   n_threads: 768
   n_streams: 16
   n_people_1_batch: 1000000
-  pre_allocated_mem_ratio: 1.5
+  pre_allocated_mem_ratio: 1.0
 
 #in order to display GUI, display_gui is true and pre_allocated_mem_ratio must be set to > 1.0
 render_config:
@@ -35,7 +35,7 @@ debug_config:
   enable_debug_text: true
   enable_debug_render: false
   enable_debug_render_text: false
-  log_interval: 30
+  log_interval: 1
 
 #set 0 to randomize seed using clock
 initial_seed_number: 123456789
@@ -46,7 +46,7 @@ initial_seed_number: 123456789
 starting_date: 2000/1/1
 
 # ending time point of the simulation (in yyyy/m/d format)
-ending_date: 2010/1/1
+ending_date: 2000/1/10
 
 # the day at which the simulation's reporting functionality begins collecting data for
 # EIR, # of clinical episodes, # death , # of treatment, #TF by location,...
@@ -95,7 +95,7 @@ raster_db:
 
   p_treatment_for_less_than_5_by_location: [ 0.5 ]
   p_treatment_for_more_than_5_by_location: [ 0.5 ]
-  beta_by_location: [ 10.21 ]
+  beta_by_location: [ 0.63 ]
 
   cell_size: 5
   age_distribution_by_location: [[0.0449, 0.0449, 0.0449, 0.0449, 0.0315, 0.0315, 0.0315, 0.0315, 0.0315, 0.0268, 0.0268, 0.0268, 0.0268, 0.0268, 0.1990, 0.1251, 0.0855, 0.0560, 0.0346, 0.0289, 0.0000]]
@@ -1031,7 +1031,7 @@ gpu_strategy_db:
     type: SFT
     therapy_id: 13
 
-initial_strategy_id: 16
+initial_strategy_id: 3
 
 
 # this number use to detemine whether a therapy is "useful" or not and it is used to calculate

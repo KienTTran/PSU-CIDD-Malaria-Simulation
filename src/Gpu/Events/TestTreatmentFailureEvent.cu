@@ -44,7 +44,7 @@ void GPU::TestTreatmentFailureEvent::schedule_event(GPU::Scheduler *scheduler, G
 
 void GPU::TestTreatmentFailureEvent::execute() {
   auto *person = dynamic_cast<GPU::Person *>(dispatcher);
-  LOG_IF(person->index() >= 1040 && person->index() <= 1045,INFO)
+  LOG_IF(person->index() >= 1000 && person->index() <= 1085,INFO)
     << fmt::format("GPU::TestTreatmentFailureEvent::execute() {}",person->index());
 
   if (person->all_clonal_parasite_populations()->contain(clinical_caused_parasite())

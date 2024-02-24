@@ -15,7 +15,7 @@ with open(old_file) as old, open(new_file, 'w') as new:
                     if ('-' in loc_data) or (loc_data ==  ''):
                         loc_data2 = loc_data
                     else:
-                        loc_data2 = int(int(loc_data)*0.5)
+                        loc_data2 = int(int(loc_data)*0.1)
                     new_row_data += str(loc_data2)+' '
                 new_row_data += '\n'
             new.write(new_row_data)

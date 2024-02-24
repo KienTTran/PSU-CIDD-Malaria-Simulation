@@ -32,7 +32,7 @@ GPU::EndClinicalEvent::schedule_event(GPU::Scheduler *scheduler, GPU::Person *p,
 
 void GPU::EndClinicalEvent::execute() {
   auto person = dynamic_cast<GPU::Person *>(dispatcher);
-  LOG_IF(person->index() >= 1040 && person->index() <= 1045,INFO)
+  LOG_IF(person->index() >= 1000 && person->index() <= 1085,INFO)
     << fmt::format("GPU::EndClinicalEvent::execute() {}",person->index());
 
   if (person->all_clonal_parasite_populations()->size()==0) {

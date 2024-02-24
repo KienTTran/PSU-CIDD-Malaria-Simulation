@@ -36,7 +36,7 @@ std::string GPU::CirculateToTargetLocationNextDayEvent::name() {
 
 void GPU::CirculateToTargetLocationNextDayEvent::execute() {
   auto *person = dynamic_cast<GPU::Person *>(dispatcher);
-  LOG_IF(person->index() >= 1040 && person->index() <= 1045,INFO)
+  LOG_IF(person->index() >= 1000 && person->index() <= 1085,INFO)
     << fmt::format("GPU::CirculateToTargetLocationNextDayEvent::execute() {}",person->index());
   person->set_location(target_location_);
 

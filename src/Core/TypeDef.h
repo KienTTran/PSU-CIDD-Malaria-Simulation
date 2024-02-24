@@ -151,6 +151,7 @@ using TVector2 = std::vector<TVector<T>>;
 template <typename T>
 using TVector3 = std::vector<TVector2<T>>;
 
+using GenotypeDBInfo = thrust::tuple<int,char*,double>;
 template<class T>
 using ThrustTVectorHostPinned = thrust::host_vector<T, thrust::mr::stateless_resource_allocator<T,
         thrust::system::cuda::universal_host_pinned_memory_resource>>;

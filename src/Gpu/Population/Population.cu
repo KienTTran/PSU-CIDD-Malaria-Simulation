@@ -73,6 +73,8 @@ void GPU::Population::add_person(GPU::Person* person) {
 }
 
 void GPU::Population::remove_person(GPU::Person* person) {
+  LOG_IF(person->index() >= 1000 && person->index() <= 1085,INFO)
+    << fmt::format("{} GPU::Population::remove_person remove person {} (DEAD)", Model::GPU_SCHEDULER->current_time(), person->index());
   for (GPU::PersonIndex* person_index : *person_index_list_) {
     person_index->remove(person);
   }
@@ -349,7 +351,7 @@ void GPU::Population::initial_infection(GPU::Person* person, GPU::Genotype* para
 //  assert(person->index() == pi->h_persons()[p_index]->index());
 
     for(auto *parasite: *person->all_clonal_parasite_populations()->parasites()){
-        LOG_IF(person->index() >= 1040 && person->index() <= 1045,INFO)
+        LOG_IF(person->index() >= 1000 && person->index() <= 1085,INFO)
             << fmt::format("{} GPU::Population::initial_infection {} {} {} {}",
                person->index(),
                parasite->index(),

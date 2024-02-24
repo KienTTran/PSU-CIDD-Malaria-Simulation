@@ -52,10 +52,14 @@ GPU::PersonUpdateInfo GPU::PersonIndexGPU::init_person_update_info(GPU::Person *
         person_update_info.parasite_genotype_fitness_multiple_infection[i] = 1.0;
         person_update_info.parasite_gametocyte_level[i] = 0.0;
         person_update_info.parasite_log10_infectious_density[i] = GPU::ClonalParasitePopulation::LOG_ZERO_PARASITE_DENSITY;
+        person_update_info.parasite_genotype_daily_fitness_multiple_infection[i] = 1.0;
     }
     person_update_info.parasites_log10_total_infectious_density = GPU::ClonalParasitePopulation::LOG_ZERO_PARASITE_DENSITY;
     person_update_info.parasites_genotype_mutated_number = 0;
     /* for drug update */
+    person_update_info.drug_in_blood_size = 0;
+    person_update_info.person_has_drug_in_blood = false;
+    person_update_info.drug_in_blood_type_id_current_index = 0;
     for(int i = 0; i < MAX_DRUG_PER_ACT; i++){
         person_update_info.drug_in_blood_type_id[i] = -1;
     }

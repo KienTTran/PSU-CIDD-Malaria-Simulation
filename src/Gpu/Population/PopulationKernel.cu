@@ -59,29 +59,35 @@ void GPU::PopulationKernel::init() {
   h_drug_res_aa_loc_index = TVector<int>(Model::CONFIG->gpu_drug_db()->size(), -1);
   int start_index = 0;
   int count = 0;
+  printf("drug_size %zu\n", Model::CONFIG->gpu_drug_db()->size());
   for (int d_index = 0; d_index < Model::CONFIG->gpu_drug_db()->size(); d_index++) {
-    if (Model::CONFIG->gpu_drug_db()->at(d_index)->resistant_aa_locations.size() > 0) {
+//    if (Model::CONFIG->gpu_drug_db()->at(d_index)->resistant_aa_locations.size() > 0)
+    {
       for (auto res_aa: Model::CONFIG->gpu_drug_db()->at(d_index)->resistant_aa_locations) {
         h_drug_res_aa_loc.push_back(res_aa);
-        printf("drug_index %d start_index: %d count: %d res_aa_chr_index: %d res_aa_gene_index: %d res_aa_aa_index: %d res_aa_index_in_string: %d\n",
-               d_index,
-               start_index,
-               count,
-               res_aa.chromosome_id,
-               res_aa.gene_id,
-               res_aa.aa_id,
-               res_aa.aa_index_in_aa_string
-        );
+        if(Model::CONFIG->debug_config().enable_debug_text) {
+          printf("drug_index %d start_index: %d count: %d res_aa_chr_index: %d res_aa_gene_index: %d res_aa_aa_index: %d res_aa_index_in_string: %d\n",
+                 d_index,
+                 start_index,
+                 count,
+                 res_aa.chromosome_id,
+                 res_aa.gene_id,
+                 res_aa.aa_id,
+                 res_aa.aa_index_in_aa_string
+          );
+        }
         count++;
       }
       h_drug_res_aa_loc_index[d_index] = encode_vec2_to_int(TVector<int>{start_index,
                                                                          static_cast<int>(start_index + Model::CONFIG->gpu_drug_db()->at(
                                                                              d_index)->resistant_aa_locations.size())});
-      printf("drug_index %d (%d -> %d) -> %d\n",
+      if(Model::CONFIG->debug_config().enable_debug_text){
+        printf("drug_index %d (%d -> %zu) -> %d\n",
              d_index,
              start_index,
              start_index + Model::CONFIG->gpu_drug_db()->at(d_index)->resistant_aa_locations.size(),
              h_drug_res_aa_loc_index[d_index]);
+      }
       start_index += Model::CONFIG->gpu_drug_db()->at(d_index)->resistant_aa_locations.size();
     }
   }
@@ -94,7 +100,7 @@ void GPU::PopulationKernel::init() {
   /*
    * To access genotype_max_copies in device, we need to copy the genotype_max_copies from host to device
    * and make an index map to access the genotype_max_copies
-   * To access genotype_aa in device, we need to copy the genotype_aa from host to device. h_gen_aa_int_start_index
+   * To access genotype_aa in device, we need to copy the genotype_aa from host to device. h_gen_aa_start_index
    * contains start index and end index of genotype_aa of each chromosome.
    *
    * */
@@ -103,10 +109,11 @@ void GPU::PopulationKernel::init() {
   TVector<int> gen_aa;
   TVector<int> gen_aa_size;
   TVector<int> gen_max_copies;
+  TVector<double> gen_crs;
   h_gen_aa_size = TVector<int>(Model::CONFIG->pf_genotype_info().chromosome_infos.size(), -1);
   h_gen_gene_size = TVector<int>(Model::CONFIG->pf_genotype_info().chromosome_infos.size(), -1);
   h_gen_max_copies = TVector<int>(Model::CONFIG->pf_genotype_info().chromosome_infos.size(), -1);
-  h_gen_aa_int_start_index = TVector<int>(Model::CONFIG->pf_genotype_info().chromosome_infos.size(), -1);
+  h_gen_aa_start_index = TVector<int>(Model::CONFIG->pf_genotype_info().chromosome_infos.size(), -1);
   for (int chr_index = 0; chr_index < Model::CONFIG->pf_genotype_info().chromosome_infos.size(); chr_index++) {
     if (Model::CONFIG->pf_genotype_info().chromosome_infos[chr_index].gene_infos.size() > 0) {
       h_gen_gene_size[chr_index] = Model::CONFIG->pf_genotype_info().chromosome_infos[chr_index].gene_infos.size();
@@ -116,8 +123,10 @@ void GPU::PopulationKernel::init() {
       for (int gen_index = 0; gen_index < Model::CONFIG->pf_genotype_info().chromosome_infos[chr_index].gene_infos.size(); gen_index++) {
         for (int aa_pos_index = 0; aa_pos_index < Model::CONFIG->pf_genotype_info().chromosome_infos[chr_index]
             .gene_infos[gen_index].aa_position_infos.size(); aa_pos_index++) {
+          gen_crs.clear();
           gen_aa.clear();
           gen_aa_test = "";
+          double avg_crs = 0;
           for (int aa_index = 0; aa_index < Model::CONFIG->pf_genotype_info().chromosome_infos[chr_index]
               .gene_infos[gen_index].aa_position_infos[aa_pos_index].amino_acids.size(); aa_index++) {
             /*
@@ -125,24 +134,36 @@ void GPU::PopulationKernel::init() {
              * */
             gen_aa.push_back((int) (Model::CONFIG->pf_genotype_info().chromosome_infos[chr_index]
                                         .gene_infos[gen_index].aa_position_infos[aa_pos_index].amino_acids[aa_index] - 48));
+            avg_crs = Model::CONFIG->pf_genotype_info().chromosome_infos[chr_index].gene_infos[gen_index].average_daily_crs;
+            double crs = Model::CONFIG->pf_genotype_info().chromosome_infos[chr_index]
+                .gene_infos[gen_index].aa_position_infos[aa_pos_index].daily_crs[aa_index];
+            if(avg_crs > 0){
+              gen_crs.push_back(avg_crs*crs);
+            } else {
+              gen_crs.push_back(crs);
+            }
           }
-          std::string a = "";
-          a = Model::CONFIG->pf_genotype_info().chromosome_infos[chr_index]
-              .gene_infos[gen_index].aa_position_infos[aa_pos_index].amino_acids[0];
-          std::string b = "";
-          b = Model::CONFIG->pf_genotype_info().chromosome_infos[chr_index]
-              .gene_infos[gen_index].aa_position_infos[aa_pos_index].amino_acids[1];
-          std::string c = "";
-          c = std::to_string((int) (Model::CONFIG->pf_genotype_info().chromosome_infos[chr_index]
-                                        .gene_infos[gen_index].aa_position_infos[aa_pos_index].amino_acids[0] - 48));
-          std::string d = "";
-          d = std::to_string((int) (Model::CONFIG->pf_genotype_info().chromosome_infos[chr_index]
-                                        .gene_infos[gen_index].aa_position_infos[aa_pos_index].amino_acids[1] - 48));
-          gen_aa_test = a + "->" + b + " " + c + "->" + d;
-          if (gen_aa.size() > 0) {
-            printf("gen_aa_int: %s %d\n", gen_aa_test.c_str(), encode_vec2_to_int(gen_aa));
-            h_gen_aa_int.push_back(encode_vec2_to_int(gen_aa));
-            gen_aa_per_gene_size++;
+          if(Model::CONFIG->debug_config().enable_debug_text){
+            std::string a = "";
+            a = Model::CONFIG->pf_genotype_info().chromosome_infos[chr_index]
+                .gene_infos[gen_index].aa_position_infos[aa_pos_index].amino_acids[0];
+            std::string b = "";
+            b = Model::CONFIG->pf_genotype_info().chromosome_infos[chr_index]
+                .gene_infos[gen_index].aa_position_infos[aa_pos_index].amino_acids[1];
+            std::string c = "";
+            c = std::to_string((int) (Model::CONFIG->pf_genotype_info().chromosome_infos[chr_index]
+                                          .gene_infos[gen_index].aa_position_infos[aa_pos_index].amino_acids[0] - 48));
+            std::string d = "";
+            d = std::to_string((int) (Model::CONFIG->pf_genotype_info().chromosome_infos[chr_index]
+                                          .gene_infos[gen_index].aa_position_infos[aa_pos_index].amino_acids[1] - 48));
+            gen_aa_test = a + "->" + b + " " + c + "->" + d;
+            if (gen_aa.size() > 0 && gen_crs.size() > 0){
+              printf("gen_aa_int: %s %d\n", gen_aa_test.c_str(), encode_vec2_to_int(gen_aa));
+              h_gen_aa_int.push_back(encode_vec2_to_int(gen_aa));
+              printf("gen_crs: %f %f\n", gen_crs[0], gen_crs[1]);
+              h_gen_crs.push_back(thrust::make_tuple(gen_crs[0], gen_crs[1]));
+              gen_aa_per_gene_size++;
+            }
           }
         }
         gen_aa_size.push_back(Model::CONFIG->pf_genotype_info().chromosome_infos[chr_index].gene_infos[gen_index].aa_position_infos.size());
@@ -159,7 +180,7 @@ void GPU::PopulationKernel::init() {
         h_gen_max_copies[chr_index] = gen_max_copies[0];
       }
       if (h_gen_aa_size[chr_index] > 0) {
-        h_gen_aa_int_start_index[chr_index] = start_index;
+        h_gen_aa_start_index[chr_index] = start_index;
         start_index += gen_aa_per_gene_size;
       }
     }
@@ -168,7 +189,8 @@ void GPU::PopulationKernel::init() {
   d_gen_aa_size = h_gen_aa_size;
   d_gen_max_copies = h_gen_max_copies;
   d_gen_aa_int = h_gen_aa_int;
-  d_gen_aa_int_start_index = h_gen_aa_int_start_index;
+  d_gen_crs = h_gen_crs;
+  d_gen_aa_start_index = h_gen_aa_start_index;
 
   /*
    * Here we don't copy Model::CONFIG->parasite_density_level()
@@ -790,14 +812,14 @@ struct AddNewGenotypes : public thrust::unary_function<GPU::PersonUpdateInfo, vo
       if (x.parasites_genotype_mutated_number > 0) {
         for (int p_index = 0; p_index < x.parasites_size; p_index++) {
           if (x.parasite_id[p_index] != -1) {
-            gpu_genotype_db_->get_genotype(x.parasite_genotype[p_index], config_);
+            gpu_genotype_db_->get_genotype(x.parasite_genotype_current[p_index], config_);
           }
         }
       }
     }
 };
 
-__global__ void update_all_individuals_kernel_stream(int offset,
+__global__ void update_all_individuals_kernel_stream_1(int offset,
                                                      int size,
                                                      int current_time,
                                                      curandState *d_state,
@@ -811,33 +833,56 @@ __global__ void update_all_individuals_kernel_stream(int offset,
                                                      int *d_gen_max_copies,
                                                      int *d_gen_aa_size,
                                                      int *d_gen_aa_int,
-                                                     int *d_gen_aa_int_start_index,
+                                                     int *d_gen_aa_start_index,
                                                      GPU::PersonUpdateInfo *d_person_update_info) {
   int index = offset + threadIdx.x + blockIdx.x * blockDim.x;
   if (index < offset + size) {
     curandState local_state = d_state[index];
     if (d_person_update_info[index].person_latest_update_time == current_time) return;
-    /* Parasite */
-    for (int p_index = 0; p_index < d_person_update_info[index].parasites_size; p_index++) {
-      if (d_person_update_info[index].parasite_id[p_index] != -1) {
-        int duration = current_time - d_person_update_info[index].person_latest_update_time;
-        if (d_person_update_info[index].parasite_update_function_type[p_index] == 1) {
-          d_person_update_info[index].parasite_last_update_log10_parasite_density[p_index] = h_parasite_density_level.log_parasite_density_asymptomatic;
+    if (d_person_update_info[index].person_host_state != GPU::Person::DEAD){
+      /* Parasite */
+      for (int p_index = 0; p_index < d_person_update_info[index].parasites_size; p_index++) {
+        if (d_person_update_info[index].parasite_id[p_index] != -1) {
+          if(index >= 1000 && index <= 1085){
+            printf("%d update_all_individuals_kernel_stream_1 GPU %f\n",
+                   index,
+                   d_person_update_info[index].parasite_last_update_log10_parasite_density[p_index]);
+          }
+          int duration = current_time - d_person_update_info[index].person_latest_update_time;
+          if (d_person_update_info[index].parasite_update_function_type[p_index] == 1) {
+            d_person_update_info[index].parasite_last_update_log10_parasite_density[p_index] = h_parasite_density_level.log_parasite_density_asymptomatic;
+          }
+          if (d_person_update_info[index].parasite_update_function_type[p_index] == 2) {
+            double temp = d_immune_system_information->c_max * (1 - d_person_update_info[index].immune_system_component_latest_value)
+                          + d_immune_system_information->c_min * d_person_update_info[index].immune_system_component_latest_value;
+            d_person_update_info[index].parasite_last_update_log10_parasite_density[p_index] =
+                d_person_update_info[index].parasite_last_update_log10_parasite_density[p_index]
+                + duration * (log10(temp) + log10(d_person_update_info[index].parasite_genotype_fitness_multiple_infection[p_index]));
+          }
         }
-        if (d_person_update_info[index].parasite_update_function_type[p_index] == 2) {
-          double temp = d_immune_system_information->c_max * (1 - d_person_update_info[index].immune_system_component_latest_value)
-                        + d_immune_system_information->c_min * d_person_update_info[index].immune_system_component_latest_value;
-          d_person_update_info[index].parasite_last_update_log10_parasite_density[p_index] =
-              d_person_update_info[index].parasite_last_update_log10_parasite_density[p_index]
-              + duration * (log10(temp) + log10(d_person_update_info[index].parasite_genotype_fitness_multiple_infection[p_index]));
+      }
+      if(index >= 1000 && index <= 1085){
+        for (int p_index = 0; p_index < d_person_update_info[index].parasites_size; p_index++) {
+          printf("%d GPU person index %d:\n\tp_index %d parasite_last_update_log10_parasite_density uf %d %f\n",
+                 current_time,
+                 index,p_index,
+                 d_person_update_info[index].parasite_update_function_type[p_index],
+                 d_person_update_info[index].parasite_last_update_log10_parasite_density[p_index]);
         }
       }
     }
     /* Drug */
+//    printf("Person %d drug size %d\n",index,d_person_update_info[index].drug_in_blood_size);
     if (d_person_update_info[index].person_has_drug_in_blood) {
       for (int d_index = 0; d_index < d_person_update_info[index].drug_in_blood_size; d_index++) {
         const int d_type_id = d_person_update_info[index].drug_in_blood_type_id[d_index];
-        if (d_type_id >= 0 && d_type_id < d_person_update_info[index].drug_in_blood_size) {
+        if (d_type_id != -1){
+          if(index >= 1000 && index <= 1085){
+            printf("%d GPU person index %d\n\tBEFORE drug index %d start time %d update time %d start value %f update value %f\n",
+                   current_time,index,d_type_id,
+                   d_person_update_info[index].drug_start_time[d_type_id],d_person_update_info[index].drug_last_update_time[d_type_id],
+                   d_person_update_info[index].drug_starting_value[d_type_id],d_person_update_info[index].drug_last_update_value[d_type_id]);
+          }
           d_person_update_info[index].drug_last_update_time[d_type_id] = current_time;
           const auto days = current_time - d_person_update_info[index].drug_start_time[d_type_id];
           if (days == 0) {
@@ -848,7 +893,7 @@ __global__ void update_all_individuals_kernel_stream(int offset,
               d_person_update_info[index].drug_last_update_value[d_type_id] =
                   d_person_update_info[index].drug_starting_value[d_type_id] + d_person_update_info[index].drug_rand_uniform_1[d_type_id];
             } else {
-              d_person_update_info[index].drug_starting_value[d_type_id] += days >= 1 ? d_person_update_info[index].drug_rand_uniform_2[d_type_id] : 0;
+              d_person_update_info[index].drug_starting_value[d_type_id] += (days >= 1) ? d_person_update_info[index].drug_rand_uniform_2[d_type_id] : 0;
               d_person_update_info[index].drug_last_update_value[d_type_id] = d_person_update_info[index].drug_starting_value[d_type_id];
             }
           } else {
@@ -862,6 +907,12 @@ __global__ void update_all_individuals_kernel_stream(int offset,
               d_person_update_info[index].drug_last_update_value[d_type_id] = d_person_update_info[index].drug_starting_value[d_type_id] * exp(temp);
             }
           }
+          if(index >= 1000 && index <= 1085){
+            printf("%d GPU person index %d\n\tAFTER drug index %d start time %d update time %d start value %f update value %f\n",
+                   current_time,index,d_type_id,
+                   d_person_update_info[index].drug_start_time[d_type_id],d_person_update_info[index].drug_last_update_time[d_type_id],
+                   d_person_update_info[index].drug_starting_value[d_type_id],d_person_update_info[index].drug_last_update_value[d_type_id]);
+          }
         }
       }
     }
@@ -869,185 +920,97 @@ __global__ void update_all_individuals_kernel_stream(int offset,
     d_person_update_info[index].parasites_genotype_mutated_number = 0;
     for (int p_index = 0; p_index < d_person_update_info[index].parasites_size; p_index++) {
       if (d_person_update_info[index].parasite_id[p_index] != -1) {
-        char *new_gen_aa = d_person_update_info[index].parasite_genotype[p_index];
+        if(index >= 1000 && index <= 1085){
+          printf("Person %d p_index %d\n\tGPU update_all_individuals_kernel_stream_1\n"
+                 "\tgenotype old %s\n",
+                 index,p_index,
+                 d_person_update_info[index].parasite_genotype_current[p_index]);
+        }
+        char *candidate_gen_aa = d_person_update_info[index].parasite_genotype_new[p_index];
         if (d_person_update_info[index].person_has_drug_in_blood) {
           for (int d_index = 0; d_index < d_person_update_info[index].drug_in_blood_size; d_index++) {
             const int d_type_id = d_person_update_info[index].drug_in_blood_type_id[d_index];
-            if (d_type_id >= 0 && d_drug_res_aa_loc_index[d_type_id] != -1
-                && d_type_id < d_person_update_info[index].drug_in_blood_size) {
-              int *d_drug_res_aa_loc_index_int = (int *) malloc(2 * sizeof(int));
+            if (d_type_id != -1 && d_drug_res_aa_loc_index[d_type_id] != -1) {
+              int d_drug_res_aa_loc_index_int[2];
               decode_int_to_arr2(d_drug_res_aa_loc_index[d_type_id], d_drug_res_aa_loc_index_int);
               for (int aa_pos_id = d_drug_res_aa_loc_index_int[0];
                    aa_pos_id < d_drug_res_aa_loc_index_int[1];
                    aa_pos_id++) {
                 if (d_gen_mutation_mask[d_drug_res_aa_loc[aa_pos_id].aa_index_in_aa_string] == '1') {
-                  const double p = curand_gsl_uniform_double(curand_uniform_double(&local_state), 0.0, 1.0);
+                  const double p = 0.00005;//curand_gsl_uniform_double(curand_uniform_double(&local_state), 0.0, 1.0);
                   if (p < mutation_probability_by_locus) {
                     if (d_drug_res_aa_loc[aa_pos_id].is_copy_number) {
                       int max_copies = -1;
                       if (d_gen_gene_size[d_drug_res_aa_loc[aa_pos_id].chromosome_id] > 1) {
-                        int *max_copies_int = (int *) malloc(2 * sizeof(int));
+                        int max_copies_int[2];
                         decode_int_to_arr2(d_gen_max_copies[d_drug_res_aa_loc[aa_pos_id].chromosome_id], max_copies_int);
                         max_copies = max_copies_int[d_drug_res_aa_loc[aa_pos_id].gene_id];
-                        free(max_copies_int);
                       } else {
                         max_copies = d_gen_max_copies[d_drug_res_aa_loc[aa_pos_id].chromosome_id];
                       }
-                      int old_copy_number = (int) (new_gen_aa[d_drug_res_aa_loc[aa_pos_id].aa_index_in_aa_string]) - 48;
+                      int old_copy_number = (int) (candidate_gen_aa[d_drug_res_aa_loc[aa_pos_id].aa_index_in_aa_string]) - 48;
                       if (old_copy_number == 1) {
-                        new_gen_aa[d_drug_res_aa_loc[aa_pos_id].aa_index_in_aa_string] = char((old_copy_number + 1) + 48);
+                        candidate_gen_aa[d_drug_res_aa_loc[aa_pos_id].aa_index_in_aa_string] = char((old_copy_number + 1) + 48);
                       } else if (old_copy_number == max_copies) {
-                        new_gen_aa[d_drug_res_aa_loc[aa_pos_id].aa_index_in_aa_string] = char((old_copy_number - 1) + 48);
+                        candidate_gen_aa[d_drug_res_aa_loc[aa_pos_id].aa_index_in_aa_string] = char((old_copy_number - 1) + 48);
                       } else {
-                        int new_copy_number = curand_gsl_uniform_double(curand_uniform_double(&local_state), 0.0, 1.0) < 0.5 ?
+                        double rand = 0.5;//curand_gsl_uniform_double(curand_uniform_double(&local_state), 0.0, 1.0)
+                        int new_copy_number = rand < 0.5 ?
                                               old_copy_number - 1 : old_copy_number + 1;
-                        new_gen_aa[d_drug_res_aa_loc[aa_pos_id].aa_index_in_aa_string] = char((new_copy_number) + 48);
+                        /* Check genotype valid */
+                        if(new_copy_number > max_copies){
+                          printf("!!! Invalid copy number %d vs %d !!!\n",new_copy_number,max_copies);
+                        }
+                        candidate_gen_aa[d_drug_res_aa_loc[aa_pos_id].aa_index_in_aa_string] = char((new_copy_number) + 48);
                       }
                     } else {
-                      int aa_start_index = d_gen_aa_int_start_index[d_drug_res_aa_loc[aa_pos_id].chromosome_id];
+                      int aa_start_index = d_gen_aa_start_index[d_drug_res_aa_loc[aa_pos_id].chromosome_id];
                       int aa_int_index = aa_start_index + d_drug_res_aa_loc[aa_pos_id].aa_id;
-                      int *aa_list_int = (int *) malloc(2 * sizeof(int));
+                      int aa_list_int[2];
                       decode_int_to_arr2(d_gen_aa_int[aa_int_index], aa_list_int);
-                      int aa_list_size = sizeof(aa_list_int) / sizeof(int);
                       char old_aa = char(aa_list_int[d_drug_res_aa_loc[aa_pos_id].gene_id] + 48);
                       // draw random aa id
-                      int new_aa_id = curand_gsl_uniform_int(curand_uniform_double(&local_state), 0, aa_list_size - 1);
+                      int new_aa_id = curand_gsl_uniform_int(curand_uniform_double(&local_state), 0, 1);
                       char new_aa = char(aa_list_int[new_aa_id] + 48);
                       if (new_aa == old_aa) {
                         new_aa = char(aa_list_int[new_aa_id + 1] + 48);
                       }
-                      new_gen_aa[d_drug_res_aa_loc[aa_pos_id].aa_index_in_aa_string] = new_aa;
-                      free(aa_list_int);
+                      candidate_gen_aa[d_drug_res_aa_loc[aa_pos_id].aa_index_in_aa_string] = new_aa;
+                      /* Check genotype valid */
+                      if(new_aa != char(aa_list_int[new_aa_id] + 48)
+                      && new_aa != char(aa_list_int[new_aa_id + 1] + 48) ){
+                        printf("!!! Invalid genotype allele %c (should be %c or %c) !!!\n",
+                               new_aa,
+                               char(aa_list_int[new_aa_id] + 48),
+                               char(aa_list_int[new_aa_id + 1] + 48));
+                      }
                     }
                     d_person_update_info[index].parasites_genotype_mutated_number += 1;
                   }
                 }
               }
-              free(d_drug_res_aa_loc_index_int);
+              if(index >= 1000 && index <= 1085){
+                printf("\tgenotype candidate %s (by drug %d) old: %s\n",
+                       candidate_gen_aa,
+                       d_type_id,
+                       d_person_update_info[index].parasite_genotype_current[p_index]);
+              }
+              /* Get new genotype daily fitness */
+              
             }
           }
         }
       }
     }
-    /* Immune */
-    auto immune_component_temp = 0.0;
-    if (d_person_update_info[index].immune_system_is_increased) {
-      //increase I(t) = 1 - (1-I0)e^(-b1*t)
-      double immune_component_acquire_rate = 0.0;
-      if (d_person_update_info[index].immune_system_component_type == 1) {
-        /* from InfantImmuneComponent acquire */
-        immune_component_acquire_rate = 0.0;
-      }
-      if (d_person_update_info[index].immune_system_component_type == 2) {
-        /* from NonInfantImmuneComponent acquire */
-        immune_component_acquire_rate = (d_person_update_info[index].person_age > 80)
-                                        ? d_immune_system_information->acquire_rate_by_age[80]
-                                        : d_immune_system_information->acquire_rate_by_age[d_person_update_info[index].person_age];
-      }
-      immune_component_temp = 1.0 - (1.0 - d_person_update_info[index].immune_system_component_latest_value)
-                                    * exp(-immune_component_acquire_rate * (current_time - d_person_update_info[index].person_latest_update_time));
-    } else {
-      //decrease I(t) = I0 * e ^ (-b2*t);
-      double immune_component_decay_rate = 0.0;
-      if (d_person_update_info[index].immune_system_component_type == 1) {
-        /* from InfantImmuneComponent decay */
-        immune_component_decay_rate = 0.0315;
-      }
-      if (d_person_update_info[index].immune_system_component_type == 2) {
-        /* from NonInfantImmuneComponent decay */
-        immune_component_decay_rate = d_immune_system_information->decay_rate;
-      }
-      immune_component_temp = d_person_update_info[index].immune_system_component_latest_value
-                              * exp(-immune_component_decay_rate * (current_time - d_person_update_info[index].person_latest_update_time));
-      immune_component_temp = (immune_component_temp < 0.00001) ? 0.0 : immune_component_temp;
-    }
-    d_person_update_info[index].immune_system_component_latest_value = immune_component_temp;
-    /* Cutoff */
-    if (d_person_update_info[index].person_has_drug_in_blood) {
-      for (int d_index = 0; d_index < d_person_update_info[index].drug_in_blood_size; d_index++) {
-        const int d_type_id = d_person_update_info[index].drug_in_blood_type_id[d_index];
-        if (d_type_id >= 0 && d_type_id < d_person_update_info[index].drug_in_blood_size) {
-          if (d_person_update_info[index].drug_last_update_value[d_type_id] <= DRUG_CUT_OFF_VALUE) {
-            d_person_update_info[index].drug_in_blood_type_id[d_type_id] = -1;
-          }
-        }
-      }
-    }
-    /* Clear cured */
-    for (int p_index = 0; p_index < d_person_update_info[index].parasites_size; p_index++) {
-      if (d_person_update_info[index].parasite_id[p_index] != -1) {
-        if (d_person_update_info[index].parasite_last_update_log10_parasite_density[p_index]
-            <= h_parasite_density_level.log_parasite_density_cured + 0.00001) {
-          d_person_update_info[index].parasite_id[p_index] = -1;
-          d_person_update_info[index].parasite_update_function_type[p_index] = 0;
-          d_person_update_info[index].parasite_last_update_log10_parasite_density[p_index] = GPU::ClonalParasitePopulation::LOG_ZERO_PARASITE_DENSITY;
-          d_person_update_info[index].parasite_genotype_fitness_multiple_infection[p_index] = 1.0;
-          d_person_update_info[index].parasite_gametocyte_level[p_index] = 0.0;
-          d_person_update_info[index].parasite_log10_infectious_density[p_index] = GPU::ClonalParasitePopulation::LOG_ZERO_PARASITE_DENSITY;
-          d_person_update_info[index].parasites_current_index -= 1;
-          d_person_update_info[index].parasites_size -= 1;
-        } else {
-          /* From GPU::ClonalParasitePopulation::get_log10_infectious_density() */
-          if (is_equal(d_person_update_info[index].parasite_last_update_log10_parasite_density[p_index],
-                       d_person_update_info[index].LOG_ZERO_PARASITE_DENSITY,
-                       d_person_update_info[index].limit_epsilon)
-              || is_equal(d_person_update_info[index].parasite_last_update_log10_parasite_density[p_index],
-                          0.0,
-                          d_person_update_info[index].limit_epsilon)) {
-            d_person_update_info[index].parasite_last_update_log10_parasite_density[p_index]
-                = d_person_update_info[index].LOG_ZERO_PARASITE_DENSITY;
-          }
-          d_person_update_info[index].parasite_log10_infectious_density[p_index]
-              = d_person_update_info[index].parasite_last_update_log10_parasite_density[p_index]
-                + log10(d_person_update_info[index].parasite_gametocyte_level[p_index]);
-
-          /* From GPU::SingleHostClonalParasitePopulations::clear_cured_parasites() */
-          if (d_person_update_info[index].parasites_log10_total_infectious_density == d_person_update_info[index].LOG_ZERO_PARASITE_DENSITY) {
-            d_person_update_info[index].parasites_log10_total_infectious_density
-                = d_person_update_info[index].parasite_log10_infectious_density[p_index];
-          } else {
-            d_person_update_info[index].parasites_log10_total_infectious_density
-                += log10(pow(10, d_person_update_info[index].parasite_log10_infectious_density[p_index]
-                                 - d_person_update_info[index].parasites_log10_total_infectious_density) + 1);
-          }
-        }
-      }
-    }
-    /* Change state */
-    if (d_person_update_info[index].parasites_size == 0) {
-      if (d_person_update_info[index].person_liver_parasite_genotype[0] == '\0') {
-        d_person_update_info[index].person_host_state = static_cast<int>(GPU::Person::SUSCEPTIBLE);
-      } else {
-        d_person_update_info[index].person_host_state = static_cast<int>(GPU::Person::EXPOSED);
-      }
-      d_person_update_info[index].immune_system_is_increased = false;
-    } else {
-      d_person_update_info[index].immune_system_is_increased = true;
-    }
-    if (d_person_update_info[index].person_using_age_dependent_biting_level) {
-      d_person_update_info[index].person_current_relative_biting_rate
-          = d_person_update_info[index].person_innate_relative_biting_rate
-            * get_age_dependent_biting_factor(d_person_update_info[index].person_age,
-                                              d_person_update_info[index].person_birthday,
-                                              current_time,
-                                              365);
-    } else {
-      d_person_update_info[index].person_current_relative_biting_rate
-          = d_person_update_info[index].person_innate_relative_biting_rate;
-    }
-    /* Latest update time */
-    d_person_update_info[index].person_latest_update_time = current_time;
-//        if(index == offset + size - 1) printf("GPU all_individuals_kernel_stream (%d -> %d) index %d last_time %d curr_time %d\n",
-//                                              offset,offset+size,index,d_person_update_info[index].person_latest_update_time,current_time);
     d_state[index] = local_state;
     __syncthreads();
   }
 }
 
-void GPU::PopulationKernel::update_all_individuals() {
+void GPU::PopulationKernel::update_all_individuals_1() {
 //  for(int i = pi->h_person_update_info().size() - 5; i < pi->h_person_update_info().size(); i++){
 //    LOG_IF(Model::CONFIG->debug_config().enable_debug_text,INFO)
-//      << fmt::format("[PopulationKernel update_all_individuals] BEFORE Person {} last update time {} parasites_size {} parasites_genotype_mutated_number {}"
+//      << fmt::format("[PopulationKernel update_all_individuals_1] BEFORE Person {} last update time {} parasites_size {} parasites_genotype_mutated_number {}"
 //                     " person_biting {} person_moving {}",
 //                     i,
 //                     pi->h_person_update_info()[i].person_latest_update_time,
@@ -1057,9 +1020,23 @@ void GPU::PopulationKernel::update_all_individuals() {
 //                     pi->h_person_update_info()[i].person_current_relative_moving_rate);
 //  }
   check_cuda_error(cudaEventRecord(start_event, 0));
+  for(auto [g_index, genotype] : Model::CONFIG->gpu_genotype_db){
+    for(auto [d_index, drug] : *Model::CONFIG->gpu_drug_db()){
+      printf("Genotype %lu Drug %d EC50: %f\n",g_index,d_index,genotype->get_EC50_power_n(drug));
+      char* temp_aa_seq = (char*)malloc(genotype->aa_sequence.size() * sizeof(char));
+      std::copy(genotype->aa_sequence.begin(),
+                genotype->aa_sequence.end(),
+                temp_aa_seq);
+      strcpy(temp_aa_seq,genotype->aa_sequence.c_str());
+      pi->h_genotype_db().push_back(thrust::make_tuple(g_index,temp_aa_seq,genotype->get_EC50_power_n(drug)));
+      free(temp_aa_seq);
+    }
+  }
+  d_genotype_ec50_power_n_table.resize(pi->h_genotype_db().size());
+  thrust::copy(pi->h_genotype_db().begin(),pi->h_genotype_db().end(),d_genotype_ec50_power_n_table.begin());
   LOG_IF(Model::CONFIG->debug_config().enable_debug_text
          && Model::GPU_SCHEDULER->current_time() % Model::CONFIG->debug_config().log_interval == 0, INFO)
-    << fmt::format("[PopulationKernel update_all_individuals] Start size {} {}GBs",
+    << fmt::format("[PopulationKernel update_all_individuals_1] Start size {} {}GBs",
                    pi->h_person_update_info().size(),
                    pi->h_person_update_info().size() * sizeof(GPU::PersonUpdateInfo) / 1e9);
   int batch_size = (pi->h_person_update_info().size() < Model::CONFIG->gpu_config().n_people_1_batch)
@@ -1073,7 +1050,7 @@ void GPU::PopulationKernel::update_all_individuals() {
     check_cuda_error(cudaMalloc((void **) &d_buffer_person_update_info_stream, batch_bytes));
 //    LOG_IF(Model::CONFIG->debug_config().enable_debug_text
 //           && Model::GPU_SCHEDULER->current_time() % Model::CONFIG->debug_config().log_interval == 0,INFO)
-//           << fmt::format("[PopulationKernel update_all_individuals] Work batch size {} remain {}, from {} to {} (of {})",
+//           << fmt::format("[PopulationKernel update_all_individuals_1] Work batch size {} remain {}, from {} to {} (of {})",
 //                                batch_size, batch_remain, batch_from, batch_to,
 //                                pi->h_person_update_info().size());
     /*
@@ -1092,9 +1069,10 @@ void GPU::PopulationKernel::update_all_individuals() {
         const int stream_bytes = stream_size * sizeof(GPU::PersonUpdateInfo);
         const int n_threads = (stream_size < Model::CONFIG->gpu_config().n_threads) ? stream_size : Model::CONFIG->gpu_config().n_threads;
         const int n_blocks = (stream_size + n_threads - 1) / n_threads;
+        Model::GPU_RANDOM->init(stream_size);
 //        LOG_IF(Model::CONFIG->debug_config().enable_debug_text
 //               && Model::GPU_SCHEDULER->current_time() % Model::CONFIG->debug_config().log_interval == 0,INFO)
-//          << fmt::format("[PopulationKernel update_all_individuals]   Work stream {} size {}, from {} to {} offset {} n_threads {} n_blocks {} per stream",
+//          << fmt::format("[PopulationKernel update_all_individuals_1]   Work stream {} size {}, from {} to {} offset {} n_threads {} n_blocks {} per stream",
 //                         s_index, stream_size, batch_size - stream_remain, batch_size - stream_remain + stream_size,
 //                         stream_offset,
 //                         n_threads,
@@ -1104,22 +1082,22 @@ void GPU::PopulationKernel::update_all_individuals() {
                                          stream_bytes,
                                          cudaMemcpyHostToDevice,
                                          d_streams[s_index]));
-        update_all_individuals_kernel_stream<<<n_blocks, n_threads, 0, d_streams[s_index]>>>(stream_offset,
-                                                                                             stream_size,
-                                                                                             Model::GPU_SCHEDULER->current_time(),
-                                                                                             Model::GPU_RANDOM->d_states,
-                                                                                             Model::CONFIG->parasite_density_level(),
-                                                                                             d_immune_system_information,
-                                                                                             thrust::raw_pointer_cast(d_drug_res_aa_loc.data()),
-                                                                                             thrust::raw_pointer_cast(d_drug_res_aa_loc_index.data()),
-                                                                                             Model::CONFIG->mutation_probability_by_locus(),
-                                                                                             d_gen_mutation_mask,
-                                                                                             thrust::raw_pointer_cast(d_gen_gene_size.data()),
-                                                                                             thrust::raw_pointer_cast(d_gen_max_copies.data()),
-                                                                                             thrust::raw_pointer_cast(d_gen_aa_size.data()),
-                                                                                             thrust::raw_pointer_cast(d_gen_aa_int.data()),
-                                                                                             thrust::raw_pointer_cast(d_gen_aa_int_start_index.data()),
-                                                                                             d_buffer_person_update_info_stream);
+        update_all_individuals_kernel_stream_1<<<n_blocks, n_threads, 0, d_streams[s_index]>>>(stream_offset,
+                                                                                               stream_size,
+                                                                                               Model::GPU_SCHEDULER->current_time(),
+                                                                                               Model::GPU_RANDOM->d_states,
+                                                                                               Model::CONFIG->parasite_density_level(),
+                                                                                               d_immune_system_information,
+                                                                                               thrust::raw_pointer_cast(d_drug_res_aa_loc.data()),
+                                                                                               thrust::raw_pointer_cast(d_drug_res_aa_loc_index.data()),
+                                                                                               Model::CONFIG->mutation_probability_by_locus(),
+                                                                                               d_gen_mutation_mask,
+                                                                                               thrust::raw_pointer_cast(d_gen_gene_size.data()),
+                                                                                               thrust::raw_pointer_cast(d_gen_max_copies.data()),
+                                                                                               thrust::raw_pointer_cast(d_gen_aa_size.data()),
+                                                                                               thrust::raw_pointer_cast(d_gen_aa_int.data()),
+                                                                                               thrust::raw_pointer_cast(d_gen_aa_start_index.data()),
+                                                                                               d_buffer_person_update_info_stream);
         check_cuda_error(cudaDeviceSynchronize());
         check_cuda_error(cudaMemcpyAsync(thrust::raw_pointer_cast(pi->h_person_update_info().data()) + batch_offset,
                                          &d_buffer_person_update_info_stream[stream_offset],
@@ -1137,10 +1115,11 @@ void GPU::PopulationKernel::update_all_individuals() {
     else{
       const int n_threads = (batch_size < Model::CONFIG->gpu_config().n_threads) ? batch_size : Model::CONFIG->gpu_config().n_threads;
       const int n_blocks = (batch_size + n_threads - 1) / n_threads;
+      Model::GPU_RANDOM->init(batch_size);
       int s_index = 0;
 //      LOG_IF(Model::CONFIG->debug_config().enable_debug_text
 //             && Model::GPU_SCHEDULER->current_time() % Model::CONFIG->debug_config().log_interval == 0,INFO)
-//        << fmt::format("[PopulationKernel update_all_individuals]   Last batch {} size {}, from {} to {} offset {} n_threads {} n_blocks {} per batch",
+//        << fmt::format("[PopulationKernel update_all_individuals_1]   Last batch {} size {}, from {} to {} offset {} n_threads {} n_blocks {} per batch",
 //                       s_index, batch_size, batch_from, batch_to,
 //                       batch_offset,
 //                       n_threads,
@@ -1150,22 +1129,22 @@ void GPU::PopulationKernel::update_all_individuals() {
                                        batch_bytes,
                                        cudaMemcpyHostToDevice,
                                        d_streams[s_index]));
-      update_all_individuals_kernel_stream<<<n_blocks, n_threads, 0, d_streams[s_index]>>>(0,
-                                                                                           batch_size,
-                                                                                           Model::GPU_SCHEDULER->current_time(),
-                                                                                           Model::GPU_RANDOM->d_states,
-                                                                                           Model::CONFIG->parasite_density_level(),
-                                                                                           d_immune_system_information,
-                                                                                           thrust::raw_pointer_cast(d_drug_res_aa_loc.data()),
-                                                                                           thrust::raw_pointer_cast(d_drug_res_aa_loc_index.data()),
-                                                                                           Model::CONFIG->mutation_probability_by_locus(),
-                                                                                           d_gen_mutation_mask,
-                                                                                           thrust::raw_pointer_cast(d_gen_gene_size.data()),
-                                                                                           thrust::raw_pointer_cast(d_gen_max_copies.data()),
-                                                                                           thrust::raw_pointer_cast(d_gen_aa_size.data()),
-                                                                                           thrust::raw_pointer_cast(d_gen_aa_int.data()),
-                                                                                           thrust::raw_pointer_cast(d_gen_aa_int_start_index.data()),
-                                                                                           d_buffer_person_update_info_stream);
+      update_all_individuals_kernel_stream_1<<<n_blocks, n_threads, 0, d_streams[s_index]>>>(0,
+                                                                                             batch_size,
+                                                                                             Model::GPU_SCHEDULER->current_time(),
+                                                                                             Model::GPU_RANDOM->d_states,
+                                                                                             Model::CONFIG->parasite_density_level(),
+                                                                                             d_immune_system_information,
+                                                                                             thrust::raw_pointer_cast(d_drug_res_aa_loc.data()),
+                                                                                             thrust::raw_pointer_cast(d_drug_res_aa_loc_index.data()),
+                                                                                             Model::CONFIG->mutation_probability_by_locus(),
+                                                                                             d_gen_mutation_mask,
+                                                                                             thrust::raw_pointer_cast(d_gen_gene_size.data()),
+                                                                                             thrust::raw_pointer_cast(d_gen_max_copies.data()),
+                                                                                             thrust::raw_pointer_cast(d_gen_aa_size.data()),
+                                                                                             thrust::raw_pointer_cast(d_gen_aa_int.data()),
+                                                                                             thrust::raw_pointer_cast(d_gen_aa_start_index.data()),
+                                                                                             d_buffer_person_update_info_stream);
       check_cuda_error(cudaDeviceSynchronize());
       check_cuda_error(cudaMemcpyAsync(thrust::raw_pointer_cast(pi->h_person_update_info().data()) + batch_offset,
                                        &d_buffer_person_update_info_stream[0],
@@ -1185,20 +1164,322 @@ void GPU::PopulationKernel::update_all_individuals() {
                      pi->h_person_update_info().begin() + batch_from,
                      pi->h_person_update_info().begin() + batch_to,
                      AddNewGenotypes(&Model::CONFIG->gpu_genotype_db,
-                                       Model::CONFIG));
+                                     Model::CONFIG));
     LOG_IF(Model::CONFIG->debug_config().enable_debug_text
            && Model::GPU_SCHEDULER->current_time() % Model::CONFIG->debug_config().log_interval == 0,INFO)
-      << fmt::format("[PopulationKernel update_all_individuals] Batch size {} gpu_genotype_db size {}",
+      << fmt::format("[PopulationKernel update_all_individuals_1] Batch size {} gpu_genotype_db size {}",
                      batch_size, Model::CONFIG->gpu_genotype_db.size());
   }
   check_cuda_error(cudaEventRecord (stop_event, 0));
   check_cuda_error(cudaEventSynchronize (stop_event));
   check_cuda_error(cudaEventElapsedTime (&elapsed_time, start_event, stop_event));
   LOG_IF(Model::GPU_SCHEDULER->current_time() % Model::CONFIG->debug_config().log_interval == 0, INFO)
-  << fmt::format("[PopulationKernel::update_all_individuals] Update population all individuals GPU time: {} ms", elapsed_time);
+    << fmt::format("[PopulationKernel::update_all_individuals_1] Update population all individuals GPU time: {} ms", elapsed_time);
 //  for(int i = pi->h_person_update_info().size() - 5; i < pi->h_person_update_info().size(); i++){
 //    LOG_IF(Model::CONFIG->debug_config().enable_debug_text,INFO)
-//      << fmt::format("[PopulationKernel update_all_individuals] AFTER Person {} last update time {} parasites_size {} parasites_genotype_mutated_number {}"
+//      << fmt::format("[PopulationKernel update_all_individuals_1] AFTER Person {} last update time {} parasites_size {} parasites_genotype_mutated_number {}"
+//                     " person_biting {} person_moving {}",
+//                     i,
+//                     pi->h_person_update_info()[i].person_latest_update_time,
+//                     pi->h_person_update_info()[i].parasites_size,
+//                     pi->h_person_update_info()[i].parasites_genotype_mutated_number,
+//                     pi->h_person_update_info()[i].person_current_relative_biting_rate,
+//                     pi->h_person_update_info()[i].person_current_relative_moving_rate);
+//  }
+}
+
+__global__ void update_all_individuals_kernel_stream_2(int offset,
+                                                       int size,
+                                                       int current_time,
+                                                       curandState *d_state,
+                                                       ParasiteDensityLevel h_parasite_density_level,
+                                                       ImmuneSystemInformation *d_immune_system_information,
+                                                       GPU::DrugType::ResistantAALocation *d_drug_res_aa_loc,
+                                                       int *d_drug_res_aa_loc_index,
+                                                       double mutation_probability_by_locus,
+                                                       char *d_gen_mutation_mask,
+                                                       int *d_gen_gene_size,
+                                                       int *d_gen_max_copies,
+                                                       int *d_gen_aa_size,
+                                                       int *d_gen_aa_int,
+                                                       int *d_gen_aa_start_index,
+                                                       GPU::PersonUpdateInfo *d_person_update_info) {
+  int index = offset + threadIdx.x + blockIdx.x * blockDim.x;
+  if (index < offset + size) {
+    curandState local_state = d_state[index];
+
+//    /* Immune */
+//    auto immune_component_temp = 0.0;
+//    if (d_person_update_info[index].immune_system_is_increased) {
+//      //increase I(t) = 1 - (1-I0)e^(-b1*t)
+//      double immune_component_acquire_rate = 0.0;
+//      if (d_person_update_info[index].immune_system_component_type == 1) {
+//        /* from InfantImmuneComponent acquire */
+//        immune_component_acquire_rate = 0.0;
+//      }
+//      if (d_person_update_info[index].immune_system_component_type == 2) {
+//        /* from NonInfantImmuneComponent acquire */
+//        immune_component_acquire_rate = (d_person_update_info[index].person_age > 80)
+//                                        ? d_immune_system_information->acquire_rate_by_age[80]
+//                                        : d_immune_system_information->acquire_rate_by_age[d_person_update_info[index].person_age];
+//      }
+//      immune_component_temp = 1.0 - (1.0 - d_person_update_info[index].immune_system_component_latest_value)
+//                                    * exp(-immune_component_acquire_rate * (current_time - d_person_update_info[index].person_latest_update_time));
+//    } else {
+//      //decrease I(t) = I0 * e ^ (-b2*t);
+//      double immune_component_decay_rate = 0.0;
+//      if (d_person_update_info[index].immune_system_component_type == 1) {
+//        /* from InfantImmuneComponent decay */
+//        immune_component_decay_rate = 0.0315;
+//      }
+//      if (d_person_update_info[index].immune_system_component_type == 2) {
+//        /* from NonInfantImmuneComponent decay */
+//        immune_component_decay_rate = d_immune_system_information->decay_rate;
+//      }
+//      immune_component_temp = d_person_update_info[index].immune_system_component_latest_value
+//                              * exp(-immune_component_decay_rate * (current_time - d_person_update_info[index].person_latest_update_time));
+//      immune_component_temp = (immune_component_temp < 0.00001) ? 0.0 : immune_component_temp;
+//    }
+//    d_person_update_info[index].immune_system_component_latest_value = immune_component_temp;
+//    /* Cutoff */
+//    if (d_person_update_info[index].person_has_drug_in_blood) {
+//      for (int d_index = 0; d_index < d_person_update_info[index].drug_in_blood_size; d_index++) {
+//        const int d_type_id = d_person_update_info[index].drug_in_blood_type_id[d_index];
+//        if (d_type_id >= 0 && d_type_id < d_person_update_info[index].drug_in_blood_size) {
+//          if (d_person_update_info[index].drug_last_update_value[d_type_id] <= DRUG_CUT_OFF_VALUE) {
+//            d_person_update_info[index].drug_in_blood_type_id[d_type_id] = -1;
+//          }
+//        }
+//      }
+//    }
+//    /* Clear cured */
+//    for (int p_index = 0; p_index < d_person_update_info[index].parasites_size; p_index++) {
+//      if (d_person_update_info[index].parasite_id[p_index] != -1) {
+//        if (d_person_update_info[index].parasite_last_update_log10_parasite_density[p_index]
+//            <= h_parasite_density_level.log_parasite_density_cured + 0.00001) {
+//          d_person_update_info[index].parasite_id[p_index] = -1;
+//          d_person_update_info[index].parasite_update_function_type[p_index] = 0;
+//          d_person_update_info[index].parasite_last_update_log10_parasite_density[p_index] = GPU::ClonalParasitePopulation::LOG_ZERO_PARASITE_DENSITY;
+//          d_person_update_info[index].parasite_genotype_fitness_multiple_infection[p_index] = 1.0;
+//          d_person_update_info[index].parasite_gametocyte_level[p_index] = 0.0;
+//          d_person_update_info[index].parasite_log10_infectious_density[p_index] = GPU::ClonalParasitePopulation::LOG_ZERO_PARASITE_DENSITY;
+//          d_person_update_info[index].parasites_current_index -= 1;
+//          d_person_update_info[index].parasites_size -= 1;
+//        } else {
+//          /* From GPU::ClonalParasitePopulation::get_log10_infectious_density() */
+//          if (is_equal(d_person_update_info[index].parasite_last_update_log10_parasite_density[p_index],
+//                       d_person_update_info[index].LOG_ZERO_PARASITE_DENSITY,
+//                       d_person_update_info[index].limit_epsilon)
+//              || is_equal(d_person_update_info[index].parasite_last_update_log10_parasite_density[p_index],
+//                          0.0,
+//                          d_person_update_info[index].limit_epsilon)) {
+//            d_person_update_info[index].parasite_last_update_log10_parasite_density[p_index]
+//                = d_person_update_info[index].LOG_ZERO_PARASITE_DENSITY;
+//          }
+//          d_person_update_info[index].parasite_log10_infectious_density[p_index]
+//              = d_person_update_info[index].parasite_last_update_log10_parasite_density[p_index]
+//                + log10(d_person_update_info[index].parasite_gametocyte_level[p_index]);
+//
+//          /* From GPU::SingleHostClonalParasitePopulations::clear_cured_parasites() */
+//          if (d_person_update_info[index].parasites_log10_total_infectious_density == d_person_update_info[index].LOG_ZERO_PARASITE_DENSITY) {
+//            d_person_update_info[index].parasites_log10_total_infectious_density
+//                = d_person_update_info[index].parasite_log10_infectious_density[p_index];
+//          } else {
+//            d_person_update_info[index].parasites_log10_total_infectious_density
+//                += log10(pow(10, d_person_update_info[index].parasite_log10_infectious_density[p_index]
+//                                 - d_person_update_info[index].parasites_log10_total_infectious_density) + 1);
+//          }
+//        }
+//      }
+//    }
+//    /* Change state */
+//    if (d_person_update_info[index].parasites_size == 0) {
+//      if (d_person_update_info[index].person_liver_parasite_genotype[0] == '\0') {
+//        d_person_update_info[index].person_host_state = static_cast<int>(GPU::Person::SUSCEPTIBLE);
+//      } else {
+//        d_person_update_info[index].person_host_state = static_cast<int>(GPU::Person::EXPOSED);
+//      }
+//      d_person_update_info[index].immune_system_is_increased = false;
+//    } else {
+//      d_person_update_info[index].immune_system_is_increased = true;
+//    }
+//    if (d_person_update_info[index].person_using_age_dependent_biting_level) {
+//      d_person_update_info[index].person_current_relative_biting_rate
+//          = d_person_update_info[index].person_innate_relative_biting_rate
+//            * get_age_dependent_biting_factor(d_person_update_info[index].person_age,
+//                                              d_person_update_info[index].person_birthday,
+//                                              current_time,
+//                                              365);
+//    } else {
+//      d_person_update_info[index].person_current_relative_biting_rate
+//          = d_person_update_info[index].person_innate_relative_biting_rate;
+//    }
+    /* Latest update time */
+    d_person_update_info[index].person_latest_update_time = current_time;
+//        if(index == offset + size - 1) printf("GPU all_individuals_kernel_stream (%d -> %d) index %d last_time %d curr_time %d\n",
+//                                              offset,offset+size,index,d_person_update_info[index].person_latest_update_time,current_time);
+    d_state[index] = local_state;
+    __syncthreads();
+  }
+}
+
+void GPU::PopulationKernel::update_all_individuals_2() {
+//  for(int i = pi->h_person_update_info().size() - 5; i < pi->h_person_update_info().size(); i++){
+//    LOG_IF(Model::CONFIG->debug_config().enable_debug_text,INFO)
+//      << fmt::format("[PopulationKernel update_all_individuals_2] BEFORE Person {} last update time {} parasites_size {} parasites_genotype_mutated_number {}"
+//                     " person_biting {} person_moving {}",
+//                     i,
+//                     pi->h_person_update_info()[i].person_latest_update_time,
+//                     pi->h_person_update_info()[i].parasites_size,
+//                     pi->h_person_update_info()[i].parasites_genotype_mutated_number,
+//                     pi->h_person_update_info()[i].person_current_relative_biting_rate,
+//                     pi->h_person_update_info()[i].person_current_relative_moving_rate);
+//  }
+  check_cuda_error(cudaEventRecord(start_event, 0));
+  for(auto [g_index, genotype] : Model::CONFIG->gpu_genotype_db){
+    for(auto [d_index, drug] : *Model::CONFIG->gpu_drug_db()){
+      printf("Genotype %lu Drug %d EC50: %f\n",g_index,d_index,genotype->get_EC50_power_n(drug));
+      char* temp_aa_seq = (char*)malloc(genotype->aa_sequence.size() * sizeof(char));
+      std::copy(genotype->aa_sequence.begin(),
+                genotype->aa_sequence.end(),
+                temp_aa_seq);
+      strcpy(temp_aa_seq,genotype->aa_sequence.c_str());
+      pi->h_genotype_db().push_back(thrust::make_tuple(g_index,temp_aa_seq,genotype->get_EC50_power_n(drug)));
+      free(temp_aa_seq);
+    }
+  }
+  d_genotype_ec50_power_n_table.resize(pi->h_genotype_db().size());
+  thrust::copy(pi->h_genotype_db().begin(),pi->h_genotype_db().end(),d_genotype_ec50_power_n_table.begin());
+  LOG_IF(Model::CONFIG->debug_config().enable_debug_text
+         && Model::GPU_SCHEDULER->current_time() % Model::CONFIG->debug_config().log_interval == 0, INFO)
+    << fmt::format("[PopulationKernel update_all_individuals_2] Start size {} {}GBs",
+                   pi->h_person_update_info().size(),
+                   pi->h_person_update_info().size() * sizeof(GPU::PersonUpdateInfo) / 1e9);
+  int batch_size = (pi->h_person_update_info().size() < Model::CONFIG->gpu_config().n_people_1_batch)
+                   ? pi->h_person_update_info().size() : Model::CONFIG->gpu_config().n_people_1_batch;
+  int batch_offset = 0;
+  for (auto [batch_remain, b_index] = std::tuple{pi->h_person_update_info().size(), 0}; batch_remain > 0; batch_remain -= batch_size, b_index++) {
+    batch_size = (batch_remain < batch_size) ? batch_remain : batch_size;
+    int batch_from = pi->h_person_update_info().size() - batch_remain;
+    int batch_to = batch_from + batch_size;
+    const int batch_bytes = batch_size * sizeof(GPU::PersonUpdateInfo);
+    check_cuda_error(cudaMalloc((void **) &d_buffer_person_update_info_stream, batch_bytes));
+//    LOG_IF(Model::CONFIG->debug_config().enable_debug_text
+//           && Model::GPU_SCHEDULER->current_time() % Model::CONFIG->debug_config().log_interval == 0,INFO)
+//           << fmt::format("[PopulationKernel update_all_individuals_2] Work batch size {} remain {}, from {} to {} (of {})",
+//                                batch_size, batch_remain, batch_from, batch_to,
+//                                pi->h_person_update_info().size());
+    /*
+     * Check if batch_size > Model::CONFIG->gpu_config().n_people_1_batch / 2
+     * If true, then use streams
+     * */
+    if(batch_size > (Model::CONFIG->gpu_config().n_people_1_batch / 2)){
+      int stream_size = batch_size / Model::CONFIG->gpu_config().n_streams;
+      int stream_offset = 0;
+      for (auto [stream_remain, s_index] = std::tuple{batch_size, 0}; stream_remain > 0; stream_remain -= stream_size, s_index++) {
+        if (s_index == Model::CONFIG->gpu_config().n_streams - 1) {
+          stream_size = stream_remain;
+        } else {
+          stream_size = (stream_remain < stream_size) ? stream_remain : stream_size;
+        }
+        const int stream_bytes = stream_size * sizeof(GPU::PersonUpdateInfo);
+        const int n_threads = (stream_size < Model::CONFIG->gpu_config().n_threads) ? stream_size : Model::CONFIG->gpu_config().n_threads;
+        const int n_blocks = (stream_size + n_threads - 1) / n_threads;
+        Model::GPU_RANDOM->init(stream_size);
+//        LOG_IF(Model::CONFIG->debug_config().enable_debug_text
+//               && Model::GPU_SCHEDULER->current_time() % Model::CONFIG->debug_config().log_interval == 0,INFO)
+//          << fmt::format("[PopulationKernel update_all_individuals_2]   Work stream {} size {}, from {} to {} offset {} n_threads {} n_blocks {} per stream",
+//                         s_index, stream_size, batch_size - stream_remain, batch_size - stream_remain + stream_size,
+//                         stream_offset,
+//                         n_threads,
+//                         n_blocks);
+        check_cuda_error(cudaMemcpyAsync(&d_buffer_person_update_info_stream[stream_offset],
+                                         thrust::raw_pointer_cast(pi->h_person_update_info().data()) + batch_offset,
+                                         stream_bytes,
+                                         cudaMemcpyHostToDevice,
+                                         d_streams[s_index]));
+        update_all_individuals_kernel_stream_2<<<n_blocks, n_threads, 0, d_streams[s_index]>>>(stream_offset,
+                                                                                             stream_size,
+                                                                                             Model::GPU_SCHEDULER->current_time(),
+                                                                                             Model::GPU_RANDOM->d_states,
+                                                                                             Model::CONFIG->parasite_density_level(),
+                                                                                             d_immune_system_information,
+                                                                                             thrust::raw_pointer_cast(d_drug_res_aa_loc.data()),
+                                                                                             thrust::raw_pointer_cast(d_drug_res_aa_loc_index.data()),
+                                                                                             Model::CONFIG->mutation_probability_by_locus(),
+                                                                                             d_gen_mutation_mask,
+                                                                                             thrust::raw_pointer_cast(d_gen_gene_size.data()),
+                                                                                             thrust::raw_pointer_cast(d_gen_max_copies.data()),
+                                                                                             thrust::raw_pointer_cast(d_gen_aa_size.data()),
+                                                                                             thrust::raw_pointer_cast(d_gen_aa_int.data()),
+                                                                                             thrust::raw_pointer_cast(d_gen_aa_start_index.data()),
+                                                                                             d_buffer_person_update_info_stream);
+        check_cuda_error(cudaDeviceSynchronize());
+        check_cuda_error(cudaMemcpyAsync(thrust::raw_pointer_cast(pi->h_person_update_info().data()) + batch_offset,
+                                         &d_buffer_person_update_info_stream[stream_offset],
+                                         stream_bytes,
+                                         cudaMemcpyDeviceToHost,
+                                         d_streams[s_index]));
+        check_cuda_error(cudaGetLastError());
+        stream_offset += stream_size;
+        batch_offset += stream_size;
+      }
+      for (int s_index = 0; s_index < Model::CONFIG->gpu_config().n_streams; s_index++) {
+        check_cuda_error(cudaStreamSynchronize(d_streams[s_index]));
+      }
+    }
+    else{
+      const int n_threads = (batch_size < Model::CONFIG->gpu_config().n_threads) ? batch_size : Model::CONFIG->gpu_config().n_threads;
+      const int n_blocks = (batch_size + n_threads - 1) / n_threads;
+      Model::GPU_RANDOM->init(batch_size);
+      int s_index = 0;
+//      LOG_IF(Model::CONFIG->debug_config().enable_debug_text
+//             && Model::GPU_SCHEDULER->current_time() % Model::CONFIG->debug_config().log_interval == 0,INFO)
+//        << fmt::format("[PopulationKernel update_all_individuals_2]   Last batch {} size {}, from {} to {} offset {} n_threads {} n_blocks {} per batch",
+//                       s_index, batch_size, batch_from, batch_to,
+//                       batch_offset,
+//                       n_threads,
+//                       n_blocks);
+      check_cuda_error(cudaMemcpyAsync(&d_buffer_person_update_info_stream[0],
+                                       thrust::raw_pointer_cast(pi->h_person_update_info().data()) + batch_offset,
+                                       batch_bytes,
+                                       cudaMemcpyHostToDevice,
+                                       d_streams[s_index]));
+      update_all_individuals_kernel_stream_2<<<n_blocks, n_threads, 0, d_streams[s_index]>>>(0,
+                                                                                           batch_size,
+                                                                                           Model::GPU_SCHEDULER->current_time(),
+                                                                                           Model::GPU_RANDOM->d_states,
+                                                                                           Model::CONFIG->parasite_density_level(),
+                                                                                           d_immune_system_information,
+                                                                                           thrust::raw_pointer_cast(d_drug_res_aa_loc.data()),
+                                                                                           thrust::raw_pointer_cast(d_drug_res_aa_loc_index.data()),
+                                                                                           Model::CONFIG->mutation_probability_by_locus(),
+                                                                                           d_gen_mutation_mask,
+                                                                                           thrust::raw_pointer_cast(d_gen_gene_size.data()),
+                                                                                           thrust::raw_pointer_cast(d_gen_max_copies.data()),
+                                                                                           thrust::raw_pointer_cast(d_gen_aa_size.data()),
+                                                                                           thrust::raw_pointer_cast(d_gen_aa_int.data()),
+                                                                                           thrust::raw_pointer_cast(d_gen_aa_start_index.data()),
+                                                                                           d_buffer_person_update_info_stream);
+      check_cuda_error(cudaDeviceSynchronize());
+      check_cuda_error(cudaMemcpyAsync(thrust::raw_pointer_cast(pi->h_person_update_info().data()) + batch_offset,
+                                       &d_buffer_person_update_info_stream[0],
+                                       batch_bytes,
+                                       cudaMemcpyDeviceToHost,
+                                       d_streams[s_index]));
+      check_cuda_error(cudaGetLastError());
+      batch_offset += batch_size;
+    }
+    check_cuda_error(cudaFree(d_buffer_person_update_info_stream));
+  }
+  check_cuda_error(cudaEventRecord (stop_event, 0));
+  check_cuda_error(cudaEventSynchronize (stop_event));
+  check_cuda_error(cudaEventElapsedTime (&elapsed_time, start_event, stop_event));
+  LOG_IF(Model::GPU_SCHEDULER->current_time() % Model::CONFIG->debug_config().log_interval == 0, INFO)
+  << fmt::format("[PopulationKernel::update_all_individuals_2] Update population all individuals GPU time: {} ms", elapsed_time);
+//  for(int i = pi->h_person_update_info().size() - 5; i < pi->h_person_update_info().size(); i++){
+//    LOG_IF(Model::CONFIG->debug_config().enable_debug_text,INFO)
+//      << fmt::format("[PopulationKernel update_all_individuals_2] AFTER Person {} last update time {} parasites_size {} parasites_genotype_mutated_number {}"
 //                     " person_biting {} person_moving {}",
 //                     i,
 //                     pi->h_person_update_info()[i].person_latest_update_time,

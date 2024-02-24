@@ -37,20 +37,20 @@ void GPU::UpdateWhenDrugIsPresentEvent::schedule_event(GPU::Scheduler *scheduler
 void GPU::UpdateWhenDrugIsPresentEvent::execute() {
   auto *person = dynamic_cast<GPU::Person *>(dispatcher);
   if (person->drugs_in_blood()->size() > 0) {
-    LOG_IF(person->index() >= 1040 && person->index() <= 1045 ,INFO)
+    LOG_IF(person->index() >= 1000 && person->index() <= 1045 ,INFO)
     << fmt::format("GPU::UpdateWhenDrugIsPresentEvent::execute() IF > 0 {}",person->index());
     if (person->all_clonal_parasite_populations()->contain(clinical_caused_parasite_) && person->host_state()==
                                                                                                  GPU::Person::CLINICAL) {
       if (clinical_caused_parasite_->last_update_log10_parasite_density() <= Model::CONFIG->parasite_density_level().
           log_parasite_density_asymptomatic) {
         person->set_host_state(GPU::Person::ASYMPTOMATIC);
-          LOG_IF(person->index() >= 1040 && person->index() <= 1045 ,INFO)
+          LOG_IF(person->index() >= 1000 && person->index() <= 1045 ,INFO)
           << fmt::format("GPU::UpdateWhenDrugIsPresentEvent::execute() IF > 0 set_host_state {}",person->index());
       }
     }
     person->schedule_update_by_drug_event(clinical_caused_parasite_);
   } else {
-      LOG_IF(person->index() >= 1040 && person->index() <= 1045 ,INFO)
+      LOG_IF(person->index() >= 1000 && person->index() <= 1045 ,INFO)
       << fmt::format("GPU::UpdateWhenDrugIsPresentEvent::execute() ELSE {}",person->index());
     //        no drug in blood, reset the status of drug Update parasite
     // the drug update parasite is inserted into blood when  there is still drug in blood and also the clinical cause parasite
@@ -62,7 +62,7 @@ void GPU::UpdateWhenDrugIsPresentEvent::execute() {
         //This makes parasite density fall back to asymptomatic level after clinical ended.
 //        person->determine_relapse_or_not(blood_parasite);
         blood_parasite->set_update_function(Model::MODEL->gpu_immunity_clearance_update_function());
-        LOG_IF(person->index() >= 1040 && person->index() <= 1045 ,INFO)
+        LOG_IF(person->index() >= 1000 && person->index() <= 1045 ,INFO)
         << fmt::format("GPU::UpdateWhenDrugIsPresentEvent::execute() ELSE set_update_function {}",person->index());
       }
     }

@@ -383,7 +383,8 @@ void Model::begin_time_step() {
 
 void Model::daily_update() {
 //  gpu_population_->update_all_individuals();
-  gpu_population_kernel_->update_all_individuals();
+  gpu_population_kernel_->update_all_individuals_1();
+  gpu_population_kernel_->update_all_individuals_2();
 
 //
 //  // for safety remove all dead by calling perform_death_event
@@ -398,8 +399,8 @@ void Model::daily_update() {
 //  gpu_population_kernel_->update_current_foi();
 
   gpu_population_->perform_infection_event();
-//  gpu_population_->perform_circulation_event();
-  gpu_population_kernel_->perform_circulation_event();
+  gpu_population_->perform_circulation_event();
+//  gpu_population_kernel_->perform_circulation_event();
 
 //  // infect new mosquito cohort in prmc must be run after population perform infection event and update current foi
 //  // because the prmc at the tracking index will be overridden with new cohort to use N days later and

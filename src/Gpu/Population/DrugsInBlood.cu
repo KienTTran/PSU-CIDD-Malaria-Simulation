@@ -50,27 +50,17 @@ GPU::Drug *GPU::DrugsInBlood::add_drug(GPU::Drug *drug) {
     delete drug;
   }
 
-  person_->person_index_gpu->h_person_update_info()[person_->index()].drug_starting_value[typeID] = drugs_->at(typeID)->starting_value();
-  person_->person_index_gpu->h_person_update_info()[person_->index()].drug_dosing_days[typeID] = drugs_->at(typeID)->dosing_days();
-  person_->person_index_gpu->h_person_update_info()[person_->index()].drug_last_update_value[typeID] = drugs_->at(typeID)->last_update_value();
-  person_->person_index_gpu->h_person_update_info()[person_->index()].drug_last_update_time[typeID] = drugs_->at(typeID)->last_update_time();
-  person_->person_index_gpu->h_person_update_info()[person_->index()].drug_start_time[typeID] = drugs_->at(typeID)->start_time();
-  person_->person_index_gpu->h_person_update_info()[person_->index()].drug_end_time[typeID] = drugs_->at(typeID)->end_time();
-  person_->person_index_gpu->h_person_update_info()[person_->index()].drug_half_life[typeID] = drugs_->at(typeID)->drug_type()->drug_half_life();
-  person_->person_index_gpu->h_person_update_info()[person_->index()].drug_rand_uniform_1[typeID] = Model::RANDOM->random_uniform_double(-0.2, 0.2);
-  person_->person_index_gpu->h_person_update_info()[person_->index()].drug_rand_uniform_2[typeID] = Model::RANDOM->random_uniform_double(0, 0.1);
-  person_->person_index_gpu->h_person_update_info()[person_->index()].drug_in_blood_type_id[typeID] = typeID;
-  person_->person_index_gpu->h_person_update_info()[person_->index()].drug_in_blood_size = drugs_->size();
-  person_->person_index_gpu->h_person_update_info()[person_->index()].person_has_drug_in_blood = true;
+  auto &person_update_info = person_->person_index_gpu->h_person_update_info()[person_->index()];
+  person_update_info.add_drug_in_blood(drugs_,typeID);
 
-  LOG_IF(person_->index() >= 1040 && person_->index() <= 1045,INFO)
+  LOG_IF(person_->index() >= 1000 && person_->index() <= 1085,INFO)
     << fmt::format("GPU::DrugsInBlood::add_drug() person_->index() = {} {} {} {} {} {} {} {}",
            person_->index(),drugs_->size(),typeID,
-           person_->person_index_gpu->h_person_update_info()[person_->index()].drug_start_time[typeID],
-           person_->person_index_gpu->h_person_update_info()[person_->index()].drug_last_update_time[typeID],
-           person_->person_index_gpu->h_person_update_info()[person_->index()].drug_starting_value[typeID],
-           person_->person_index_gpu->h_person_update_info()[person_->index()].drug_last_update_value[typeID],
-           person_->person_index_gpu->h_person_update_info()[person_->index()].drug_half_life[typeID]);
+           person_update_info.drug_start_time[typeID],
+           person_update_info.drug_last_update_time[typeID],
+           person_update_info.drug_starting_value[typeID],
+           person_update_info.drug_last_update_value[typeID],
+           person_update_info.drug_half_life[typeID]);
 
   return drugs_->at(typeID);
 }
@@ -126,7 +116,7 @@ void GPU::DrugsInBlood::update() const {
 
 void GPU::DrugsInBlood::clear_cut_off_drugs_by_event(GPU::Event *event) const {
   if (!drugs_->empty()) {
-    LOG_IF(person_->index() >= 1040 && person_->index() <= 1045,INFO)
+    LOG_IF(person_->index() >= 1000 && person_->index() <= 1085,INFO)
       << fmt::format("GPU::DrugsInBlood::clear_cut_off_drugs_by_event() before person_->index() = {} {}",
              person_->index(),drugs_->size());
     for (auto pos = drugs_->begin(); pos!=drugs_->end();) {
@@ -142,7 +132,7 @@ void GPU::DrugsInBlood::clear_cut_off_drugs_by_event(GPU::Event *event) const {
         ++pos;
       }
     }
-    LOG_IF(person_->index() >= 1040 && person_->index() <= 1045,INFO)
+    LOG_IF(person_->index() >= 1000 && person_->index() <= 1085,INFO)
       << fmt::format("GPU::DrugsInBlood::clear_cut_off_drugs_by_event() after person_->index() = {} {}",
              person_->index(),drugs_->size());
   }
