@@ -170,11 +170,12 @@ void Mosquito::infect_new_cohort_in_PRMC(Config *config, Random *random, Populat
              * Print our recombination for counting later
              * */
             auto resistant_tracker_info = std::make_tuple(Model::SCHEDULER->current_time(),parent_genotypes[0]->genotype_id, parent_genotypes[1]->genotype_id, sampled_genotype->genotype_id);
-            if (std::find(Model::DATA_COLLECTOR->mosquito_recombined_resistant_genotype_tracker[loc].begin(),
-                          Model::DATA_COLLECTOR->mosquito_recombined_resistant_genotype_tracker[loc].end(), resistant_tracker_info)
-                == Model::DATA_COLLECTOR->mosquito_recombined_resistant_genotype_tracker[loc].end()){
-                Model::DATA_COLLECTOR->mosquito_recombined_resistant_genotype_tracker[loc].push_back(resistant_tracker_info);
-            }
+//            if (std::find(Model::DATA_COLLECTOR->mosquito_recombined_resistant_genotype_tracker[loc].begin(),
+//                          Model::DATA_COLLECTOR->mosquito_recombined_resistant_genotype_tracker[loc].end(), resistant_tracker_info)
+//                == Model::DATA_COLLECTOR->mosquito_recombined_resistant_genotype_tracker[loc].end()){
+//                Model::DATA_COLLECTOR->mosquito_recombined_resistant_genotype_tracker[loc].push_back(resistant_tracker_info);
+//            }
+            Model::DATA_COLLECTOR->mosquito_recombined_resistant_genotype_tracker[loc].push_back(resistant_tracker_info);
         }
       //Count number of bites
       Model::DATA_COLLECTOR->mosquito_recombination_events_count()[loc][1]++;

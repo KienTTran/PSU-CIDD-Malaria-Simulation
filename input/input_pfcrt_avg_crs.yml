@@ -174,7 +174,7 @@ circulation_info:
     mean: 5
     sd: 10
 
-mutation_mask: "||||111||1111111,0||||||000000000010|1"
+mutation_mask: "||||111||11111100,0||||||000000000010|1"
 
 # the appearance of gene should be in order
 # the appearance of gene should be in order
@@ -260,13 +260,13 @@ pf_genotype_info:
             daily_crs: [ 0, 0.003875969 ]
             multiplicative_effect_on_EC50:
               - drug_id: 3
-                factors: [ 1, 1.7 ]
+                factors: [ 1, 1.0 ] #double check with M
           - position: 353
             amino_acids: [ 'G', 'V' ]
             daily_crs: [ 0, 0.003875969 ]
             multiplicative_effect_on_EC50:
               - drug_id: 3
-                factors: [ 1, 1.7 ]
+                factors: [ 1, 1.0 ] #double check with M
       - name: "Pfkaf"
         aa_positions:
           - position: 500

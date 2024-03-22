@@ -1,0 +1,981 @@
+age_bracket_prob_individual_present_at_mda:
+- 10
+- 40
+age_structure:
+- 1
+- 2
+- 3
+- 4
+- 5
+- 6
+- 7
+- 8
+- 9
+- 10
+- 11
+- 15
+- 20
+- 60
+- 100
+allow_new_coinfection_to_cause_symtoms: true
+artemisinin_drug_id: 0
+artificial_rescaling_of_population_size: 1.0
+birth_rate: 0.0
+circulation_info:
+  circulation_percent: 0.0
+  length_of_stay:
+    mean: 5
+    sd: 10
+  max_relative_moving_value: 35
+  moving_level_distribution:
+    Exponential:
+      scale: 0.17
+    Gamma:
+      mean: 5
+      sd: 10
+    distribution: Gamma
+  number_of_moving_levels: 100
+days_mature_gametocyte_over_five: 6
+days_mature_gametocyte_under_five: 4
+days_to_clinical_over_five: 6
+days_to_clinical_under_five: 4
+death_rate_by_age_class:
+- 0.0
+- 0.0
+- 0.0
+- 0.0
+- 0.0
+- 0.0
+- 0.0
+- 0.0
+- 0.0
+- 0.0
+- 0.0
+- 0.0
+- 0.0
+- 0.0
+- 0.0
+drug_db:
+  0:
+    age_specific_drug_concentration_sd:
+    - 0.4
+    - 0.4
+    - 0.4
+    - 0.4
+    - 0.4
+    - 0.4
+    - 0.4
+    - 0.4
+    - 0.4
+    - 0.4
+    - 0.4
+    - 0.4
+    - 0.4
+    - 0.4
+    - 0.4
+    base_EC50: 0.75
+    half_life: 0.0
+    k: 4
+    maximum_parasite_killing_rate: 0.999
+    n: 25
+    name: artemisinin
+  1:
+    age_specific_drug_absorption:
+    - 0.7
+    - 0.7
+    - 0.85
+    - 0.85
+    - 0.85
+    - 0.85
+    - 0.85
+    - 0.85
+    - 0.85
+    - 0.85
+    - 1.0
+    - 1.0
+    - 1.0
+    - 1.0
+    - 1.0
+    age_specific_drug_concentration_sd:
+    - 0.4
+    - 0.4
+    - 0.4
+    - 0.4
+    - 0.4
+    - 0.4
+    - 0.4
+    - 0.4
+    - 0.4
+    - 0.4
+    - 0.4
+    - 0.4
+    - 0.4
+    - 0.4
+    - 0.4
+    base_EC50: 0.6
+    half_life: 4.5
+    k: 4
+    maximum_parasite_killing_rate: 0.99
+    n: 20
+    name: lumefantrine
+  2:
+    age_specific_drug_concentration_sd:
+    - 0.4
+    - 0.4
+    - 0.4
+    - 0.4
+    - 0.4
+    - 0.4
+    - 0.4
+    - 0.4
+    - 0.4
+    - 0.4
+    - 0.4
+    - 0.4
+    - 0.4
+    - 0.4
+    - 0.4
+    base_EC50: 0.5
+    half_life: 9.0
+    k: 4
+    maximum_parasite_killing_rate: 0.95
+    n: 19
+    name: amodiaquine
+  3:
+    age_specific_drug_concentration_sd:
+    - 0.4
+    - 0.4
+    - 0.4
+    - 0.4
+    - 0.4
+    - 0.4
+    - 0.4
+    - 0.4
+    - 0.4
+    - 0.4
+    - 0.4
+    - 0.4
+    - 0.4
+    - 0.4
+    - 0.4
+    base_EC50: 0.58
+    half_life: 28.0
+    k: 4
+    maximum_parasite_killing_rate: 0.9
+    n: 15
+    name: piperaquine
+  4:
+    age_specific_drug_concentration_sd:
+    - 0.4
+    - 0.4
+    - 0.4
+    - 0.4
+    - 0.4
+    - 0.4
+    - 0.4
+    - 0.4
+    - 0.4
+    - 0.4
+    - 0.4
+    - 0.4
+    - 0.4
+    - 0.4
+    - 0.4
+    base_EC50: 0.45
+    half_life: 21.0
+    k: 4
+    maximum_parasite_killing_rate: 0.9
+    n: 15
+    name: Mefloquine
+    resistant_genes:
+    - Pfmdr1
+  5:
+    age_specific_drug_concentration_sd:
+    - 0.4
+    - 0.4
+    - 0.4
+    - 0.4
+    - 0.4
+    - 0.4
+    - 0.4
+    - 0.4
+    - 0.4
+    - 0.4
+    - 0.4
+    - 0.4
+    - 0.4
+    - 0.4
+    - 0.4
+    base_EC50: 1.08
+    half_life: 6.5
+    k: 4
+    maximum_parasite_killing_rate: 0.9
+    n: 15
+    name: SP
+    resistant_genes: []
+  6:
+    age_specific_drug_concentration_sd:
+    - 0.4
+    - 0.4
+    - 0.4
+    - 0.4
+    - 0.4
+    - 0.4
+    - 0.4
+    - 0.4
+    - 0.4
+    - 0.4
+    - 0.4
+    - 0.4
+    - 0.4
+    - 0.4
+    - 0.4
+    base_EC50: 0.72
+    half_life: 10
+    k: 4
+    maximum_parasite_killing_rate: 0.95
+    n: 19
+    name: CQ
+  7:
+    age_specific_drug_concentration_sd:
+    - 0.4
+    - 0.4
+    - 0.4
+    - 0.4
+    - 0.4
+    - 0.4
+    - 0.4
+    - 0.4
+    - 0.4
+    - 0.4
+    - 0.4
+    - 0.4
+    - 0.4
+    - 0.4
+    - 0.4
+    base_EC50: 0.55
+    half_life: 1.6
+    k: 4
+    maximum_parasite_killing_rate: 0.99
+    n: 15
+    name: KAF156
+  8:
+    age_specific_drug_concentration_sd:
+    - 0.4
+    - 0.4
+    - 0.4
+    - 0.4
+    - 0.4
+    - 0.4
+    - 0.4
+    - 0.4
+    - 0.4
+    - 0.4
+    - 0.4
+    - 0.4
+    - 0.4
+    - 0.4
+    - 0.4
+    base_EC50: 0.68
+    half_life: 7
+    k: 4
+    maximum_parasite_killing_rate: 0.8
+    n: 15
+    name: generic
+ending_date: 1990/1/29
+events:
+- info:
+  - day: 1990/1/1
+  name: turn_off_mutation
+external_population_circulation_information:
+  circulation_percent:
+  - 0.0
+  - 0.01
+  - 0.01
+  - 0.01
+  - 0.01
+  daily_EIR:
+  - 0.01
+  - 0.01
+  - 0.01
+  - 0.01
+  - 0.1
+  length_of_stay:
+    mean: 5
+    sd: 10
+  max_relative_moving_value: 35
+  moving_level_distribution:
+    Exponential:
+      scale: 0.17
+    Gamma:
+      mean: 5
+      sd: 10
+    distribution: Gamma
+  number_of_moving_levels: 100
+  seasonal_EIR:
+    a:
+    - 1
+    min_value: 0.1
+    period: 360
+    phi:
+    - 180
+fraction_mosquitoes_interrupted_feeding: 0.0
+gametocyte_level_full: 1.0
+gametocyte_level_under_artemisinin_action: 1.0
+immune_system_information:
+  age_mature_immunity: 10
+  b1: 0.00125
+  b2: 0.0025
+  duration_for_fully_immune: 60
+  duration_for_naive: 300
+  factor_effect_age_mature_immunity: 0.3
+  immune_effect_on_progression_to_clinical: 5.4
+  immune_inflation_rate: 0.01
+  max_clinical_probability: 0.99
+  mean_initial_condition: 0.1
+  min_clinical_probability: 0.05
+  sd_initial_condition: 0.1
+inflation_factor: 0.01
+initial_age_structure:
+- 1
+- 2
+- 3
+- 4
+- 5
+- 6
+- 7
+- 8
+- 9
+- 10
+- 11
+- 12
+- 13
+- 14
+- 15
+- 25
+- 35
+- 45
+- 55
+- 65
+- 100
+initial_parasite_info:
+- location_id: -1
+  parasite_info: []
+initial_strategy_id: 0
+location_db:
+  age_distribution_by_location:
+  - - 0.0334
+    - 0.03
+    - 0.0329
+    - 0.0324
+    - 0.0332
+    - 0.0314
+    - 0.0316
+    - 0.031
+    - 0.0285
+    - 0.0256
+    - 0.0298
+    - 0.0212
+    - 0.0321
+    - 0.0228
+    - 0.023
+    - 0.1906
+    - 0.1403
+    - 0.0966
+    - 0.0605
+    - 0.0344
+    - 0.0387
+  beta_by_location:
+  - 0.0
+  location_info:
+  - - 0
+    - 0
+    - 0
+  p_treatment_for_less_than_5_by_location:
+  - 1
+  p_treatment_for_more_than_5_by_location:
+  - 1
+  population_size_by_location:
+  - 10000
+lumefantrine_drug_id: 2
+mda_therapy_id: 8
+mean_prob_individual_present_at_mda:
+- 0.85
+- 0.75
+- 0.85
+min_dosing_days: 1
+mortality_when_treatment_fail_by_age_class:
+- -1.0
+- -1.0
+- -1.0
+- -1.0
+- -1.0
+- -1.0
+- -1.0
+- -1.0
+- -1.0
+- -1.0
+- -1.0
+- -1.0
+- -1.0
+- -1.0
+- -1.0
+mosquito_config:
+  interrupted_feeding_rate:
+  - 0.19
+  prmc_size: 100
+mutation_mask: '||||000||0111111,0||||||000000000010|1'
+mutation_probability_by_locus: 0.001
+number_of_age_classes: 15
+number_of_tracking_days: 11
+override_ec50_patterns:
+- drug_id: 1
+  ec50: 0.8
+  pattern: '||||NY1||K......,.||||||............|.'
+- drug_id: 1
+  ec50: 0.67
+  pattern: '||||YY1||K......,.||||||............|.'
+- drug_id: 1
+  ec50: 0.9
+  pattern: '||||NF1||K......,.||||||............|.'
+- drug_id: 1
+  ec50: 0.8
+  pattern: '||||YF1||K......,.||||||............|.'
+- drug_id: 1
+  ec50: 1.0
+  pattern: '||||NY2||K......,.||||||............|.'
+- drug_id: 1
+  ec50: 0.87
+  pattern: '||||YY2||K......,.||||||............|.'
+- drug_id: 1
+  ec50: 1.1
+  pattern: '||||NF2||K......,.||||||............|.'
+- drug_id: 1
+  ec50: 1.0
+  pattern: '||||YF2||K......,.||||||............|.'
+- drug_id: 1
+  ec50: 0.75
+  pattern: '||||NY1||T......,.||||||............|.'
+- drug_id: 1
+  ec50: 0.6
+  pattern: '||||YY1||T......,.||||||............|.'
+- drug_id: 1
+  ec50: 0.85
+  pattern: '||||NF1||T......,.||||||............|.'
+- drug_id: 1
+  ec50: 0.75
+  pattern: '||||YF1||T......,.||||||............|.'
+- drug_id: 1
+  ec50: 0.95
+  pattern: '||||NY2||T......,.||||||............|.'
+- drug_id: 1
+  ec50: 0.8
+  pattern: '||||YY2||T......,.||||||............|.'
+- drug_id: 1
+  ec50: 1.05
+  pattern: '||||NF2||T......,.||||||............|.'
+- drug_id: 1
+  ec50: 0.95
+  pattern: '||||YF2||T......,.||||||............|.'
+- drug_id: 2
+  ec50: 0.62
+  pattern: '||||NY.||K......,.||||||............|.'
+- drug_id: 2
+  ec50: 0.85
+  pattern: '||||YY.||K......,.||||||............|.'
+- drug_id: 2
+  ec50: 0.5
+  pattern: '||||NF.||K......,.||||||............|.'
+- drug_id: 2
+  ec50: 0.775
+  pattern: '||||YF.||K......,.||||||............|.'
+- drug_id: 2
+  ec50: 0.7
+  pattern: '||||NY.||T......,.||||||............|.'
+- drug_id: 2
+  ec50: 0.9
+  pattern: '||||YY.||T......,.||||||............|.'
+- drug_id: 2
+  ec50: 0.65
+  pattern: '||||NF.||T......,.||||||............|.'
+- drug_id: 2
+  ec50: 0.82
+  pattern: '||||YF.||T......,.||||||............|.'
+p_compliance: 1
+p_infection_from_an_infectious_bite: 0.1
+p_relapse: 0.01
+parasite_density_level:
+  log_parasite_density_asymptomatic: 3
+  log_parasite_density_clinical: 4.301
+  log_parasite_density_clinical_from: 3.301
+  log_parasite_density_clinical_to: 5.301
+  log_parasite_density_cured: -4.699
+  log_parasite_density_detectable: 1.0
+  log_parasite_density_from_liver: -2.0
+  log_parasite_density_pyrogenic: 3.398
+pf_genotype_info:
+- chromosome: 5
+  genes:
+  - aa_positions:
+    - amino_acids:
+      - N
+      - Y
+      daily_crs:
+      - 0
+      - 0.0005
+      multiplicative_effect_on_EC50:
+      - drug_id: 6
+        factors:
+        - 1
+        - 1.25
+      - drug_id: 1
+        factors:
+        - 1.25
+        - 1
+      - drug_id: 2
+        factors:
+        - 1
+        - 1.42
+      position: 86
+    - amino_acids:
+      - Y
+      - F
+      daily_crs:
+      - 0
+      - 0.0005
+      multiplicative_effect_on_EC50:
+      - drug_id: 1
+        factors:
+        - 1
+        - 1.25
+      - drug_id: 2
+        factors:
+        - 1.2
+        - 1
+      position: 184
+    cnv_daily_crs:
+    - 0
+    - 0.0005
+    cnv_multiplicative_effect_on_EC50:
+    - drug_id: 4
+      factors:
+      - 1
+      - 2.44444444
+    - drug_id: 1
+      factors:
+      - 1
+      - 1.3
+    max_copies: 2
+    multiplicative_effect_on_EC50_for_2_or_more_mutations:
+    - drug_id: 1
+      factor: 1.05
+    name: Pfmdr1
+- chromosome: 7
+  genes:
+  - aa_positions:
+    - amino_acids:
+      - K
+      - T
+      daily_crs:
+      - 0
+      - 0.0005
+      multiplicative_effect_on_EC50:
+      - drug_id: 6
+        factors:
+        - 1
+        - 1.6
+      - drug_id: 1
+        factors:
+        - 1.1
+        - 1
+      - drug_id: 2
+        factors:
+        - 1
+        - 1.2
+      position: 76
+    - amino_acids:
+      - T
+      - S
+      daily_crs:
+      - 0
+      - 0.0005
+      multiplicative_effect_on_EC50:
+      - drug_id: -1
+        factors:
+        - 1
+        - 1.6
+      position: 93
+    - amino_acids:
+      - H
+      - T
+      daily_crs:
+      - 0
+      - 0.0005
+      multiplicative_effect_on_EC50:
+      - drug_id: -1
+        factors:
+        - 1
+        - 1.6
+      position: 97
+    - amino_acids:
+      - F
+      - I
+      daily_crs:
+      - 0
+      - 0.0005
+      multiplicative_effect_on_EC50:
+      - drug_id: 3
+        factors:
+        - 1.0
+        - 4.9
+      position: 145
+    - amino_acids:
+      - I
+      - F
+      daily_crs:
+      - 0
+      - 0.0005
+      multiplicative_effect_on_EC50:
+      - drug_id: -1
+        factors:
+        - 1
+        - 1.6
+      position: 218
+    - amino_acids:
+      - M
+      - L
+      daily_crs:
+      - 0
+      - 0.0005
+      multiplicative_effect_on_EC50:
+      - drug_id: -1
+        factors:
+        - 1
+        - 1.6
+      position: 343
+    - amino_acids:
+      - G
+      - V
+      daily_crs:
+      - 0
+      - 0.0005
+      multiplicative_effect_on_EC50:
+      - drug_id: -1
+        factors:
+        - 1
+        - 1.6
+      position: 353
+    multiplicative_effect_on_EC50_for_2_or_more_mutations:
+    - drug_id: 3
+      factor: 1.199
+    name: Pfcrt
+  - aa_positions:
+    - amino_acids:
+      - x
+      - X
+      daily_crs:
+      - 0
+      - 0.0005
+      multiplicative_effect_on_EC50:
+      - drug_id: 7
+        factors:
+        - 1
+        - 1.6
+      position: 500
+    name: Pfkaf
+- chromosome: 13
+  genes:
+  - aa_positions:
+    - amino_acids:
+      - F
+      - I
+      daily_crs:
+      - 0
+      - 0.0005
+      multiplicative_effect_on_EC50:
+      - drug_id: 0
+        factors:
+        - 1
+        - 1.6
+      position: 446
+    - amino_acids:
+      - N
+      - Y
+      daily_crs:
+      - 0
+      - 0.0005
+      multiplicative_effect_on_EC50:
+      - drug_id: 0
+        factors:
+        - 1
+        - 1.6
+      position: 458
+    - amino_acids:
+      - C
+      - Y
+      daily_crs:
+      - 0
+      - 0.0005
+      multiplicative_effect_on_EC50:
+      - drug_id: 0
+        factors:
+        - 1
+        - 1.6
+      position: 469
+    - amino_acids:
+      - M
+      - I
+      daily_crs:
+      - 0
+      - 0.0005
+      multiplicative_effect_on_EC50:
+      - drug_id: 0
+        factors:
+        - 1
+        - 1.6
+      position: 476
+    - amino_acids:
+      - Y
+      - H
+      daily_crs:
+      - 0
+      - 0.0005
+      multiplicative_effect_on_EC50:
+      - drug_id: 0
+        factors:
+        - 1
+        - 1.6
+      position: 493
+    - amino_acids:
+      - R
+      - T
+      daily_crs:
+      - 0
+      - 0.0005
+      multiplicative_effect_on_EC50:
+      - drug_id: 0
+        factors:
+        - 1
+        - 1.6
+      position: 539
+    - amino_acids:
+      - I
+      - T
+      daily_crs:
+      - 0
+      - 0.0005
+      multiplicative_effect_on_EC50:
+      - drug_id: 0
+        factors:
+        - 1
+        - 1.6
+      position: 543
+    - amino_acids:
+      - P
+      - L
+      daily_crs:
+      - 0
+      - 0.0005
+      multiplicative_effect_on_EC50:
+      - drug_id: 0
+        factors:
+        - 1
+        - 1.6
+      position: 553
+    - amino_acids:
+      - R
+      - H
+      daily_crs:
+      - 0
+      - 0.0005
+      multiplicative_effect_on_EC50:
+      - drug_id: 0
+        factors:
+        - 1
+        - 1.6
+      position: 561
+    - amino_acids:
+      - P
+      - L
+      daily_crs:
+      - 0
+      - 0.0005
+      multiplicative_effect_on_EC50:
+      - drug_id: 0
+        factors:
+        - 1
+        - 1.6
+      position: 574
+    - amino_acids:
+      - C
+      - Y
+      daily_crs:
+      - 0
+      - 0.0005
+      multiplicative_effect_on_EC50:
+      - drug_id: 0
+        factors:
+        - 1
+        - 1.6
+      position: 580
+    - amino_acids:
+      - A
+      - V
+      daily_crs:
+      - 0
+      - 0.0005
+      multiplicative_effect_on_EC50:
+      - drug_id: 0
+        factors:
+        - 1
+        - 1.6
+      position: 675
+    multiplicative_effect_on_EC50_for_2_or_more_mutations:
+    - drug_id: 0
+      factor: 1.1
+    name: Pfkelch13
+- chromosome: 14
+  genes:
+  - aa_positions: []
+    cnv_daily_crs:
+    - 0
+    - 0.0005
+    cnv_multiplicative_effect_on_EC50:
+    - drug_id: 3
+      factors:
+      - 1
+      - 1.37
+    max_copies: 2
+    name: Pfplasmepsin
+relapseRate: 4.4721
+relapse_duration: 30
+relative_bitting_info:
+  biting_level_distribution:
+    Exponential:
+      scale: 0.17
+    Gamma:
+      mean: 5
+      sd: 10
+    distribution: Gamma
+  max_relative_biting_value: 35
+  min_relative_biting_value: 0.35
+  number_of_biting_levels: 100
+relative_infectivity:
+  blood_meal_volume: 3
+  ro: 0.00031
+  sigma: 3.91
+report_frequency: 30
+sd_prob_individual_present_at_mda:
+- 0.3
+- 0.3
+- 0.3
+seasonal_info:
+  a:
+  - 1
+  enable: false
+  min_value:
+  - 0.1
+  period: 365
+  phi:
+  - 250
+spatial_model:
+  Barabasi:
+    beta_r: 1.65
+    kappa: 350
+    r_g_0: 5.8
+  Wesolowski:
+    alpha: 0.22268982
+    beta: 0.14319618
+    gamma: 0.83741484
+    kappa: 0.01093251
+  name: Wesolowski
+start_collect_data_day: 365
+start_of_comparison_period: 2019/12/1
+starting_date: 1990/1/1
+strategy_db:
+  0:
+    name: SFTStrategy
+    therapy_id: 0
+    type: SFT
+tf_rate: 0.1
+tf_testing_day: 28
+tf_window_size: 60
+therapy_db:
+  0:
+    dosing_days:
+    - 3
+    drug_id:
+    - 0
+  1:
+    dosing_days:
+    - 3
+    drug_id:
+    - 1
+  2:
+    dosing_days:
+    - 3
+    drug_id:
+    - 2
+  3:
+    dosing_days:
+    - 3
+    drug_id:
+    - 3
+  4:
+    dosing_days:
+    - 3
+    drug_id:
+    - 4
+  5:
+    dosing_days:
+    - 3
+    drug_id:
+    - 5
+  6:
+    dosing_days:
+    - 3
+    drug_id:
+    - 0
+    - 1
+  7:
+    dosing_days:
+    - 3
+    drug_id:
+    - 0
+    - 2
+  8:
+    dosing_days:
+    - 3
+    drug_id:
+    - 0
+    - 3
+  9:
+    dosing_days:
+    - 3
+    drug_id:
+    - 0
+    - 4
+  10:
+    dosing_days:
+    - 3
+    drug_id:
+    - 0
+    - 3
+    - 4
+  11:
+    dosing_days:
+    - 3
+    drug_id:
+    - 0
+    - 1
+    - 2
+  12:
+    dosing_days:
+    - 3
+    drug_id:
+    - 6
+update_frequency: 7
+using_age_dependent_bitting_level: false
+using_variable_probability_infectious_bites_cause_infection: false
+within_chromosome_recombination_rate: 0.1
+within_host_induced_free_recombination: true

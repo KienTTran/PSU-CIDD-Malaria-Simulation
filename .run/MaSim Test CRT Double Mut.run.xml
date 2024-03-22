@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="MaSim Test CRT Double Mut" type="CMakeRunConfiguration" factoryName="Application" PROGRAM_PARAMS="-i input_CRT_Double_Mut.yml --v=1" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" WORKING_DIR="file://$PROJECT_DIR$/cmake-build-release/bin" PASS_PARENT_ENVS_2="true" PROJECT_NAME="POMS" TARGET_NAME="MaSim" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="POMS" RUN_TARGET_NAME="MaSim">
+  <configuration default="false" name="MaSim Test CRT Double Mut" type="CMakeRunConfiguration" factoryName="Application" PROGRAM_PARAMS="-i ../../run/input_CRT_Double_Mut.yml --v=1" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" WORKING_DIR="file://$PROJECT_DIR$/cmake-build-release/bin" PASS_PARENT_ENVS_2="true" PROJECT_NAME="POMS" TARGET_NAME="MaSim" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="POMS" RUN_TARGET_NAME="MaSim">
     <method v="2">
       <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
     </method>

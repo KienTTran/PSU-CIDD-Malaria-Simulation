@@ -20,7 +20,7 @@ ending_date: 1990/1/29
 # the day at which the simulation's reporting functionality begins collecting data for
 # EIR, # of clinical episodes, # death , # of treatment, #TF by location,...
 # for monthly data display
-start_collect_data_day: 365
+start_collect_data_day: 0
 
 # the day at which the MDC will begin collecting NTF, AMU, UTL
 start_of_comparison_period: 2019/12/1
