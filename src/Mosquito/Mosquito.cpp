@@ -169,13 +169,13 @@ void Mosquito::infect_new_cohort_in_PRMC(Config *config, Random *random, Populat
             /*
              * Print our recombination for counting later
              * */
-            auto resistant_tracker_info = std::make_tuple(Model::SCHEDULER->current_time(),parent_genotypes[0]->genotype_id, parent_genotypes[1]->genotype_id, sampled_genotype->genotype_id);
+//            auto resistant_tracker_info = std::make_tuple(Model::SCHEDULER->current_time(),parent_genotypes[0]->genotype_id, parent_genotypes[1]->genotype_id, sampled_genotype->genotype_id);
 //            if (std::find(Model::DATA_COLLECTOR->mosquito_recombined_resistant_genotype_tracker[loc].begin(),
 //                          Model::DATA_COLLECTOR->mosquito_recombined_resistant_genotype_tracker[loc].end(), resistant_tracker_info)
 //                == Model::DATA_COLLECTOR->mosquito_recombined_resistant_genotype_tracker[loc].end()){
 //                Model::DATA_COLLECTOR->mosquito_recombined_resistant_genotype_tracker[loc].push_back(resistant_tracker_info);
 //            }
-            Model::DATA_COLLECTOR->mosquito_recombined_resistant_genotype_tracker[loc].push_back(resistant_tracker_info);
+//            Model::DATA_COLLECTOR->mosquito_recombined_resistant_genotype_tracker[loc].push_back(resistant_tracker_info);
         }
       //Count number of bites
       Model::DATA_COLLECTOR->mosquito_recombination_events_count()[loc][1]++;
@@ -224,12 +224,12 @@ std::vector<std::string> Mosquito::split_string(std::string str, char delimiter)
 
 std::string Mosquito::get_old_genotype_string(std::string new_genotype){
     std::vector<std::string> pattern_chr = split_string(new_genotype,'|');
-    std::string old_chr_5 = pattern_chr[6].substr(0, 1);
-    std::string old_chr_7 = "";
+    std::string old_chr_7 = pattern_chr[6].substr(0, 7);
+    std::string old_chr_5 = "";
     if(pattern_chr[4].substr(2, 1) == "2")
-        old_chr_7 = pattern_chr[4].substr(0, 2)+pattern_chr[4].substr(0, 2);
+        old_chr_5 = pattern_chr[4].substr(0, 2)+pattern_chr[4].substr(0, 2);
     else
-        old_chr_7 = pattern_chr[4].substr(0, 2)+"--";
+        old_chr_5 = pattern_chr[4].substr(0, 2)+"--";
     std::string old_chr_13 = pattern_chr[12].substr(10, 1);
     std::string old_chr_14 = pattern_chr[13].substr(0, 1);
     std::string old_chr_x = pattern_chr[6].substr(6, 1);
