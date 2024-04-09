@@ -8,6 +8,6 @@ export PATH=/usr/lpp/mmfs/bin:/usr/local/bin:/usr/local/sbin:/usr/lib64/qt-3.3/b
 export LIBRARY_PATH=/storage/home/#username#/work/build_env/postgres/lib:/storage/home/#username#/work/build_env/lib/lib:
 
 #module load gcc/8.3.1
-module load cmake/3.21.4
+module load cmake/3.22.1
 cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=/storage/home/#username#/work/build_env/vcpkg/scripts/buildsystems/vcpkg.cmake ..
 make MaSim -j 8
