@@ -15,7 +15,7 @@
 starting_date: 2000/1/1
 
 # ending time point of the simulation (in yyyy/m/d format)
-ending_date: 2020/1/1
+ending_date: 2030/1/1
 
 # the day at which the simulation's reporting functionality begins collecting data for
 # EIR, # of clinical episodes, # death , # of treatment, #TF by location,...
@@ -232,37 +232,37 @@ pf_genotype_info:
             daily_crs: [ 0, 0.0005 ]
             multiplicative_effect_on_EC50:
               - drug_id: 3
-                factors: [ 1, 1.8 ]
+                factors: [ 1, 1.84 ]
           - position: 97
             amino_acids: [ 'H', 'Y' ]
             daily_crs: [ 0, 0.0005 ]
             multiplicative_effect_on_EC50:
               - drug_id: 3
-                factors: [ 1, 1.8 ]
+                factors: [ 1, 1.84 ]
           - position: 145
             amino_acids: [ 'F', 'I' ]
             daily_crs: [ 0, 0.0005 ]
             multiplicative_effect_on_EC50:
               - drug_id: 3
-                factors: [ 1, 2.6 ]
+                factors: [ 1, 2.23]
           - position: 218
             amino_acids: [ 'I', 'F' ]
             daily_crs: [ 0, 0.0005 ]
             multiplicative_effect_on_EC50:
               - drug_id: 3
-                factors: [ 1, 1.8 ]
+                factors: [ 1, 1.84 ]
           - position: 343
             amino_acids: [ 'M', 'L' ]
             daily_crs: [ 0, 0.0005 ]
             multiplicative_effect_on_EC50:
               - drug_id: 3
-                factors: [ 1, 1.7 ]
+                factors: [ 1, 1.0 ]
           - position: 353
             amino_acids: [ 'G', 'V' ]
             daily_crs: [ 0, 0.0005 ]
             multiplicative_effect_on_EC50:
               - drug_id: 3
-                factors: [ 1, 1.7 ]
+                factors: [ 1, 1.0 ]
       - name: "Pfkaf"
         aa_positions:
           - position: 500
