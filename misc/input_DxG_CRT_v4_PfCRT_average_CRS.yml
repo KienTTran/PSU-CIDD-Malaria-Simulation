@@ -233,13 +233,13 @@ pf_genotype_info:
             daily_crs: [ 0, 0.0002433748 ]
             multiplicative_effect_on_EC50:
               - drug_id: 3
-                factors: [ 1, 1.84 ]
+                factors: [ 1, 1.64 ]
           - position: 97
             amino_acids: [ 'H', 'Y' ]
             daily_crs: [ 0, 0.003875969 ]
             multiplicative_effect_on_EC50:
               - drug_id: 3
-                factors: [ 1, 1.84 ]
+                factors: [ 1, 1.64 ]
           - position: 145
             amino_acids: [ 'F', 'I' ]
             daily_crs: [ 0, 0.0078751277 ]
@@ -251,7 +251,7 @@ pf_genotype_info:
             daily_crs: [ 0, 0.0035124091 ]
             multiplicative_effect_on_EC50:
               - drug_id: 3
-                factors: [ 1, 1.84 ]
+                factors: [ 1, 1.64 ]
           - position: 343
             amino_acids: [ 'M', 'L' ]
             daily_crs: [ 0, 0.003875969 ]
