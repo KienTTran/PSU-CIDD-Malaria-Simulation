@@ -60,8 +60,8 @@ void MFTRebalancingStrategy::update_end_of_time_step() {
         LOG(INFO) << "Current treatment failure rate of " << therapy_list[i]->id() << " : "
                   << Model::DATA_COLLECTOR->
                       current_tf_by_therapy()[therapy_list[i]->id()];
-        if (Model::DATA_COLLECTOR->current_tf_by_therapy()[therapy_list[i]->id()] < 0.05) {
-          next_distribution[i] = 1.0/0.05;
+        if (Model::DATA_COLLECTOR->current_tf_by_therapy()[therapy_list[i]->id()] < 0.04) {
+          next_distribution[i] = 1.0/0.04;
         } else {
           next_distribution[i] = 1.0/Model::DATA_COLLECTOR->current_tf_by_therapy()[therapy_list[i]->id()];
         }
