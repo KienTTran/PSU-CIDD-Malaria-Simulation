@@ -37,7 +37,7 @@ p_infection_from_an_infectious_bite: 0.1
 # the simulation itself uses explicit ages and birthdays
 # but for reporting purposes and for age-specific mortality calculations, individuals are grouped into the following age classes
 number_of_age_classes: 15
-age_structure: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 15, 20, 60, 100]
+age_structure: [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 15, 20, 60, 100]
 
 # this is only used for initializing the population structure at time 0
 # the last four rows of the matrix below are ignored when the number of locations is 1

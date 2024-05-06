@@ -398,7 +398,7 @@ pf_genotype_info:
             factors: [ 1, 1.37 ]
         aa_positions: [ ]
 
-override_ec50_patterns:
+override_ec50_patterns: #this is from Thu's DxG table
   - pattern: "||||NY1||K......,.||||||............|."
     drug_id: 1
     ec50: 0.8

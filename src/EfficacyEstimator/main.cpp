@@ -110,7 +110,9 @@ int main(int argc, char** argv) {
   p_model->add_reporter(new PkPdReporter(&input));
 
   // =========infect population with genotype 0================
-  auto* genotype = Model::CONFIG->genotype_db.get_genotype("||||NY1||KTHIIMG,x||||||FNCMYRIPRPCA|1",p_model->CONFIG);
+  auto* genotype = Model::CONFIG->genotype_db.get_genotype(input.genotypes[0],p_model->CONFIG);
+  //Override EC50_power_n of provided genotype
+  genotype->EC50_power_n[start_drug_id] = pow(input.EC50[0],input.slope[0]);
 
   for (auto person : Model::POPULATION->all_persons()->vPerson()) {
     auto density = Model::CONFIG->parasite_density_level().log_parasite_density_from_liver;
@@ -154,7 +156,7 @@ void create_cli_options(int argc, char** argv, CLI::App& app, AppInput& input) {
 
   app.add_option(
       "-d,--dosing", input.dosing_days,
-      "Drung dosing days.\nEx: `-d 2` or `--dosing 2` for monotherapy,\n  `-d "
+      "Drug dosing days.\nEx: `-d 2` or `--dosing 2` for monotherapy,\n  `-d "
       "5 2` or `--dosing 5 2` for a combination of two drugs."
   );
 
@@ -191,6 +193,9 @@ void create_cli_options(int argc, char** argv, CLI::App& app, AppInput& input) {
       "`--slope 25` for monotherapy,\n `-n 25 10` or `--slope 25 "
       "10` for drug combination."
   );
+
+  app.add_option("-g,--genotype", input.genotypes,
+                 "Input genotype (for testing only)");
 }
 
 bool validate_config(AppInput& input) {

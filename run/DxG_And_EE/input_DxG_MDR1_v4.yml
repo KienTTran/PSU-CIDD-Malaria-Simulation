@@ -8,6 +8,7 @@
 #
 # ---------------------------------------------------------------
 
+initial_seed_number: 123456
 
 # starting time point of the simulation (in yyyy/m/d format)
 # which is day 0 in the simulation
@@ -100,8 +101,8 @@ death_rate_by_age_class: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
 
 # probability of death for patients who are not treated or patients who experience a treatment failure (due to drug resistance, or otherwise)
 # when received treatment, this rate drop by factor of 10 in code
-# mortality_when_treatment_fail_by_age_class: [0.040, 0.020,0.020,0.020,0.020,0.004,0.004,0.004,0.004,0.004,0.004, 0.001, 0.001, 0.001, 0.001]
-mortality_when_treatment_fail_by_age_class: [-1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0]
+mortality_when_treatment_fail_by_age_class: [0.040, 0.020,0.020,0.020,0.020,0.004,0.004,0.004,0.004,0.004,0.004, 0.001, 0.001, 0.001, 0.001]
+#mortality_when_treatment_fail_by_age_class: [-1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0]
 
 # definitions of some log parasite density levels
 #
@@ -144,13 +145,13 @@ immune_system_information:
   max_clinical_probability: 0.99
 
   # slope of sigmoidal prob-v-immunity function (parameter z in supplement of 2015 LGH paper)
-  immune_effect_on_progression_to_clinical: 5.4
+  immune_effect_on_progression_to_clinical: 5.4 #4
 
   # age at which immune function is mature
   age_mature_immunity: 10
 
   # parameter kappa in supplement of 2015 LGH paper
-  factor_effect_age_mature_immunity : 0.3
+  factor_effect_age_mature_immunity : 0.3 #1
 
 
 # this functionality works, but it was not used in any analyses for the 2015 LGH paper
@@ -171,8 +172,9 @@ circulation_info:
     mean: 5
     sd: 10
 
-mutation_mask: "||||000||0000000,0||||||000000000010|1"
+mutation_mask: "||||111||1000000,0||||||000000000010|0"
 
+# the appearance of gene should be in order
 # the appearance of gene should be in order
 pf_genotype_info:
   - chromosome: 5
@@ -213,11 +215,13 @@ pf_genotype_info:
       - name: "Pfcrt"
         multiplicative_effect_on_EC50_for_2_or_more_mutations:
           - drug_id: 3
-            factor: 1.199
+            factor: 1.0
+        average_daily_crs: 0.1290
+        # 0.1290 is average of (0.1169,0.0081,0.2621 -  converted from fitness (2.19,2.46,1.83)) from Small-Sander PLOS 2019 paper
         aa_positions:
           - position: 76
             amino_acids: [ 'K', 'T' ]
-            daily_crs: [ 0, 0.0005 ]
+            daily_crs: [ 0, 0.003875969 ]
             multiplicative_effect_on_EC50:
               - drug_id: 6
                 factors: [ 1, 1.6 ]
@@ -227,40 +231,40 @@ pf_genotype_info:
                 factors: [ 1, 1.2 ]
           - position: 93
             amino_acids: [ 'T', 'S' ]
-            daily_crs: [ 0, 0.0005 ]
+            daily_crs: [ 0, 0.0002433748 ]
             multiplicative_effect_on_EC50:
-              - drug_id: -1
-                factors: [ 1, 1.6 ]
+              - drug_id: 3
+                factors: [ 1, 1.64 ]
           - position: 97
             amino_acids: [ 'H', 'Y' ]
-            daily_crs: [ 0, 0.0005 ]
+            daily_crs: [ 0, 0.003875969 ]
             multiplicative_effect_on_EC50:
-              - drug_id: -1
-                factors: [ 1, 1.6 ]
+              - drug_id: 3
+                factors: [ 1, 1.64 ]
           - position: 145
             amino_acids: [ 'F', 'I' ]
-            daily_crs: [ 0, 0.0005 ]
+            daily_crs: [ 0, 0.0078751277 ]
             multiplicative_effect_on_EC50:
-              - drug_id: -1
-                factors: [ 1, 1.6 ]
+              - drug_id: 3
+                factors: [ 1, 2.23]
           - position: 218
             amino_acids: [ 'I', 'F' ]
-            daily_crs: [ 0, 0.0005 ]
+            daily_crs: [ 0, 0.0035124091 ]
             multiplicative_effect_on_EC50:
-              - drug_id: -1
-                factors: [ 1, 1.6 ]
+              - drug_id: 3
+                factors: [ 1, 1.64 ]
           - position: 343
             amino_acids: [ 'M', 'L' ]
-            daily_crs: [ 0, 0.0005 ]
+            daily_crs: [ 0, 0.003875969 ]
             multiplicative_effect_on_EC50:
-              - drug_id: -1
-                factors: [ 1, 1.6 ]
+              - drug_id: 3
+                factors: [ 1, 1.0 ]
           - position: 353
             amino_acids: [ 'G', 'V' ]
-            daily_crs: [ 0, 0.0005 ]
+            daily_crs: [ 0, 0.003875969 ]
             multiplicative_effect_on_EC50:
-              - drug_id: -1
-                factors: [ 1, 1.6 ]
+              - drug_id: 3
+                factors: [ 1, 1.0 ]
       - name: "Pfkaf"
         aa_positions:
           - position: 500
@@ -355,11 +359,11 @@ pf_genotype_info:
         cnv_daily_crs: [ 0, 0.0005 ]
         cnv_multiplicative_effect_on_EC50:
           - drug_id: 3
-#            factors: [ 1, 2.4137931 ]
-            factors: [ 1, 1.37 ]
+            factors: [ 1, 2.4137931 ]
+#            factors: [ 1, 1.37 ]
         aa_positions: [ ]
 
-override_ec50_patterns:
+override_ec50_patterns: #this is from Thu's DxG table
   - pattern: "||||NY1||K......,.||||||............|."
     drug_id: 1
     ec50: 0.8
@@ -616,7 +620,7 @@ strategy_db:
   0:
     name: SFTStrategy
     type: SFT
-    therapy_id: 0
+    therapy_id: 5
 
 initial_strategy_id: 0
 
@@ -674,7 +678,7 @@ relative_infectivity:
   blood_meal_volume: 3
 
 # probability to relapse after no treatment, or a treatment failure due to drug resistance
-p_relapse: 0.01
+p_relapse: 0.0
 
 # number of days before a relapse can occur
 relapse_duration: 30
@@ -685,7 +689,7 @@ relapseRate: 4.4721
 
 # minimum update frequency for a host's attributes (esp. parasite density) is every 7 days, or
 # more frequently if other events are occurring at this time
-update_frequency: 7
+update_frequency: 1
 
 #report to GUI and console every 30 days
 report_frequency: 30

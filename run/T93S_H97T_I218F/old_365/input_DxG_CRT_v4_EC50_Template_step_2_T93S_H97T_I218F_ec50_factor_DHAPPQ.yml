@@ -428,7 +428,7 @@ mutation_mask: '||||000||0111111,0||||||000000000010|1'
 mutation_probability_by_locus: 0.001
 number_of_age_classes: 15
 number_of_tracking_days: 11
-override_ec50_patterns:
+override_ec50_patterns: #this is from Thu's DxG table
 - drug_id: 1
   ec50: 0.8
   pattern: '||||NY1||K......,.||||||............|.'

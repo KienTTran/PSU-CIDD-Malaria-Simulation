@@ -45,7 +45,7 @@ INITIALIZE_EASYLOGGINGPP
 using namespace std;
 
 bool validate_config_for_ee(AppInput& input);
-double getEfficacyForTherapy(Genotype* g, Model* p_model,AppInput& input, int therapy_id);
+double getEfficacyForTherapy(std::string g_str, Model* p_model,AppInput& input, int therapy_id);
 double getEfficacyForTherapyCRT(Model* p_model,AppInput& input, int therapy_id);
 
 void create_cli_option(CLI::App& app,AppInput& input);
@@ -232,27 +232,21 @@ int main(int argc, char** argv) {
             }
         }
         std::cout << std::endl;
-        Model::CONFIG->genotype_db.clear();
-        std::vector<Genotype*> genotype_inputs;
-        for(auto genotype_str : input.genotypes){
-            genotype_inputs.push_back(Model::CONFIG->genotype_db.get_genotype(genotype_str,p_model->CONFIG));
-        }
-        for(auto p_genotype : genotype_inputs){
+        for(int g_index = 0; g_index < input.genotypes.size(); g_index++){
             std::stringstream ss;
-            ss << p_genotype->genotype_id << "\t" << Model::MOSQUITO->get_old_genotype_string(p_genotype->get_aa_sequence()) << "\t";
-
+            ss << g_index << "\t" << Model::MOSQUITO->get_old_genotype_string(input.genotypes[g_index]) << "\t";
             if(input.therapy_list.empty()){
               for (auto therapy_id = min_therapy_id; therapy_id <= max_therapy_id; therapy_id++) {
-                double efficacy = getEfficacyForTherapy(p_genotype, p_model, input, therapy_id);
+                double efficacy = getEfficacyForTherapy(input.genotypes[g_index], p_model, input, therapy_id);
 //                ss << efficacy << (therapy_id == max_therapy_id ? "" : "\t");
                   ss << efficacy << "\t";
               }
             }
             else{
               for (int t_index = 0; t_index < input.therapy_list.size(); t_index++) {
-                double efficacy = getEfficacyForTherapy(p_genotype, p_model, input, input.therapy_list[t_index]);
+                double efficacy = getEfficacyForTherapy(input.genotypes[g_index], p_model, input, input.therapy_list[t_index]);
 //                ss << efficacy << (input.therapy_list[t_index] == input.therapy_list.size() - 1 ? "" : "\t");
-                  ss << efficacy << "\t";
+                ss << efficacy << "\t";
               }
             }
             std::cout << ss.str() << std::endl;
@@ -287,7 +281,7 @@ void create_cli_option(CLI::App& app, AppInput& input) {
     app.add_option("--mda", input.mean_drug_absorption, "ee mean drug absorption");
 }
 
-double getEfficacyForTherapy(Genotype* g, Model* p_model, AppInput& input, int therapy_id) {
+double getEfficacyForTherapy(std::string g_str, Model* p_model, AppInput& input, int therapy_id) {
     auto* mainTherapy = p_model->CONFIG->therapy_db()[therapy_id];
     dynamic_cast<SFTStrategy*>(Model::TREATMENT_STRATEGY)->get_therapy_list().clear();
     dynamic_cast<SFTStrategy*>(Model::TREATMENT_STRATEGY)->add_therapy(mainTherapy);
@@ -308,7 +302,8 @@ double getEfficacyForTherapy(Genotype* g, Model* p_model, AppInput& input, int t
 
     for (auto person : Model::POPULATION->all_persons()->vPerson()) {
         auto density = Model::CONFIG->parasite_density_level().log_parasite_density_from_liver;
-        auto* blood_parasite = person->add_new_parasite_to_blood(g);
+        auto* genotype = Model::CONFIG->genotype_db.get_genotype(g_str,p_model->CONFIG);
+        auto* blood_parasite = person->add_new_parasite_to_blood(genotype);
 
         person->immune_system()->set_increase(true);
         person->set_host_state(Person::EXPOSED);

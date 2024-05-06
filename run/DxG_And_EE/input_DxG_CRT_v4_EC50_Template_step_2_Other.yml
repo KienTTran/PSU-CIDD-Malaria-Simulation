@@ -171,7 +171,7 @@ circulation_info:
     mean: 5
     sd: 10
 
-mutation_mask: "||||000||0000000,0||||||000000000010|1"
+mutation_mask: "||||000||0111111,0||||||000000000010|1"
 
 # the appearance of gene should be in order
 pf_genotype_info:
@@ -229,26 +229,26 @@ pf_genotype_info:
             amino_acids: [ 'T', 'S' ]
             daily_crs: [ 0, 0.0005 ]
             multiplicative_effect_on_EC50:
-              - drug_id: -1
-                factors: [ 1, 1.6 ]
+              - drug_id: 3
+                factors: [ 1, 1.64 ]
           - position: 97
             amino_acids: [ 'H', 'Y' ]
             daily_crs: [ 0, 0.0005 ]
             multiplicative_effect_on_EC50:
-              - drug_id: -1
-                factors: [ 1, 1.6 ]
+              - drug_id: 3
+                factors: [ 1, 1.64 ]
           - position: 145
             amino_acids: [ 'F', 'I' ]
             daily_crs: [ 0, 0.0005 ]
             multiplicative_effect_on_EC50:
-              - drug_id: -1
-                factors: [ 1, 1.6 ]
+              - drug_id: 3
+                factors: [ 1, 2.8 ]
           - position: 218
             amino_acids: [ 'I', 'F' ]
             daily_crs: [ 0, 0.0005 ]
             multiplicative_effect_on_EC50:
-              - drug_id: -1
-                factors: [ 1, 1.6 ]
+              - drug_id: 3
+                factors: [ 1, 1.64 ]
           - position: 343
             amino_acids: [ 'M', 'L' ]
             daily_crs: [ 0, 0.0005 ]
@@ -359,7 +359,7 @@ pf_genotype_info:
             factors: [ 1, 1.37 ]
         aa_positions: [ ]
 
-override_ec50_patterns:
+override_ec50_patterns: #this is from Thu's DxG table
   - pattern: "||||NY1||K......,.||||||............|."
     drug_id: 1
     ec50: 0.8
@@ -674,7 +674,7 @@ relative_infectivity:
   blood_meal_volume: 3
 
 # probability to relapse after no treatment, or a treatment failure due to drug resistance
-p_relapse: 0.01
+p_relapse: 0.0
 
 # number of days before a relapse can occur
 relapse_duration: 30
@@ -685,7 +685,7 @@ relapseRate: 4.4721
 
 # minimum update frequency for a host's attributes (esp. parasite density) is every 7 days, or
 # more frequently if other events are occurring at this time
-update_frequency: 7
+update_frequency: 1
 
 #report to GUI and console every 30 days
 report_frequency: 30

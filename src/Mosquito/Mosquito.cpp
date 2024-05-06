@@ -224,15 +224,15 @@ std::vector<std::string> Mosquito::split_string(std::string str, char delimiter)
 
 std::string Mosquito::get_old_genotype_string(std::string new_genotype){
     std::vector<std::string> pattern_chr = split_string(new_genotype,'|');
-    std::string old_chr_5 = pattern_chr[6].substr(0, 1);
-    std::string old_chr_7 = "";
-    if(pattern_chr[4].substr(2, 1) == "2")
-        old_chr_7 = pattern_chr[4].substr(0, 2)+pattern_chr[4].substr(0, 2);
-    else
-        old_chr_7 = pattern_chr[4].substr(0, 2)+"--";
-    std::string old_chr_13 = pattern_chr[12].substr(10, 1);
+    std::string old_chr_7 = pattern_chr[6].substr(0, 7);
+    std::string old_chr_5 = pattern_chr[4];
+//    if(pattern_chr[4].substr(2, 1) == "2")
+//        old_chr_5 = pattern_chr[4].substr(0, 2)+pattern_chr[4].substr(0, 2);
+//    else
+//        old_chr_5 = pattern_chr[4].substr(0, 2)+"--";
+    std::string old_chr_13 = pattern_chr[12].substr(0, 13);
     std::string old_chr_14 = pattern_chr[13].substr(0, 1);
     std::string old_chr_x = pattern_chr[6].substr(6, 1);
-    return old_chr_5+old_chr_7+old_chr_13+old_chr_14;
+    return old_chr_5+"|"+old_chr_7+"|"+old_chr_13+"|"+old_chr_14;
 }
 

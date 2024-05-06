@@ -177,12 +177,11 @@ void Genotype::calculate_EC50_power_n(const PfGeneInfo &gene_info, DrugDatabase 
                 // if multiplicative effect can apply to this drug
                 multiplicative_effect_factor =
                     res_gene_info.multiplicative_effect_on_EC50_for_2_or_more_mutations[drug_id];
-                LOG(TRACE) << aa_sequence << " DOUBLE MUT drug_id: " << drug_id << " chr: " << chromosome_i + 1 << " gene: " << gene_i << " aa: " << aa_i
+                LOG(INFO) << aa_sequence << " DOUBLE MUT drug_id: " << drug_id << " chr: " << chromosome_i + 1 << " gene: " << gene_i << " aa: " << aa_i
                            << " EC50_power_n: " << EC50_power_n[drug_id] << " * multiplicative_effect_factor: " << multiplicative_effect_factor
                            << "  = " << EC50_power_n[drug_id]*multiplicative_effect_factor;
               }
-
-              LOG(TRACE) << aa_sequence << " SINGLE MUT drug_id: " << drug_id << " chr: " << chromosome_i + 1 << " gene: " << gene_i << " aa: " << aa_i
+              LOG(INFO) << aa_sequence << " SINGLE MUT drug_id: " << drug_id << " chr: " << chromosome_i + 1 << " gene: " << gene_i << " aa: " << aa_i
                         << " EC50_power_n: " << EC50_power_n[drug_id] << " * multiplicative_effect_factor: " << multiplicative_effect_factor
                         << "  = " << EC50_power_n[drug_id]*multiplicative_effect_factor;
             }
@@ -198,7 +197,7 @@ void Genotype::calculate_EC50_power_n(const PfGeneInfo &gene_info, DrugDatabase 
           for (const auto &[drug_id, dt] : *drug_db) {
             if (res_gene_info.cnv_multiplicative_effect_on_EC50.find(drug_id)
                 != res_gene_info.cnv_multiplicative_effect_on_EC50.end()) {
-              LOG(TRACE) << aa_sequence << " drug_id: " << drug_id << " chr: " << chromosome_i + 1 << " gene: " << gene_i
+              LOG(INFO) << aa_sequence << " CNV drug_id: " << drug_id << " chr: " << chromosome_i + 1 << " gene: " << gene_i
                         << " EC50_power_n: " << EC50_power_n[drug_id] << " * multiplicative_effect_factor: " << res_gene_info.cnv_multiplicative_effect_on_EC50[drug_id][copy_number - 1]
                         << "  = " << EC50_power_n[drug_id]*res_gene_info.cnv_multiplicative_effect_on_EC50[drug_id][copy_number - 1];
               EC50_power_n[drug_id] *= res_gene_info.cnv_multiplicative_effect_on_EC50[drug_id][copy_number - 1];
@@ -270,6 +269,8 @@ void Genotype::override_EC50_power_n(const std::vector<OverrideEC50Pattern> &ove
     if (match_pattern(pattern.pattern)) {
       // override ec50 power n
       EC50_power_n[pattern.drug_id] = pow(pattern.ec50, drug_db->at(pattern.drug_id)->n());
+        LOG(INFO) << aa_sequence << " OVERRIDE drug_id: " << pattern.drug_id << " genotype: " << aa_sequence
+                  << " EC50:" << pattern.ec50 << " n: " << drug_db->at(pattern.drug_id)->n() << " EC50_power_n: " << EC50_power_n[pattern.drug_id];
     }
   }
 }

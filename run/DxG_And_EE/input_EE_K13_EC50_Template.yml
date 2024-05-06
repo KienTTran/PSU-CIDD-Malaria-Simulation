@@ -37,11 +37,11 @@ p_infection_from_an_infectious_bite: 0.1
 # the simulation itself uses explicit ages and birthdays
 # but for reporting purposes and for age-specific mortality calculations, individuals are grouped into the following age classes
 number_of_age_classes: 15
-age_structure: [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 15, 20, 60, 100 ]
+age_structure: [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 15, 20, 60, 100]
 
 # this is only used for initializing the population structure at time 0
 # the last four rows of the matrix below are ignored when the number of locations is 1
-initial_age_structure: [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 25, 35, 45, 55, 65, 100 ]
+initial_age_structure: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 25, 35, 45, 55, 65, 100]
 
 artificial_rescaling_of_population_size: 1.0
 
@@ -102,6 +102,7 @@ death_rate_by_age_class: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
 # when received treatment, this rate drop by factor of 10 in code
 # mortality_when_treatment_fail_by_age_class: [0.040, 0.020,0.020,0.020,0.020,0.004,0.004,0.004,0.004,0.004,0.004, 0.001, 0.001, 0.001, 0.001]
 mortality_when_treatment_fail_by_age_class: [-1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0]
+
 
 # definitions of some log parasite density levels
 #
@@ -171,8 +172,9 @@ circulation_info:
     mean: 5
     sd: 10
 
-mutation_mask: "||||000||0111111,0||||||000000000010|1"
+mutation_mask: "||||000||0000000,0||||||110010000110|0"
 
+# the appearance of gene should be in order
 # the appearance of gene should be in order
 pf_genotype_info:
   - chromosome: 5
@@ -213,11 +215,13 @@ pf_genotype_info:
       - name: "Pfcrt"
         multiplicative_effect_on_EC50_for_2_or_more_mutations:
           - drug_id: 3
-            factor: 1.199
+            factor: 1.0
+        average_daily_crs: 0.1290
+        # 0.1290 is average of (0.1169,0.0081,0.2621 -  converted from fitness (2.19,2.46,1.83)) from Small-Sander PLOS 2019 paper
         aa_positions:
           - position: 76
             amino_acids: [ 'K', 'T' ]
-            daily_crs: [ 0, 0.0005 ]
+            daily_crs: [ 0, 0.003875969 ]
             multiplicative_effect_on_EC50:
               - drug_id: 6
                 factors: [ 1, 1.6 ]
@@ -227,40 +231,40 @@ pf_genotype_info:
                 factors: [ 1, 1.2 ]
           - position: 93
             amino_acids: [ 'T', 'S' ]
-            daily_crs: [ 0, 0.0005 ]
+            daily_crs: [ 0, 0.0002433748 ]
             multiplicative_effect_on_EC50:
               - drug_id: 3
                 factors: [ 1, 1.64 ]
           - position: 97
             amino_acids: [ 'H', 'Y' ]
-            daily_crs: [ 0, 0.0005 ]
+            daily_crs: [ 0, 0.003875969 ]
             multiplicative_effect_on_EC50:
               - drug_id: 3
                 factors: [ 1, 1.64 ]
           - position: 145
             amino_acids: [ 'F', 'I' ]
-            daily_crs: [ 0, 0.0005 ]
+            daily_crs: [ 0, 0.0078751277 ]
             multiplicative_effect_on_EC50:
               - drug_id: 3
-                factors: [ 1, 100.0 ]
+                factors: [ 1, 2.23]
           - position: 218
             amino_acids: [ 'I', 'F' ]
-            daily_crs: [ 0, 0.0005 ]
+            daily_crs: [ 0, 0.0035124091 ]
             multiplicative_effect_on_EC50:
               - drug_id: 3
                 factors: [ 1, 1.64 ]
           - position: 343
             amino_acids: [ 'M', 'L' ]
-            daily_crs: [ 0, 0.0005 ]
+            daily_crs: [ 0, 0.003875969 ]
             multiplicative_effect_on_EC50:
               - drug_id: 3
-                factors: [ 1, 1.0 ]
+                factors: [ 1, 1.0 ] #double check with M
           - position: 353
             amino_acids: [ 'G', 'V' ]
-            daily_crs: [ 0, 0.0005 ]
+            daily_crs: [ 0, 0.003875969 ]
             multiplicative_effect_on_EC50:
               - drug_id: 3
-                factors: [ 1, 1.0 ]
+                factors: [ 1, 1.0 ] #double check with M
       - name: "Pfkaf"
         aa_positions:
           - position: 500
@@ -281,73 +285,73 @@ pf_genotype_info:
             daily_crs: [ 0, 0.0005 ]
             multiplicative_effect_on_EC50:
               - drug_id: 0
-                factors: [ 1, 1.6 ]
+                factors: [ 1, 1.0 ]
           - position: 458
             amino_acids: [ 'N', 'Y' ]
             daily_crs: [ 0, 0.0005 ]
             multiplicative_effect_on_EC50:
               - drug_id: 0
-                factors: [ 1, 1.6 ]
+                factors: [ 1, 1.0 ]
           - position: 469
             amino_acids: [ 'C', 'Y' ]
             daily_crs: [ 0, 0.0005 ]
             multiplicative_effect_on_EC50:
               - drug_id: 0
-                factors: [ 1, 1.6 ]
+                factors: [ 1, 1.0 ]
           - position: 476
             amino_acids: [ 'M', 'I' ]
             daily_crs: [ 0, 0.0005 ]
             multiplicative_effect_on_EC50:
               - drug_id: 0
-                factors: [ 1, 1.6 ]
+                factors: [ 1, 1.0 ]
           - position: 493
             amino_acids: [ 'Y', 'H' ]
             daily_crs: [ 0, 0.0005 ]
             multiplicative_effect_on_EC50:
               - drug_id: 0
-                factors: [ 1, 1.6 ]
+                factors: [ 1, 1.0 ]
           - position: 539
             amino_acids: [ 'R', 'T' ]
             daily_crs: [ 0, 0.0005 ]
             multiplicative_effect_on_EC50:
               - drug_id: 0
-                factors: [ 1, 1.6 ]
+                factors: [ 1, 1.0 ]
           - position: 543
             amino_acids: [ 'I', 'T' ]
             daily_crs: [ 0, 0.0005 ]
             multiplicative_effect_on_EC50:
               - drug_id: 0
-                factors: [ 1, 1.6 ]
+                factors: [ 1, 1.0 ]
           - position: 553
             amino_acids: [ 'P', 'L' ]
             daily_crs: [ 0, 0.0005 ]
             multiplicative_effect_on_EC50:
               - drug_id: 0
-                factors: [ 1, 1.6 ]
+                factors: [ 1, 1.0 ]
           - position: 561
             amino_acids: [ 'R', 'H' ]
             daily_crs: [ 0, 0.0005 ]
             multiplicative_effect_on_EC50:
               - drug_id: 0
-                factors: [ 1, 1.6 ]
+                factors: [ 1, 1.0 ]
           - position: 574
             amino_acids: [ 'P', 'L' ]
             daily_crs: [ 0, 0.0005 ]
             multiplicative_effect_on_EC50:
               - drug_id: 0
-                factors: [ 1, 1.6 ]
+                factors: [ 1, 1.0 ]
           - position: 580
             amino_acids: [ 'C', 'Y' ]
             daily_crs: [ 0, 0.0005 ]
             multiplicative_effect_on_EC50:
               - drug_id: 0
-                factors: [ 1, 1.6 ]
+                factors: [ 1, 1.0 ]
           - position: 675
             amino_acids: [ 'A', 'V' ]
             daily_crs: [ 0, 0.0005 ]
             multiplicative_effect_on_EC50:
               - drug_id: 0
-                factors: [ 1, 1.6 ]
+                factors: [ 1, 1.0 ]
   - chromosome: 14
     genes:
       - name: "Pfplasmepsin"
@@ -355,11 +359,11 @@ pf_genotype_info:
         cnv_daily_crs: [ 0, 0.0005 ]
         cnv_multiplicative_effect_on_EC50:
           - drug_id: 3
-#            factors: [ 1, 2.4137931 ]
+            #            factors: [ 1, 2.4137931 ]
             factors: [ 1, 1.37 ]
         aa_positions: [ ]
 
-override_ec50_patterns:
+override_ec50_patterns: #this is from Thu's DxG table
   - pattern: "||||NY1||K......,.||||||............|."
     drug_id: 1
     ec50: 0.8
@@ -439,10 +443,7 @@ initial_parasite_info:
   #if location id is -1 all location will have the same initial parasites
   - location_id: -1
     parasite_info: []
-#      #TNY__C1x
-#      - aa_sequence: "||||NY1||KTHFI,x||||||FNMYRIPRPC|1"
-#        prevalence: 0.05
-#      - aa_sequence: "||||YY1||KTHFI,x||||||FNMYRIPRPC|1"
+#      - aa_sequence: "||||NY1||TTHIFMG,x||||||FNCMYRIPRPCA|1"
 #        prevalence: 0.05
 
 # drug information below
@@ -468,6 +469,7 @@ initial_parasite_info:
 #               to intermediate concentrations, and then decreases linearly from intermediate concentrations to zero
 #
 
+# this is the daily probability that a parasite will mutate at a given locus when the drug concentration is not zero
 # mutation_probability_by_locus: 0.00235
 mutation_probability_by_locus: 0.001
 
@@ -560,56 +562,60 @@ tf_testing_day: 28
 therapy_db:
   #mono as
   0:
-    drug_id: [ 0 ]
-    dosing_days: [ 3 ]
+    drug_id: [0]
+    dosing_days: [3]
   #mono Lumefaltrine
   1:
-    drug_id: [ 1 ]
-    dosing_days: [ 3 ]
+    drug_id: [1]
+    dosing_days: [3]
   #mono AQ
   2:
-    drug_id: [ 2 ]
-    dosing_days: [ 3 ]
+    drug_id: [2]
+    dosing_days: [3]
   #mono PPQ
   3:
-    drug_id: [ 3 ]
-    dosing_days: [ 3 ]
+    drug_id: [3]
+    dosing_days: [3]
   #mono MQ
   4:
-    drug_id: [ 4 ]
-    dosing_days: [ 3 ]
+    drug_id: [4]
+    dosing_days: [3]
   #mono SP
   5:
-    drug_id: [ 5 ]
-    dosing_days: [ 3 ]
+    drug_id: [5]
+    dosing_days: [3]
   #AL
   6:
-    drug_id: [ 0,1 ]
-    dosing_days: [ 3 ]
+    drug_id: [0,1]
+    dosing_days: [3]
   #AS-AQ
   7:
-    drug_id: [ 0,2 ]
-    dosing_days: [ 3 ]
+    drug_id: [0,2]
+    dosing_days: [3]
   # DHA-PPQ
   8:
-    drug_id: [ 0,3 ]
-    dosing_days: [ 3 ]
+    drug_id: [0,3]
+    dosing_days: [3]
   #AS-MQ
   9:
-    drug_id: [ 0,4 ]
-    dosing_days: [ 3 ]
+    drug_id: [0,4]
+    dosing_days: [3]
   #TACT DHA-PPQ-MQ
   10:
-    drug_id: [ 0,3,4 ]
-    dosing_days: [ 3 ]
+    drug_id: [0,3,4]
+    dosing_days: [3]
   #TACT AL-AQ
   11:
-    drug_id: [ 0,1,2 ]
-    dosing_days: [ 3 ]
+    drug_id: [0,1,2]
+    dosing_days: [3]
   #CQ
   12:
-    drug_id: [ 6 ]
-    dosing_days: [ 3 ]
+    drug_id: [6]
+    dosing_days: [3]
+  #Generic for Burn-in
+  13:
+    drug_id: [8]
+    dosing_days: [3]
 
 # drug-deployment strategy - simply uncomment below to turn on a particular strategy
 strategy_db:
@@ -625,7 +631,6 @@ initial_strategy_id: 0
 # this number use to detemine whether a therapy is "useful" or not and it is used to calculate
 # the useful therapeutic duration of a therapy
 tf_rate: 0.1
-
 
 # days from end of liver-stage infection to appearance of symptoms
 days_to_clinical_under_five: 4
@@ -651,7 +656,7 @@ min_dosing_days: 1
 # exponentially distributed biting rate
 relative_bitting_info:
   max_relative_biting_value: 35
-  min_relative_biting_value: 0.35
+  min_relative_biting_value: 1.0
   number_of_biting_levels: 100
   biting_level_distribution:
     #  distribution: Exponential
@@ -674,7 +679,7 @@ relative_infectivity:
   blood_meal_volume: 3
 
 # probability to relapse after no treatment, or a treatment failure due to drug resistance
-p_relapse: 0.01
+p_relapse: 0.0
 
 # number of days before a relapse can occur
 relapse_duration: 30
@@ -685,7 +690,7 @@ relapseRate: 4.4721
 
 # minimum update frequency for a host's attributes (esp. parasite density) is every 7 days, or
 # more frequently if other events are occurring at this time
-update_frequency: 7
+update_frequency: 1
 
 #report to GUI and console every 30 days
 report_frequency: 30
@@ -706,21 +711,20 @@ external_population_circulation_information:
     Gamma:
       mean: 5
       sd: 10
-  circulation_percent: [ 0.0, 0.01, 0.01, 0.01, 0.01 ]
+  circulation_percent: [0.0, 0.01, 0.01, 0.01, 0.01 ]
   length_of_stay:
     # drawn from gamma distribution?
     mean: 5
     sd: 10
-  daily_EIR: [ 0.01,0.01,0.01,0.01,0.1 ]
+  daily_EIR: [0.01,0.01,0.01,0.01,0.1]
   seasonal_EIR:
-    a: [ 1 ]
-    phi: [ 180 ]
+    a: [1]
+    phi: [180]
     period: 360
     min_value: 0.1
 
-# TODO: remove unused parameter
 # free recombination among the drug resistance loci
-#using_free_recombination: true
+using_free_recombination: true
 #using_free_recombination: false
 
 # the current treatment failure rate as observed in the population is not really
@@ -738,7 +742,7 @@ using_variable_probability_infectious_bites_cause_infection: false
 
 fraction_mosquitoes_interrupted_feeding: 0.0
 
-inflation_factor: 0.01
+inflation_factor: 1.01
 
 events:
   - name: turn_off_mutation
@@ -748,14 +752,11 @@ events:
 mda_therapy_id: 8
 
 age_bracket_prob_individual_present_at_mda: [ 10, 40 ]
-
 mean_prob_individual_present_at_mda: [ 0.85, 0.75, 0.85 ]
-
 sd_prob_individual_present_at_mda: [ 0.3, 0.3, 0.3 ]
 
 #Mosquito
 mosquito_config:
   interrupted_feeding_rate: [0.19]
   prmc_size: 100
-
 within_host_induced_free_recombination: true
