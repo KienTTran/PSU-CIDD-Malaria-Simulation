@@ -61,6 +61,7 @@ public:
   std::vector<std::string> split_string(std::string str, char delimiter);
 
   std::string get_old_genotype_string(std::string new_genotype);
+    std::string get_old_genotype_string2(std::string new_genotype);
 };
 
 #endif  // POMS_SRC_MOSQUITO_MOSQUITO_H

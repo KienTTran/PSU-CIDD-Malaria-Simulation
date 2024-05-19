@@ -84,6 +84,22 @@ void Mosquito::infect_new_cohort_in_PRMC(Config *config, Random *random, Populat
       sampled_genotypes.clear();
       relative_infectivity_each_pp.clear();
 
+        /* There are 4 cases:
+         * 1. WH=1,IF=1: recombination between two persons
+         *    - Get 2 sample genotypes from 2 person
+         *    - Select 2 genotypes from 2 sampled genotypes
+         *    - Recombine 2 selected genotypes
+         * 2. WH=1,IF=0: recombination within one person
+         *    - Get 1 sample genotypes from 1 person
+         *    - Select 2 genotypes from 1 sampled genotypes
+         *    - Recombine 2 selected genotypes
+         * 3. WH=0,IF=1: recombination between two persons
+         *    - Get 1 genotype from each of 2 person
+         *    - Recombine 2 selected genotypes
+         * 4. WH=0,IF=0: recombination between two persons
+         *   - Get 1 genotype from each of 2 person
+         *   - Recombine 1 selected genotypes (nothing happen)
+        */
       if (config->within_host_induced_free_recombination()) {
         // get all infectious parasites from first person
         get_genotypes_profile_from_person(first_sampling[if_index], sampled_genotypes, relative_infectivity_each_pp);
@@ -234,5 +250,20 @@ std::string Mosquito::get_old_genotype_string(std::string new_genotype){
     std::string old_chr_14 = pattern_chr[13].substr(0, 1);
     std::string old_chr_x = pattern_chr[6].substr(6, 1);
     return old_chr_5+"|"+old_chr_7+"|"+old_chr_13+"|"+old_chr_14;
+}
+
+
+std::string Mosquito::get_old_genotype_string2(std::string new_genotype){
+  std::vector<std::string> pattern_chr = split_string(new_genotype,'|');
+  std::string old_chr_7 = pattern_chr[6].substr(0, 7);
+  std::string old_chr_5 = pattern_chr[4];
+//    if(pattern_chr[4].substr(2, 1) == "2")
+//        old_chr_5 = pattern_chr[4].substr(0, 2)+pattern_chr[4].substr(0, 2);
+//    else
+//        old_chr_5 = pattern_chr[4].substr(0, 2)+"--";
+  std::string old_chr_13 = pattern_chr[12].substr(0, 13);
+  std::string old_chr_14 = pattern_chr[13].substr(0, 1);
+  std::string old_chr_x = pattern_chr[6].substr(6, 1);
+  return old_chr_7[0]+old_chr_5+old_chr_13[10]+old_chr_14;
 }
 

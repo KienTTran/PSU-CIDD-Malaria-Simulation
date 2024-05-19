@@ -151,6 +151,14 @@ int main(int argc, char** argv) {
               exit(0);
         }
         else{
+            // ==== override population size ======
+            if (input.population_size != Model::POPULATION->size()) {
+                Model::CONFIG->location_db()[0].population_size = input.population_size;
+                delete Model::POPULATION;
+                p_model->set_population(new Population(p_model));
+                Model::POPULATION = p_model->population();
+                p_model->population()->initialize();
+            }
             // ==== override drug type info ========
             auto start_drug_id = input.is_art ? 0 : 1;
             for (int i = 0; i < input.number_of_drugs_in_combination; i++) {
@@ -234,7 +242,7 @@ int main(int argc, char** argv) {
         std::cout << std::endl;
         for(int g_index = 0; g_index < input.genotypes.size(); g_index++){
             std::stringstream ss;
-            ss << g_index << "\t" << Model::MOSQUITO->get_old_genotype_string(input.genotypes[g_index]) << "\t";
+            ss << g_index << "\t" << Model::MOSQUITO->get_old_genotype_string2(input.genotypes[g_index]) << "\t";
             if(input.therapy_list.empty()){
               for (auto therapy_id = min_therapy_id; therapy_id <= max_therapy_id; therapy_id++) {
                 double efficacy = getEfficacyForTherapy(input.genotypes[g_index], p_model, input, therapy_id);
@@ -270,6 +278,7 @@ void create_cli_option(CLI::App& app, AppInput& input) {
     app.add_option("--cc", input.is_crt_calibration, "Enable PfCRT ec50 calibration");
     app.add_option("--tl", input.therapy_list, "Get efficacy for list of therapies [0 1 2 ...]");
     //EfficacyEstimator. --ee to enable and use below params
+    app.add_option("--popsize", input.population_size, "Population size for EfficacyEstimator");
     app.add_option("--ee", input.is_ee_calibration, "Enable EfficacyEstimator");
     app.add_option("--EC50", input.EC50, "ee ec50");
     app.add_option("--art", input.is_art, "ee is art");

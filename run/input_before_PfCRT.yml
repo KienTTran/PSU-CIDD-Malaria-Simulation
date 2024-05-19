@@ -104,7 +104,6 @@ death_rate_by_age_class: [ 0.053979329, 0.018935757, 0.006867257, 0.001124347, 0
 # when received treatment, this rate drop by factor of 10 in code
 mortality_when_treatment_fail_by_age_class: [ 0.040, 0.020,0.020,0.020,0.020,0.004,0.004,0.004,0.004,0.004,0.004, 0.001, 0.001, 0.001, 0.001 ]
 
-
 # definitions of some log parasite density levels
 #
 parasite_density_level:
@@ -493,7 +492,7 @@ drug_db:
     maximum_parasite_killing_rate: 0.99
     n: 20
     age_specific_drug_concentration_sd: [ 0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4 ]
-    age_specific_drug_absorption: [ 0.7,0.7,0.85,0.85,0.85,0.85,0.85,0.85,0.85,0.85,1.0,1.0,1.0,1.0,1.0 ]
+    #age_specific_drug_absorption: [ 0.7,0.7,0.85,0.85,0.85,0.85,0.85,0.85,0.85,0.85,1.0,1.0,1.0,1.0,1.0 ]
     k: 4
     base_EC50: 0.6
   2:
