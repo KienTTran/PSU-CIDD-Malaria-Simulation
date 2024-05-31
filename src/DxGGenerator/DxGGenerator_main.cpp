@@ -242,7 +242,7 @@ int main(int argc, char** argv) {
         std::cout << std::endl;
         for(int g_index = 0; g_index < input.genotypes.size(); g_index++){
             std::stringstream ss;
-            ss << g_index << "\t" << Model::MOSQUITO->get_old_genotype_string2(input.genotypes[g_index]) << "\t";
+            ss << g_index << "\t" << Model::MOSQUITO->get_old_genotype_string(input.genotypes[g_index]) << "\t";
             if(input.therapy_list.empty()){
               for (auto therapy_id = min_therapy_id; therapy_id <= max_therapy_id; therapy_id++) {
                 double efficacy = getEfficacyForTherapy(input.genotypes[g_index], p_model, input, therapy_id);

@@ -512,7 +512,7 @@ drug_db:
     maximum_parasite_killing_rate: 0.99
     n: 20
     age_specific_drug_concentration_sd: [ 0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4 ]
-    #age_specific_drug_absorption: [ 0.7,0.7,0.85,0.85,0.85,0.85,0.85,0.85,0.85,0.85,1.0,1.0,1.0,1.0,1.0 ]
+    age_specific_drug_absorption: [ 0.7,0.7,0.85,0.85,0.85,0.85,0.85,0.85,0.85,0.85,1.0,1.0,1.0,1.0,1.0 ]
     k: 4
     base_EC50: 0.6
   2:

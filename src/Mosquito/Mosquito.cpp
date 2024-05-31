@@ -96,8 +96,8 @@ void Mosquito::infect_new_cohort_in_PRMC(Config *config, Random *random, Populat
          * 3. WH=0,IF=1: recombination between two persons
          *    - Get 1 genotype from each of 2 person
          *    - Recombine 2 selected genotypes
-         * 4. WH=0,IF=0: recombination between two persons
-         *   - Get 1 genotype from each of 2 person
+         * 4. WH=0,IF=0: recombination inside 1 persons
+         *   - Get 1 genotype from 1 person
          *   - Recombine 1 selected genotypes (nothing happen)
         */
       if (config->within_host_induced_free_recombination()) {
@@ -167,6 +167,11 @@ void Mosquito::infect_new_cohort_in_PRMC(Config *config, Random *random, Populat
         }
       }
 
+      /* The sampling 2 genotypes here are WITH replacement (see roulette sampling code)
+       * 1. We select two people with different g(density) and sample genotypes from them,
+       * 2. We select two genotypes based on their relative infectivity so there is a case
+       * that we select the same genotype twice.
+       * */
       auto parent_genotypes = random->roulette_sampling<Genotype>(2, relative_infectivity_each_pp, sampled_genotypes, false);
 
       Genotype *sampled_genotype =

@@ -135,7 +135,7 @@ void immune_system_information::set_value(const YAML::Node &node) {
     value_.acquire_rate_by_age.push_back(factor * acR);
 
     acR *= (1 + value_.immune_inflation_rate);
-    std::cout << "age " << age << ": "<< acR << std::endl;
+//    std::cout << "age " << age << ": "<< acR << std::endl;
   }
   assert(value_.acquire_rate_by_age.size() == 81);
 

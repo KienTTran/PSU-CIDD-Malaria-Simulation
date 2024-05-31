@@ -231,25 +231,25 @@ pf_genotype_info:
             daily_crs: [ 0, 0.0005 ]
             multiplicative_effect_on_EC50:
               - drug_id: 3
-                factors: [ 1, 1.64 ]
+                factors: [ 1, 1.84 ]
           - position: 97
             amino_acids: [ 'H', 'Y' ]
             daily_crs: [ 0, 0.0005 ]
             multiplicative_effect_on_EC50:
               - drug_id: 3
-                factors: [ 1, 1.64 ]
+                factors: [ 1, 1.84 ]
           - position: 145
             amino_acids: [ 'F', 'I' ]
             daily_crs: [ 0, 0.0005 ]
             multiplicative_effect_on_EC50:
               - drug_id: 3
-                factors: [ 1, 100.0 ]
+                factors: [ 1, 2.23 ]
           - position: 218
             amino_acids: [ 'I', 'F' ]
             daily_crs: [ 0, 0.0005 ]
             multiplicative_effect_on_EC50:
               - drug_id: 3
-                factors: [ 1, 1.64 ]
+                factors: [ 1, 1.84 ]
           - position: 343
             amino_acids: [ 'M', 'L' ]
             daily_crs: [ 0, 0.0005 ]
@@ -487,7 +487,7 @@ drug_db:
     maximum_parasite_killing_rate: 0.99
     n: 20
     age_specific_drug_concentration_sd: [ 0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4 ]
-    #age_specific_drug_absorption: [ 0.7,0.7,0.85,0.85,0.85,0.85,0.85,0.85,0.85,0.85,1.0,1.0,1.0,1.0,1.0 ]
+    age_specific_drug_absorption: [ 0.7,0.7,0.85,0.85,0.85,0.85,0.85,0.85,0.85,0.85,1.0,1.0,1.0,1.0,1.0 ]
     k: 4
     base_EC50: 0.6
   2:
