@@ -22,4 +22,5 @@ struct AppInput {
     std::vector<double> mean_drug_absorption;
     int population_size { 10000 };
     bool is_print_immunity_level {false};
+    bool is_old_format {false};
 };

@@ -242,7 +242,12 @@ int main(int argc, char** argv) {
         std::cout << std::endl;
         for(int g_index = 0; g_index < input.genotypes.size(); g_index++){
             std::stringstream ss;
-            ss << g_index << "\t" << Model::MOSQUITO->get_old_genotype_string(input.genotypes[g_index]) << "\t";
+            if(input.is_old_format){
+                ss << g_index << "\t" << Model::MOSQUITO->get_old_genotype_string2(input.genotypes[g_index]) << "\t";
+            }
+            else{
+                ss << g_index << "\t" << Model::MOSQUITO->get_old_genotype_string(input.genotypes[g_index]) << "\t";
+            }
             if(input.therapy_list.empty()){
               for (auto therapy_id = min_therapy_id; therapy_id <= max_therapy_id; therapy_id++) {
                 double efficacy = getEfficacyForTherapy(input.genotypes[g_index], p_model, input, therapy_id);
@@ -274,6 +279,7 @@ void create_cli_option(CLI::App& app, AppInput& input) {
     app.add_option("--iiv", input.as_iiv, "AS inter-individual-variability");
     app.add_option("--ec50", input.as_ec50, "EC50 for AS on C580 only");
     app.add_option("--pil", input.is_print_immunity_level, "print immunity level");
+    app.add_option("--old_format", input.is_old_format, "print old format genotype");
     //DxG to calibrate PfCRT factor. --cc to enable and use with -g to distribute 3 genotypes to population, --tl to get efficacy of list of therapy
     app.add_option("--cc", input.is_crt_calibration, "Enable PfCRT ec50 calibration");
     app.add_option("--tl", input.therapy_list, "Get efficacy for list of therapies [0 1 2 ...]");
