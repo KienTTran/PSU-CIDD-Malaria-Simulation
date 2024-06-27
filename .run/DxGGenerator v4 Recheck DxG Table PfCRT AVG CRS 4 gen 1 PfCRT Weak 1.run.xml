@@ -1,0 +1,7 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="DxGGenerator v4 Recheck DxG Table PfCRT AVG CRS 4 gen 1 PfCRT Weak 1" type="CMakeRunConfiguration" factoryName="Application" PROGRAM_PARAMS="-i ../../run/DxG_And_EE/input_DxG_CRT_v4_PfCRT_average_CRS.yml --of ../../run/output_test.csv --tl 0 3 8 -g &quot;||||NY1||KSHFIMG,x||||||FNCMYRIPRPCA|1&quot; &quot;||||NY1||KSHFIMG,x||||||FNCMYRIPRPYA|1&quot; &quot;||||NY1||KSHFIMG,x||||||FNCMYRIPRPCA|2&quot; &quot;||||NY1||KSHFIMG,x||||||FNCMYRIPRPYA|2&quot;" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" WORKING_DIR="file://$PROJECT_DIR$/cmake-build-release/bin" PASS_PARENT_ENVS_2="true" PROJECT_NAME="POMS" TARGET_NAME="DxGGenerator" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="POMS" RUN_TARGET_NAME="DxGGenerator">
+    <method v="2">
+      <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+    </method>
+  </configuration>
+</component>
