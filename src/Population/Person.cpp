@@ -542,6 +542,9 @@ void Person::update() {
   // the other will be update in birthday event
   update_bitting_level();
 
+//  Print ECE50 table
+//  printf("EC50 TYY AS: %.6f LUM: %.6f\n",Model::CONFIG->EC50_power_n_table()[72][0],Model::CONFIG->EC50_power_n_table()[72][1]);
+
   latest_update_time_ = Model::SCHEDULER->current_time();
   //    std::cout << "End Person Update"<< std::endl;
 }

@@ -104,7 +104,7 @@ int Genotype::select_mutation_allele(const int &mutation_locus) {
 }
 
 std::ostream &operator<<(std::ostream &os, const Genotype &e) {
-  os << e.genotype_id_ << "\t";
+  os << e.genotype_id_ << ",";
   for (auto i = 0; i < e.gene_expression_.size(); i++) {
     const auto v = e.gene_expression_[i];
     os << Model::CONFIG->genotype_info().loci_vector[i].alleles[v];

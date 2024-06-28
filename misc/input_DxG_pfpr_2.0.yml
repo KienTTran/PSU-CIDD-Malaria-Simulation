@@ -8,7 +8,7 @@
 #
 # ---------------------------------------------------------------
 
-initial_seed_number: 123456
+
 # starting time point of the simulation (in yyyy/m/d format) 
 # which is day 0 in the simulation
 # including the burn-in period which we normally set to 4000# days;
@@ -116,6 +116,7 @@ parasite_density_level:
   log_parasite_density_clinical_from:     3.301    # corresponds to 2000 parasites per microliter of blood (total 10^10)
   log_parasite_density_clinical_to:     5.301    # corresponds to 200,000 parasites per microliter of blood (total 10^12)
   log_parasite_density_detectable:   1.000    # corresponds to 10 parasites per microliter of blood
+  log_parasite_density_detectable_pfpr:   2.000    # corresponds to 100 parasites per microliter of blood
   log_parasite_density_pyrogenic:    3.398    # corresponds to 2500 parasites per microliter of blood
 
   
@@ -347,6 +348,7 @@ drug_db:
     maximum_parasite_killing_rate: 0.999
     n: 25
     age_specific_drug_concentration_sd: [0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4]
+    #age_specific_drug_concentration_sd: [0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.2]
     mutation_probability: 0.005
     affecting_loci: [2]
     selecting_alleles: [[1]]
@@ -732,7 +734,7 @@ using_free_recombination: true
 # today's treatment failure rate, as these data are never assembled that quickly in
 # real life; rather, it is the average treatment failure rate observed over the 
 # past 60 days
-tf_window_size: 90
+tf_window_size: 60
 
 # special function to make the mean biting rate (across hosts) depend on age
 using_age_dependent_bitting_level: false
