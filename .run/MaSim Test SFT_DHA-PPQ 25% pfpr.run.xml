@@ -1,0 +1,7 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="MaSim Test SFT_DHA-PPQ 25% pfpr" type="CMakeRunConfiguration" factoryName="Application" PROGRAM_PARAMS="-i SFT_DHA-PPQ_25p/SFT_DHA-PPQ_25p.yml -r ValidationReporter -o SFT_DHA-PPQ_25p &gt; SFT_DHA-PPQ_25p/log/0.output" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="POMS" TARGET_NAME="MaSim" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="POMS" RUN_TARGET_NAME="MaSim">
+    <method v="2">
+      <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+    </method>
+  </configuration>
+</component>

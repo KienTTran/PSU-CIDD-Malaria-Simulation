@@ -456,7 +456,7 @@ initial_parasite_info:
   - location_id: -1
     parasite_info:
       #TNY__C1x
-      - aa_sequence: "||||NY1||KTTIIMG,x||||||FNCMYRIPRPCA|1"
+      - aa_sequence: "||||NY1||KTHFIMG,x||||||FNCMYRIPRPCA|1"
         prevalence: 0.05
 
 # drug information below

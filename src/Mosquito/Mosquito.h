@@ -54,10 +54,6 @@ public:
   void get_genotypes_profile_from_person(Person *person, std::vector<Genotype *> &sampling_genotypes,
                                          std::vector<double> &relative_infectivity_each_pp);
 
-  typedef std::tuple<bool,int,int,std::string> resistant_result_info;
-  resistant_result_info count_resistant_genotypes(Config* config, int loc, std::vector<Genotype*> parent_genotypes, Genotype *genotype,
-                                                  std::vector<int> drugs, int resistant_drug_pair_id, int resistant_type_id, bool verbose = false);
-
   std::vector<std::string> split_string(std::string str, char delimiter);
 
   std::string get_old_genotype_string(std::string new_genotype);

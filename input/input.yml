@@ -188,7 +188,7 @@ circulation_info:
     mean: 5
     sd: 10
 
-mutation_mask: "||||111||1000000,0||||||000000000010|1"
+mutation_mask: "||||111||1111100,0||||||000000000010|1"
 
 # the appearance of gene should be in order
 # the appearance of gene should be in order
@@ -229,11 +229,15 @@ pf_genotype_info:
   - chromosome: 7
     genes:
       - name: "Pfcrt"
-        #        multiplicative_effect_on_EC50_for_2_or_more_mutations: 1.1
+        multiplicative_effect_on_EC50_for_2_or_more_mutations:
+          - drug_id: 3
+            factor: 1.0
+        average_daily_crs: 0.1290
+        # 0.1290 is average of (0.1169,0.0081,0.2621 -  converted from fitness (2.19,2.46,1.83)) from Small-Sander PLOS 2019 paper
         aa_positions:
           - position: 76
             amino_acids: [ 'K', 'T' ]
-            daily_crs: [ 0, 0.0005 ]
+            daily_crs: [ 0, 0.003875969 ]
             multiplicative_effect_on_EC50:
               - drug_id: 6
                 factors: [ 1, 1.6 ]
@@ -243,40 +247,40 @@ pf_genotype_info:
                 factors: [ 1, 1.2 ]
           - position: 93
             amino_acids: [ 'T', 'S' ]
-            daily_crs: [ 0, 0.0005 ]
+            daily_crs: [ 0, 0.0002433748 ]
             multiplicative_effect_on_EC50:
               - drug_id: 3
-                factors: [ 1, 1.64 ]
+                factors: [ 1, 1.66 ]
           - position: 97
             amino_acids: [ 'H', 'Y' ]
-            daily_crs: [ 0, 0.0005 ]
+            daily_crs: [ 0, 0.003875969 ]
             multiplicative_effect_on_EC50:
               - drug_id: 3
-                factors: [ 1, 1.64 ]
+                factors: [ 1, 1.66 ]
           - position: 145
             amino_acids: [ 'F', 'I' ]
-            daily_crs: [ 0, 0.0005 ]
+            daily_crs: [ 0, 0.0078751277 ]
             multiplicative_effect_on_EC50:
               - drug_id: 3
-                factors: [ 1, 2.23]
+                factors: [ 1, 2.22]
           - position: 218
             amino_acids: [ 'I', 'F' ]
-            daily_crs: [ 0, 0.0005 ]
+            daily_crs: [ 0, 0.0035124091 ]
             multiplicative_effect_on_EC50:
               - drug_id: 3
-                factors: [ 1, 1.64 ]
+                factors: [ 1, 1.66 ]
           - position: 343
             amino_acids: [ 'M', 'L' ]
-            daily_crs: [ 0, 0.0005 ]
+            daily_crs: [ 0, 0.003875969 ]
             multiplicative_effect_on_EC50:
               - drug_id: 3
-                factors: [ 1, 1.0 ]
+                factors: [ 1, 1.0 ] #double check with M
           - position: 353
             amino_acids: [ 'G', 'V' ]
-            daily_crs: [ 0, 0.0005 ]
+            daily_crs: [ 0, 0.003875969 ]
             multiplicative_effect_on_EC50:
               - drug_id: 3
-                factors: [ 1, 1.0 ]
+                factors: [ 1, 1.0 ] #double check with M
       - name: "Pfkaf"
         aa_positions:
           - position: 500
@@ -456,7 +460,7 @@ initial_parasite_info:
   - location_id: -1
     parasite_info:
       #TNY__C1x
-      - aa_sequence: "||||NY1||KTTIIMG,x||||||FNCMYRIPRPCA|1"
+      - aa_sequence: "||||NY1||KTHFIMG,x||||||FNCMYRIPRPCA|1"
         prevalence: 0.05
 
 # drug information below
@@ -483,7 +487,7 @@ initial_parasite_info:
 #
 
 # this is the daily probability that a parasite will mutate at a given locus when the drug concentration is not zero
-mutation_probability_by_locus: 0.005
+mutation_probability_by_locus: 0.001
 
 drug_db:
   0:

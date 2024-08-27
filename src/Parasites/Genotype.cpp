@@ -95,6 +95,7 @@ bool Genotype::is_valid(const PfGeneInfo &gene_info) {
 void Genotype::calculate_daily_fitness(const PfGeneInfo &gene_info) {
   daily_fitness_multiple_infection = 1.0;
 
+  LOG(TRACE) << "Genotype: " << aa_sequence;
   for (int chromosome_i = 0; chromosome_i < pf_genotype_str.size(); ++chromosome_i) {
     auto chromosome_info = gene_info.chromosome_infos[chromosome_i];
 
@@ -116,12 +117,14 @@ void Genotype::calculate_daily_fitness(const PfGeneInfo &gene_info) {
 
             if (res_gene_info.average_daily_crs > 0) {
                 daily_fitness_multiple_infection *= (1 - res_gene_info.average_daily_crs*cr);
-                LOG(TRACE) << "Using average CRS chromosome_i: " << chromosome_i << " gene_i: " << gene_i << " aa_i: " << aa_i << " cr: " << cr
-                << " average_daily_crs: " << res_gene_info.average_daily_crs;
+                LOG(TRACE) << "\tUsing average CRS chromosome_i: " << chromosome_i + 1<< " gene_i: " << gene_i << " aa_i: " << aa_i << " cr: " << cr
+                << " average_daily_crs: " << res_gene_info.average_daily_crs
+                << " cr: " << cr
+                << " (1 - res_gene_info.average_daily_crs*cr): " << (1 - res_gene_info.average_daily_crs*cr);
             } else {
                 daily_fitness_multiple_infection *= (1 - cr);
             }
-            LOG(TRACE) << "Genotype: " << aa_sequence << " chromosome_i: " << chromosome_i << " gene_i: " << gene_i << " aa_i: " << aa_i << " cr: " << cr
+            LOG(TRACE) << "Genotype: " << aa_sequence << " chromosome_i: " << chromosome_i + 1<< " gene_i: " << gene_i << " aa_i: " << aa_i << " cr: " << cr
             << " daily_fitness_multiple_infection: " << daily_fitness_multiple_infection;
         }
 
@@ -130,10 +133,14 @@ void Genotype::calculate_daily_fitness(const PfGeneInfo &gene_info) {
         auto copy_number = (int)pf_genotype_str[chromosome_i][gene_i].back() - 48;
         if (copy_number > 1) {
           daily_fitness_multiple_infection *= 1 - res_gene_info.cnv_daily_crs[copy_number - 1];
+          LOG(TRACE) << "Genotype: " << aa_sequence << " chromosome_i: " << chromosome_i + 1<< " gene_i: " << gene_i
+                    << " CNV res_gene_info.cnv_daily_crs[" << copy_number - 1 << "]: " << res_gene_info.cnv_daily_crs[copy_number - 1]
+                    << " daily_fitness_multiple_infection: " << daily_fitness_multiple_infection;
         }
       }
     }
   }
+//  LOG(INFO) << "\n";
 }
 
 void Genotype::calculate_EC50_power_n(const PfGeneInfo &gene_info, DrugDatabase *drug_db) {
@@ -216,42 +223,69 @@ void Genotype::calculate_EC50_power_n(const PfGeneInfo &gene_info, DrugDatabase 
 
 Genotype *Genotype::perform_mutation_by_drug(Config *pConfig, Random *pRandom, DrugType *pDrugType, double mutation_probability_by_locus) const {
   std::string new_aa_sequence { aa_sequence };
+//  LOG(INFO) << "mask: " << pConfig->mutation_mask();
+//  LOG(INFO) << "old aa_sequence: " << aa_sequence;
   for(int aa_pos_id = 0; aa_pos_id < pDrugType->resistant_aa_locations.size(); aa_pos_id++) {
     // get aa position info (aa index in aa string, is copy number)
     auto aa_pos = pDrugType->resistant_aa_locations[aa_pos_id];
     if(pConfig->mutation_mask()[aa_pos.aa_index_in_aa_string] == '1'){
-        const auto p = Model::RANDOM->random_flat(0.0, 1.0);
+        const auto p = pRandom->random_flat(0.0, 1.0);
+//        LOG(INFO) << "p: " << p << " Mutation probability: " << mutation_probability_by_locus;
+//        LOG(INFO) << "aa_pos_id: " << aa_pos_id << " aa_pos.aa_index_in_aa_string: " << aa_pos.aa_index_in_aa_string;
         if (p < mutation_probability_by_locus){
           if (aa_pos.is_copy_number) {
                 // increase or decrease by 1 step
                 auto old_copy_number = NumberHelpers::char_to_single_digit_number(aa_sequence[aa_pos.aa_index_in_aa_string]);
+//                LOG(INFO) << "old_copy_number: " << old_copy_number;
                 if (old_copy_number == 1) {
+//                  LOG(INFO) << "old_copy_number == 1";
                     new_aa_sequence[aa_pos.aa_index_in_aa_string] = NumberHelpers::single_digit_number_to_char(old_copy_number + 1);
                 } else if (old_copy_number == pConfig->pf_genotype_info()
                                    .chromosome_infos[aa_pos.chromosome_id]
                                    .gene_infos[aa_pos.gene_id]
                                    .max_copies) {
+//                    LOG(INFO) << "old_copy_number == max_copies";
                     new_aa_sequence[aa_pos.aa_index_in_aa_string] = NumberHelpers::single_digit_number_to_char(old_copy_number - 1);
                 } else {
                     auto new_copy_number = pRandom->random_uniform() < 0.5 ? old_copy_number - 1 : old_copy_number + 1;
+//                    LOG(INFO) << "else " << "pRandom->random_uniform(): " << pRandom->random_uniform() << " new_copy_number: " << new_copy_number;
                     new_aa_sequence[aa_pos.aa_index_in_aa_string] = NumberHelpers::single_digit_number_to_char(new_copy_number);
                 }
-
             } else {
                 auto &aa_list = pConfig->pf_genotype_info()
                         .chromosome_infos[aa_pos.chromosome_id]
                         .gene_infos[aa_pos.gene_id]
                         .aa_position_infos[aa_pos.aa_id]
                         .amino_acids;
+//                LOG(INFO) << "aa_list: [" << aa_list[0] << "," << aa_list[1] << "]";
                 // draw random aa id
                 auto new_aa_id = pRandom->random_uniform(aa_list.size() - 1);
-
+//                LOG(INFO) << "pRandom->random_uniform(aa_list.size() - 1) " << pRandom->random_uniform(aa_list.size() - 1);
                 auto old_aa = aa_sequence[aa_pos.aa_index_in_aa_string];
                 auto new_aa = aa_list[new_aa_id];
+//                LOG(INFO) << "Mutation old_aa: " << old_aa << " -> new_aa: " << new_aa;
+//                if (new_aa == old_aa) {
+//                    LOG(INFO) << "old_aa: " << old_aa << " == new_aa: " << new_aa;
+//                    new_aa = aa_list[new_aa_id + 1];
+//                }
                 if (new_aa == old_aa) {
+                  if (new_aa_id + 1 < aa_list.size()) {
                     new_aa = aa_list[new_aa_id + 1];
+                  } else {
+                    new_aa = aa_list[0];
+                  }
                 }
                 new_aa_sequence[aa_pos.aa_index_in_aa_string] = new_aa;
+//                if (aa_pos.aa_index_in_aa_string == 10 && new_aa == 'T'){
+//                  LOG(INFO) << Model::SCHEDULER->current_time() << " p: " << p << " < " << mutation_probability_by_locus
+//                            << " select new_aa_id: " << new_aa_id
+//                            << " from [0," << aa_list.size() - 1 << "]"
+//                            << " aa_list[new_aa_id] = aa_list[" << new_aa_id << "] = " << aa_list[new_aa_id];
+//                  LOG(INFO) << Model::SCHEDULER->current_time() << " Mutation " << old_aa << " -> " << new_aa <<
+//                            " old:" << aa_sequence
+//                            <<" new: " << new_aa_sequence
+//                            << " aa_pos_id: " << aa_pos_id << " aa_pos: " << aa_pos.aa_index_in_aa_string;
+//                }
             }
         }
     }
