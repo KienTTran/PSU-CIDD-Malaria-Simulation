@@ -250,7 +250,11 @@ Genotype *Genotype::perform_mutation_by_drug(Config *pConfig, Random *pRandom, D
                 auto old_aa = aa_sequence[aa_pos.aa_index_in_aa_string];
                 auto new_aa = aa_list[new_aa_id];
                 if (new_aa == old_aa) {
-                    new_aa = aa_list[new_aa_id + 1];
+                if (new_aa_id + 1 < aa_list.size()) {
+                        new_aa = aa_list[new_aa_id + 1];
+                    } else {
+                        new_aa = aa_list[0];
+                    }
                 }
                 new_aa_sequence[aa_pos.aa_index_in_aa_string] = new_aa;
             }
