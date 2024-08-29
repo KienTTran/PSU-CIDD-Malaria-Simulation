@@ -54,6 +54,7 @@ void config_logger() {
 }
 
 int main(const int argc, char **argv) {
+    printf("MaSim\n[Log all recombination events]\n");
 #ifndef __DISABLE_CRIT_ERR
   // Set the last chance error handler
   struct sigaction sigact;

@@ -276,7 +276,7 @@ Genotype *Genotype::perform_mutation_by_drug(Config *pConfig, Random *pRandom, D
                   }
                 }
                 new_aa_sequence[aa_pos.aa_index_in_aa_string] = new_aa;
-//                if (aa_pos.aa_index_in_aa_string == 10 && new_aa == 'T'){
+//                if (aa_pos.aa_index_in_aa_string == 9 && old_aa == 'K' && new_aa == 'T'){
 //                  LOG(INFO) << Model::SCHEDULER->current_time() << " p: " << p << " < " << mutation_probability_by_locus
 //                            << " select new_aa_id: " << new_aa_id
 //                            << " from [0," << aa_list.size() - 1 << "]"

@@ -237,7 +237,8 @@ void ValidationReporter::monthly_report() {
             ss << std::get<1>(Model::DATA_COLLECTOR->mutation_tracker[loc][i]) << sep;
             ss << std::get<2>(Model::DATA_COLLECTOR->mutation_tracker[loc][i]) << sep;
             ss << std::get<3>(Model::DATA_COLLECTOR->mutation_tracker[loc][i]) << sep;
-            ss << std::get<4>(Model::DATA_COLLECTOR->mutation_tracker[loc][i]) << '\n';
+            ss << std::get<4>(Model::DATA_COLLECTOR->mutation_tracker[loc][i]) << sep;
+            ss << std::get<5>(Model::DATA_COLLECTOR->mutation_tracker[loc][i]) << '\n';
         }
     }
     if(sum > 0){
