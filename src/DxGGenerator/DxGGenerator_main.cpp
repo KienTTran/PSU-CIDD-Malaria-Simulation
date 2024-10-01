@@ -219,12 +219,12 @@ int main(int argc, char** argv) {
             p_model->run();
 
             const auto result = 1 - Model::DATA_COLLECTOR->blood_slide_prevalence_by_location()[0];
-            fmt::print(
-                "pop\tdose\thalflife\tkmax\tec50\tslope\tis_art\tefficacy\n"
-                "{}\t{}\t{}\t{}\t{}\t{}\t{}\t{:f}\n", p_model->population()->all_persons()->size(), fmt::join(input.dosing_days, "\t"),
-                fmt::join(input.half_life, "\t"), fmt::join(input.k_max, "\t"), fmt::join(input.EC50, "\t"),
-                fmt::join(input.slope, "\t"), input.is_art ? 1 : 0, result
-            );
+//            fmt::print(
+//                "pop\tdose\thalflife\tkmax\tec50\tslope\tis_art\tefficacy\n"
+//                "{}\t{}\t{}\t{}\t{}\t{}\t{}\t{:f}\n", p_model->population()->all_persons()->size(), fmt::join(input.dosing_days, "\t"),
+//                fmt::join(input.half_life, "\t"), fmt::join(input.k_max, "\t"), fmt::join(input.EC50, "\t"),
+//                fmt::join(input.slope, "\t"), input.is_art ? 1 : 0, result
+//            );
         }
     }
     else{

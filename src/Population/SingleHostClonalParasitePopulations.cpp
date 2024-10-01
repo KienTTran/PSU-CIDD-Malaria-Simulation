@@ -154,14 +154,13 @@ void SingleHostClonalParasitePopulations::update_by_drugs(DrugsInBlood* drugs_in
           new_genotype = candidate_genotype;
         }
         if (new_genotype != blood_parasite->genotype()) {
-//            if(blood_parasite->genotype()->get_aa_sequence()[9] == 'K'
-//               && new_genotype->get_aa_sequence()[9] == 'T'){
-//              LOG(INFO) << "76 K -> T";
-//            }
-//            if(blood_parasite->genotype()->get_aa_sequence()[10] == 'T'
-//            && new_genotype->get_aa_sequence()[10] == 'S'){
-//                LOG(INFO) << "93 T -> S";
-//            }
+            if(blood_parasite->genotype()->get_aa_sequence()[9] == 'K'
+               && new_genotype->get_aa_sequence()[9] == 'T'){
+              LOG(INFO) << "76 K -> T";
+            }
+            if(new_genotype->get_aa_sequence()[9] == 'T'){
+                LOG(INFO) << "new 76T " << blood_parasite->genotype()->aa_sequence << " -> " << new_genotype->aa_sequence;
+            }
           // mutation occurs
           Model::DATA_COLLECTOR->record_1_mutation(person_->location(), blood_parasite->genotype(), new_genotype);
           Model::DATA_COLLECTOR->record_1_mutation_by_drug(person_->location(), blood_parasite->genotype(), new_genotype, drug_id);
