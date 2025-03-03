@@ -220,185 +220,193 @@ pf_genotype_info:
       - name: "Pfmdr1"
         max_copies: 2
         # copy number variation cost of resistances
-        cnv_daily_crs: [ 0, 0.0005 ]
+        cnv_daily_crs: [ 0, 0.400005 ]
         cnv_multiplicative_effect_on_EC50:
           - drug_id: 4
-            factors: [ 1, 2.44444444 ]
+            factors: [ 1, 4012.44444444 ]
           - drug_id: 1
-            factors: [ 1, 1.3 ]
+            factors: [ 1, 4021.3 ]
         multiplicative_effect_on_EC50_for_2_or_more_mutations:
           - drug_id: 1
-            factor: 1.05
+            factor: 4031.05
         aa_positions:
           - position: 86
             amino_acids: [ 'N', 'Y' ]
-            daily_crs: [ 0, 0.0005 ]
+            daily_crs: [ 0, 0.410005 ]
             multiplicative_effect_on_EC50:
               - drug_id: 6
-                factors: [ 1, 1.25 ]
+                factors: [ 1, 4111.25 ]
               - drug_id: 1
-                factors: [ 1.25, 1 ]
+                factors: [ 1.25, 4121 ]
               - drug_id: 2
-                factors: [ 1, 1.42 ]
+                factors: [ 1, 4131.42 ]
           - position: 184
             amino_acids: [ 'Y', 'F' ]
-            daily_crs: [ 0, 0.0005 ]
+            daily_crs: [ 0, 0.420005 ]
             multiplicative_effect_on_EC50:
               - drug_id: 1
-                factors: [ 1, 1.25 ] # base*1.25*1.25 0.9375 > 0.8xxx (old value)
+                factors: [ 1, 4141.25 ] # base*1.25*1.25 0.9375 > 0.8xxx (old value)
               - drug_id: 2
-                factors: [ 1.2, 1 ]
+                factors: [ 1.2, 4151 ]
   - chromosome: 7
     genes:
       - name: "Pfcrt"
         multiplicative_effect_on_EC50_for_2_or_more_mutations:
           - drug_id: 3
-            factor: 1.0
-        average_daily_crs: 0.1290
+            factor: 601.0
+        average_daily_crs: 0.0 #0.1290
         # 0.1290 is average of (0.1169,0.0081,0.2621 -  converted from fitness (2.19,2.46,1.83)) from Small-Sander PLOS 2019 paper
         aa_positions:
           - position: 76
             amino_acids: [ 'K', 'T' ]
-            daily_crs: [ 0, 0.003875969 ]
+            daily_crs: [ 0, 0.60003875969 ]
             multiplicative_effect_on_EC50:
               - drug_id: 6
-                factors: [ 1, 1.6 ]
+                factors: [ 1, 611.6 ]
               - drug_id: 1
-                factors: [ 1.1, 1 ]
+                factors: [ 1.1, 601 ]
               - drug_id: 2
-                factors: [ 1, 1.2 ]
+                factors: [ 1, 621.2 ]
           - position: 93
             amino_acids: [ 'T', 'S' ]
-            daily_crs: [ 0, 0.0002433748 ]
+            daily_crs: [ 0, 0.610002433748 ]
             multiplicative_effect_on_EC50:
               - drug_id: 3
-                factors: [ 1, 1.8 ]
+                factors: [ 1, 631.8 ]
           - position: 97
             amino_acids: [ 'H', 'Y' ]
-            daily_crs: [ 0, 0.003875969 ]
+            daily_crs: [ 0, 0.62003875969 ]
             multiplicative_effect_on_EC50:
               - drug_id: 3
-                factors: [ 1, 1.8 ]
+                factors: [ 1, 641.8 ]
           - position: 145
             amino_acids: [ 'F', 'I' ]
-            daily_crs: [ 0, 0.0078751277 ]
+            daily_crs: [ 0, 0.630078751277 ]
             multiplicative_effect_on_EC50:
               - drug_id: 3
-                factors: [ 1, 2.6 ]
+                factors: [ 1, 652.6 ]
           - position: 218
             amino_acids: [ 'I', 'F' ]
-            daily_crs: [ 0, 0.0035124091 ]
+            daily_crs: [ 0, 0.640035124091 ]
             multiplicative_effect_on_EC50:
               - drug_id: 3
-                factors: [ 1, 1.8 ]
+                factors: [ 1, 661.8 ]
           - position: 343
             amino_acids: [ 'M', 'L' ]
-            daily_crs: [ 0, 0.003875969 ]
+            daily_crs: [ 0, 0.65003875969 ]
             multiplicative_effect_on_EC50:
               - drug_id: 3
-                factors: [ 1, 1.7 ]
+                factors: [ 1, 671.7 ]
           - position: 353
             amino_acids: [ 'G', 'V' ]
-            daily_crs: [ 0, 0.003875969 ]
+            daily_crs: [ 0, 0.66003875969 ]
             multiplicative_effect_on_EC50:
               - drug_id: 3
-                factors: [ 1, 1.7 ]
+                factors: [ 1, 681.7 ]
       - name: "Pfkaf"
+        cnv_multiplicative_effect_on_EC50:
+          - drug_id: 4
+            factors: [ 1, 6012.44444444 ]
+          - drug_id: 1
+            factors: [ 1, 6021.3 ]
+        multiplicative_effect_on_EC50_for_2_or_more_mutations:
+          - drug_id: 0
+            factor: 6101.1
         aa_positions:
           - position: 500
             amino_acids: [ 'x', 'X' ]
-            daily_crs: [ 0, 0.0005 ]
+            daily_crs: [ 0, 0.610005 ]
             multiplicative_effect_on_EC50:
               - drug_id: 7
-                factors: [ 1, 1.6 ]
+                factors: [ 1, 6191.6 ]
   - chromosome: 13
     genes:
       - name: "Pfkelch13"
         multiplicative_effect_on_EC50_for_2_or_more_mutations:
           - drug_id: 0
-            factor: 1.1
+            factor: 1201.1
         aa_positions:
           - position: 446
             amino_acids: [ 'F', 'I' ]
-            daily_crs: [ 0, 0.0005 ]
+            daily_crs: [ 0, 0.120005 ]
             multiplicative_effect_on_EC50:
               - drug_id: 0
-                factors: [ 1, 1.6 ]
+                factors: [ 1, 1211.6 ]
           - position: 458
             amino_acids: [ 'N', 'Y' ]
-            daily_crs: [ 0, 0.0005 ]
+            daily_crs: [ 0, 0.1210005 ]
             multiplicative_effect_on_EC50:
               - drug_id: 0
-                factors: [ 1, 1.6 ]
+                factors: [ 1, 1221.6 ]
           - position: 469
             amino_acids: [ 'C', 'Y' ]
-            daily_crs: [ 0, 0.0005 ]
+            daily_crs: [ 0, 0.1220005 ]
             multiplicative_effect_on_EC50:
               - drug_id: 0
-                factors: [ 1, 1.6 ]
+                factors: [ 1, 1231.6 ]
           - position: 476
             amino_acids: [ 'M', 'I' ]
-            daily_crs: [ 0, 0.0005 ]
+            daily_crs: [ 0, 0.1230005 ]
             multiplicative_effect_on_EC50:
               - drug_id: 0
-                factors: [ 1, 1.6 ]
+                factors: [ 1, 1241.6 ]
           - position: 493
             amino_acids: [ 'Y', 'H' ]
-            daily_crs: [ 0, 0.0005 ]
+            daily_crs: [ 0, 0.1240005 ]
             multiplicative_effect_on_EC50:
               - drug_id: 0
-                factors: [ 1, 1.6 ]
+                factors: [ 1, 1251.6 ]
           - position: 539
             amino_acids: [ 'R', 'T' ]
-            daily_crs: [ 0, 0.0005 ]
+            daily_crs: [ 0, 0.1250005 ]
             multiplicative_effect_on_EC50:
               - drug_id: 0
-                factors: [ 1, 1.6 ]
+                factors: [ 1, 1261.6 ]
           - position: 543
             amino_acids: [ 'I', 'T' ]
-            daily_crs: [ 0, 0.0005 ]
+            daily_crs: [ 0, 0.1260005 ]
             multiplicative_effect_on_EC50:
               - drug_id: 0
-                factors: [ 1, 1.6 ]
+                factors: [ 1, 1271.6 ]
           - position: 553
             amino_acids: [ 'P', 'L' ]
-            daily_crs: [ 0, 0.0005 ]
+            daily_crs: [ 0, 0.1270005 ]
             multiplicative_effect_on_EC50:
               - drug_id: 0
-                factors: [ 1, 1.6 ]
+                factors: [ 1, 1281.6 ]
           - position: 561
             amino_acids: [ 'R', 'H' ]
-            daily_crs: [ 0, 0.0005 ]
+            daily_crs: [ 0, 0.1280005 ]
             multiplicative_effect_on_EC50:
               - drug_id: 0
-                factors: [ 1, 1.6 ]
+                factors: [ 1, 1291.6 ]
           - position: 574
             amino_acids: [ 'P', 'L' ]
-            daily_crs: [ 0, 0.0005 ]
+            daily_crs: [ 0, 0.1290005 ]
             multiplicative_effect_on_EC50:
               - drug_id: 0
-                factors: [ 1, 1.6 ]
+                factors: [ 1, 12101.6 ]
           - position: 580
             amino_acids: [ 'C', 'Y' ]
-            daily_crs: [ 0, 0.0005 ]
+            daily_crs: [ 0, 0.12100005 ]
             multiplicative_effect_on_EC50:
               - drug_id: 0
-                factors: [ 1, 1.6 ]
+                factors: [ 1, 121111.6 ]
           - position: 675
             amino_acids: [ 'A', 'V' ]
-            daily_crs: [ 0, 0.0005 ]
+            daily_crs: [ 0, 0.12110005 ]
             multiplicative_effect_on_EC50:
               - drug_id: 0
-                factors: [ 1, 1.6 ]
+                factors: [ 1, 121221.6 ]
   - chromosome: 14
     genes:
       - name: "Pfplasmepsin"
         max_copies: 2
-        cnv_daily_crs: [ 0, 0.0005 ]
+        cnv_daily_crs: [ 0, 0.130005 ]
         cnv_multiplicative_effect_on_EC50:
           - drug_id: 3
             #            factors: [ 1, 2.4137931 ]
-            factors: [ 1, 1.37 ]
+            factors: [ 1, 1301.37 ]
         aa_positions: [ ]
 
 override_ec50_patterns:

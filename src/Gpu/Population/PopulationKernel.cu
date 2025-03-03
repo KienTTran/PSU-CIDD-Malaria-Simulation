@@ -84,8 +84,8 @@ void GPU::PopulationKernel::init() {
       if(Model::CONFIG->debug_config().enable_debug_text){
         printf("drug_index %d (%d -> %zu) -> %d\n",
              d_index,
-             start_index,
-             start_index + Model::CONFIG->gpu_drug_db()->at(d_index)->resistant_aa_locations.size(),
+               start_index,
+               start_index + Model::CONFIG->gpu_drug_db()->at(d_index)->resistant_aa_locations.size(),
              h_drug_res_aa_loc_index[d_index]);
       }
       start_index += Model::CONFIG->gpu_drug_db()->at(d_index)->resistant_aa_locations.size();
@@ -100,78 +100,168 @@ void GPU::PopulationKernel::init() {
   /*
    * To access genotype_max_copies in device, we need to copy the genotype_max_copies from host to device
    * and make an index map to access the genotype_max_copies
-   * To access genotype_aa in device, we need to copy the genotype_aa from host to device. h_gen_aa_start_index
+   * To access genotype_aa in device, we need to copy the genotype_aa from host to device. h_gen_aa_as_int_start_index
    * contains start index and end index of genotype_aa of each chromosome.
    *
    * */
-  start_index = 0;
+  int start_index_aa_as_int = 0;
+  int start_index_crs = 0;
+  int start_index_ec50_factor = 0;
+  int start_index_cnv_ec50_factor = 0;
+  int start_index_multiplicative_ec50_factor = 0;
   std::string gen_aa_test;
   TVector<int> gen_aa;
   TVector<int> gen_aa_size;
   TVector<int> gen_max_copies;
   TVector<double> gen_crs;
+  TVector<int> gen_ec50_drug_id;
+  TVector<double> gen_ec50_factor;
   h_gen_aa_size = TVector<int>(Model::CONFIG->pf_genotype_info().chromosome_infos.size(), -1);
   h_gen_gene_size = TVector<int>(Model::CONFIG->pf_genotype_info().chromosome_infos.size(), -1);
   h_gen_max_copies = TVector<int>(Model::CONFIG->pf_genotype_info().chromosome_infos.size(), -1);
-  h_gen_aa_start_index = TVector<int>(Model::CONFIG->pf_genotype_info().chromosome_infos.size(), -1);
+  h_gen_aa_as_int_start_index = TVector<int>(Model::CONFIG->pf_genotype_info().chromosome_infos.size(), -1);
+  h_gen_crs_start_index = TVector<int>(Model::CONFIG->pf_genotype_info().chromosome_infos.size(), -1);
+  h_gen_ec50_factor_start_index = TVector<int>(Model::CONFIG->pf_genotype_info().chromosome_infos.size(), -1);
+  h_gen_cnv_ec50_factor_start_index = TVector<int>(Model::CONFIG->pf_genotype_info().chromosome_infos.size(), -1);
+  h_gen_multiplicative_ec50_factor_start_index = TVector<int>(Model::CONFIG->pf_genotype_info().chromosome_infos.size(), -1);
   for (int chr_index = 0; chr_index < Model::CONFIG->pf_genotype_info().chromosome_infos.size(); chr_index++) {
     if (Model::CONFIG->pf_genotype_info().chromosome_infos[chr_index].gene_infos.size() > 0) {
       h_gen_gene_size[chr_index] = Model::CONFIG->pf_genotype_info().chromosome_infos[chr_index].gene_infos.size();
       gen_aa_size.clear();
       gen_max_copies.clear();
       int gen_aa_per_gene_size = 0;
-      for (int gen_index = 0; gen_index < Model::CONFIG->pf_genotype_info().chromosome_infos[chr_index].gene_infos.size(); gen_index++) {
+      gen_crs.clear();
+      gen_ec50_drug_id.clear();
+      gen_ec50_factor.clear();
+      int gen_crs_per_gene_size = 0;
+      int gen_ec50_factor_per_gene_size = 0;
+      int gen_cnv_ec50_factor_per_gene_size = 0;
+      int gen_multiplicative_ec50_factor_per_gene_size = 0;
+      for (int gene_index = 0; gene_index < Model::CONFIG->pf_genotype_info().chromosome_infos[chr_index].gene_infos.size(); gene_index++) {
+        double avg_crs = Model::CONFIG->pf_genotype_info().chromosome_infos[chr_index].gene_infos[gene_index].average_daily_crs;
+        gen_crs.clear();
         for (int aa_pos_index = 0; aa_pos_index < Model::CONFIG->pf_genotype_info().chromosome_infos[chr_index]
-            .gene_infos[gen_index].aa_position_infos.size(); aa_pos_index++) {
+            .gene_infos[gene_index].aa_position_infos.size(); aa_pos_index++) {
           gen_crs.clear();
+          gen_ec50_drug_id.clear();
+          gen_ec50_factor.clear();
           gen_aa.clear();
           gen_aa_test = "";
-          double avg_crs = 0;
           for (int aa_index = 0; aa_index < Model::CONFIG->pf_genotype_info().chromosome_infos[chr_index]
-              .gene_infos[gen_index].aa_position_infos[aa_pos_index].amino_acids.size(); aa_index++) {
-            /*
-             * Char to Int
-             * */
+              .gene_infos[gene_index].aa_position_infos[aa_pos_index].amino_acids.size(); aa_index++) {
+            /* Char to Int */
             gen_aa.push_back((int) (Model::CONFIG->pf_genotype_info().chromosome_infos[chr_index]
-                                        .gene_infos[gen_index].aa_position_infos[aa_pos_index].amino_acids[aa_index] - 48));
-            avg_crs = Model::CONFIG->pf_genotype_info().chromosome_infos[chr_index].gene_infos[gen_index].average_daily_crs;
+                                        .gene_infos[gene_index].aa_position_infos[aa_pos_index].amino_acids[aa_index] - 48));
             double crs = Model::CONFIG->pf_genotype_info().chromosome_infos[chr_index]
-                .gene_infos[gen_index].aa_position_infos[aa_pos_index].daily_crs[aa_index];
+                .gene_infos[gene_index].aa_position_infos[aa_pos_index].daily_crs[aa_index];
             if(avg_crs > 0){
               gen_crs.push_back(avg_crs*crs);
             } else {
               gen_crs.push_back(crs);
             }
           }
-          if(Model::CONFIG->debug_config().enable_debug_text){
-            std::string a = "";
-            a = Model::CONFIG->pf_genotype_info().chromosome_infos[chr_index]
-                .gene_infos[gen_index].aa_position_infos[aa_pos_index].amino_acids[0];
-            std::string b = "";
-            b = Model::CONFIG->pf_genotype_info().chromosome_infos[chr_index]
-                .gene_infos[gen_index].aa_position_infos[aa_pos_index].amino_acids[1];
-            std::string c = "";
-            c = std::to_string((int) (Model::CONFIG->pf_genotype_info().chromosome_infos[chr_index]
-                                          .gene_infos[gen_index].aa_position_infos[aa_pos_index].amino_acids[0] - 48));
-            std::string d = "";
-            d = std::to_string((int) (Model::CONFIG->pf_genotype_info().chromosome_infos[chr_index]
-                                          .gene_infos[gen_index].aa_position_infos[aa_pos_index].amino_acids[1] - 48));
-            gen_aa_test = a + "->" + b + " " + c + "->" + d;
-            if (gen_aa.size() > 0 && gen_crs.size() > 0){
-              printf("gen_aa_int: %s %d\n", gen_aa_test.c_str(), encode_vec2_to_int(gen_aa));
-              h_gen_aa_int.push_back(encode_vec2_to_int(gen_aa));
-              printf("gen_crs: %f %f\n", gen_crs[0], gen_crs[1]);
-              h_gen_crs.push_back(thrust::make_tuple(gen_crs[0], gen_crs[1]));
-              gen_aa_per_gene_size++;
+          if(Model::CONFIG->pf_genotype_info().chromosome_infos[chr_index]
+                 .gene_infos[gene_index].aa_position_infos[aa_pos_index].multiplicative_effect_on_EC50.size() > 0){
+            for(auto [ec50_drug_id,ec50_factors] : Model::CONFIG->pf_genotype_info().chromosome_infos[chr_index]
+                .gene_infos[gene_index].aa_position_infos[aa_pos_index].multiplicative_effect_on_EC50){
+              gen_ec50_drug_id.push_back(ec50_drug_id);
+              for(auto ec50_factor : ec50_factors){
+                gen_ec50_factor.push_back(ec50_factor);
+              }
             }
           }
+          if (gen_crs.size() > 0){
+            h_gen_crs.push_back(thrust::make_tuple(gen_crs[0], gen_crs[1]));
+            gen_crs_per_gene_size++;
+          }
+          if (gen_ec50_drug_id.size() > 0 && gen_ec50_factor.size()){
+            for(int ec50_index = 0; ec50_index < gen_ec50_drug_id.size(); ec50_index++){
+              h_gen_ec50_factor.push_back(thrust::make_tuple(gen_ec50_drug_id[ec50_index], gen_ec50_factor[ec50_index*2], gen_ec50_factor[ec50_index*2+1]));
+            }
+            gen_ec50_factor_per_gene_size+=gen_ec50_drug_id.size();
+          }
+          std::string a = "";
+          a = Model::CONFIG->pf_genotype_info().chromosome_infos[chr_index]
+              .gene_infos[gene_index].aa_position_infos[aa_pos_index].amino_acids[0];
+          std::string b = "";
+          b = Model::CONFIG->pf_genotype_info().chromosome_infos[chr_index]
+              .gene_infos[gene_index].aa_position_infos[aa_pos_index].amino_acids[1];
+          std::string c = "";
+          c = std::to_string((int) (Model::CONFIG->pf_genotype_info().chromosome_infos[chr_index]
+                                        .gene_infos[gene_index].aa_position_infos[aa_pos_index].amino_acids[0] - 48));
+          std::string d = "";
+          d = std::to_string((int) (Model::CONFIG->pf_genotype_info().chromosome_infos[chr_index]
+                                        .gene_infos[gene_index].aa_position_infos[aa_pos_index].amino_acids[1] - 48));
+          gen_aa_test = a + "->" + b + " " + c + "->" + d;
+          if (gen_aa.size() > 0){
+//            printf("start_index_aa_as_int: %d\n", start_index_aa_as_int);
+//            printf("\tgen_aa_int: %s %d\n", gen_aa_test.c_str(), encode_vec2_to_int(gen_aa));
+            h_gen_aa_as_int.push_back(encode_vec2_to_int(gen_aa));
+            gen_aa_per_gene_size++;
+          }
         }
-        gen_aa_size.push_back(Model::CONFIG->pf_genotype_info().chromosome_infos[chr_index].gene_infos[gen_index].aa_position_infos.size());
-        gen_max_copies.push_back(Model::CONFIG->pf_genotype_info().chromosome_infos[chr_index].gene_infos[gen_index].max_copies);
+        /* CNV CRS - save to the last index of gene */
+        if(Model::CONFIG->pf_genotype_info().chromosome_infos[chr_index].gene_infos[gene_index].cnv_daily_crs.size() > 0){
+          gen_crs.clear();
+          for(auto crs : Model::CONFIG->pf_genotype_info().chromosome_infos[chr_index].gene_infos[gene_index].cnv_daily_crs){
+            if(avg_crs > 0){
+              gen_crs.push_back(avg_crs*crs);
+            } else {
+              gen_crs.push_back(crs);
+            }
+          }
+          if (gen_crs.size() > 0){
+            h_gen_crs.push_back(thrust::make_tuple(gen_crs[0], gen_crs[1]));
+            gen_crs_per_gene_size++;
+          }
+        }
+        /* CNV EC50 */
+        if(Model::CONFIG->pf_genotype_info().chromosome_infos[chr_index].gene_infos[gene_index].cnv_multiplicative_effect_on_EC50.size() > 0){
+          start_index_cnv_ec50_factor = start_index_ec50_factor + gen_ec50_factor_per_gene_size;
+          gen_ec50_drug_id.clear();
+          gen_ec50_factor.clear();
+          for(auto [ec50_drug_id, ec50_factors] : Model::CONFIG->pf_genotype_info().chromosome_infos[chr_index].gene_infos[gene_index].cnv_multiplicative_effect_on_EC50){
+            gen_ec50_drug_id.push_back(ec50_drug_id);
+            for(auto ec50_factor : ec50_factors){
+              gen_ec50_factor.push_back(ec50_factor);
+            }
+          }
+          if (gen_ec50_drug_id.size() > 0 && gen_ec50_factor.size()){
+            for(int ec50_index = 0; ec50_index < gen_ec50_drug_id.size(); ec50_index++){
+              h_gen_ec50_factor.push_back(thrust::make_tuple(gen_ec50_drug_id[ec50_index], gen_ec50_factor[ec50_index*2], gen_ec50_factor[ec50_index*2+1]));
+            }
+            gen_ec50_factor_per_gene_size+=gen_ec50_drug_id.size();
+            gen_cnv_ec50_factor_per_gene_size+=gen_ec50_drug_id.size();
+          }
+        }
+        /* Multiplicative EC50 */
+        if(Model::CONFIG->pf_genotype_info().chromosome_infos[chr_index].gene_infos[gene_index].multiplicative_effect_on_EC50_for_2_or_more_mutations.size() > 0){
+          start_index_multiplicative_ec50_factor = start_index_ec50_factor + gen_ec50_factor_per_gene_size;
+          gen_ec50_drug_id.clear();
+          gen_ec50_factor.clear();
+          for(auto [ec50_drug_id, ec50_factor] : Model::CONFIG->pf_genotype_info().chromosome_infos[chr_index].gene_infos[gene_index]
+          .multiplicative_effect_on_EC50_for_2_or_more_mutations){
+            gen_ec50_drug_id.push_back(ec50_drug_id);
+            gen_ec50_factor.push_back(ec50_factor);
+          }
+          if (gen_ec50_drug_id.size() > 0 && gen_ec50_factor.size()){
+            h_gen_ec50_factor.push_back(thrust::make_tuple(gen_ec50_drug_id[0], -1.0, gen_ec50_factor[0]));
+            gen_ec50_factor_per_gene_size+=gen_ec50_drug_id.size();
+            gen_multiplicative_ec50_factor_per_gene_size+=gen_ec50_drug_id.size();
+          }
+        }
+        if(gen_crs_per_gene_size > 0){
+          h_gen_crs_start_index[chr_index] = start_index_crs;
+          start_index_crs += gen_crs_per_gene_size;
+        }
+        gen_aa_size.push_back(Model::CONFIG->pf_genotype_info().chromosome_infos[chr_index].gene_infos[gene_index].aa_position_infos.size());
+        gen_max_copies.push_back(Model::CONFIG->pf_genotype_info().chromosome_infos[chr_index].gene_infos[gene_index].max_copies);
       }
       /*
        * This is just for 2 gene in 1 chromosome, if number of gene is bigger then 2 then we need to find another way
+       * to encode it to 1 int
        * */
+      /* Encode genotype aa and crs size to int*/
       if (gen_aa_size.size() > 1) {
         h_gen_aa_size[chr_index] = encode_vec2_to_int(gen_aa_size);
         h_gen_max_copies[chr_index] = encode_vec2_to_int(gen_max_copies);
@@ -180,17 +270,123 @@ void GPU::PopulationKernel::init() {
         h_gen_max_copies[chr_index] = gen_max_copies[0];
       }
       if (h_gen_aa_size[chr_index] > 0) {
-        h_gen_aa_start_index[chr_index] = start_index;
-        start_index += gen_aa_per_gene_size;
+        h_gen_aa_as_int_start_index[chr_index] = start_index_aa_as_int;
+        start_index_aa_as_int += gen_aa_per_gene_size;
       }
+      if(gen_ec50_factor_per_gene_size > 0){
+        h_gen_ec50_factor_start_index[chr_index] = start_index_ec50_factor;
+        start_index_ec50_factor += gen_ec50_factor_per_gene_size;
+      }
+      if(gen_cnv_ec50_factor_per_gene_size > 0){
+        h_gen_cnv_ec50_factor_start_index[chr_index] = start_index_cnv_ec50_factor;
+        start_index_cnv_ec50_factor += gen_cnv_ec50_factor_per_gene_size;
+      }
+      if(gen_multiplicative_ec50_factor_per_gene_size > 0){
+        h_gen_multiplicative_ec50_factor_start_index[chr_index] = start_index_multiplicative_ec50_factor;
+        start_index_multiplicative_ec50_factor += gen_multiplicative_ec50_factor_per_gene_size;
+      }
+    }
+  }
+//  for(int i = 0; i < h_gen_aa_as_int_start_index.size(); i++){
+//    printf("h_gen_aa_as_int_start_index %d %d\n", i, h_gen_aa_as_int_start_index[i]);
+//  }
+//  for(int i = 0; i < h_gen_aa_as_int.size(); i++){
+//    printf("h_gen_aa_as_int %d %d\n", i, h_gen_aa_as_int[i]);
+//  }
+//  for(int i = 0; i < h_gen_crs_start_index.size(); i++){
+//    printf("h_gen_crs_start_index %d %d\n", i, h_gen_crs_start_index[i]);
+//  }
+//  for(int i = 0; i < h_gen_crs.size(); i++){
+//    printf("h_gen_crs %d %f %f\n", i, thrust::get<0>(h_gen_crs[i]), thrust::get<1>(h_gen_crs[i]));
+//  }
+//  for (int chr_index = 0; chr_index < Model::CONFIG->pf_genotype_info().chromosome_infos.size(); chr_index++) {
+//    for (int gene_index = 0; gene_index < Model::CONFIG->pf_genotype_info().chromosome_infos[chr_index].gene_infos.size(); gene_index++) {
+//      int last_gene_size = 0;
+//      if(gene_index >= 1){
+//        last_gene_size = Model::CONFIG->pf_genotype_info().chromosome_infos[chr_index]
+//            .gene_infos[gene_index - 1].aa_position_infos.size();
+//      }
+//      for (int aa_pos_index = 0; aa_pos_index < Model::CONFIG->pf_genotype_info().chromosome_infos[chr_index]
+//          .gene_infos[gene_index].aa_position_infos.size(); aa_pos_index++) {
+//        printf("chr %d gene %d %d aa %d start %d %d crs %f %f\n",
+//               chr_index, gene_index,last_gene_size,aa_pos_index,h_gen_crs_start_index[chr_index],aa_pos_index,
+//               thrust::get<0>(h_gen_crs[h_gen_crs_start_index[chr_index] + last_gene_size + aa_pos_index]),
+//               thrust::get<1>(h_gen_crs[h_gen_crs_start_index[chr_index] + last_gene_size + aa_pos_index]));
+//      }
+//      if(Model::CONFIG->pf_genotype_info().chromosome_infos[chr_index].gene_infos[gene_index].cnv_multiplicative_effect_on_EC50.size() > 0){
+//        int cnv_index = Model::CONFIG->pf_genotype_info().chromosome_infos[chr_index]
+//            .gene_infos[gene_index].aa_position_infos.size();
+//        printf("chr %d gene %d %d CNV start %d cnv %d crs %f %f\n",
+//               chr_index, gene_index,last_gene_size,h_gen_crs_start_index[chr_index],cnv_index,
+//               thrust::get<0>(h_gen_crs[h_gen_crs_start_index[chr_index] + last_gene_size + cnv_index]),
+//               thrust::get<1>(h_gen_crs[h_gen_crs_start_index[chr_index] + last_gene_size + cnv_index]));
+//      }
+//    }
+//  }
+  for(int i = 0; i < h_gen_ec50_factor_start_index.size(); i++){
+    printf("h_gen_ec50_factor_start_index %d %d\n", i, h_gen_ec50_factor_start_index[i]);
+  }
+  for(int i = 0; i < h_gen_cnv_ec50_factor_start_index.size(); i++){
+    printf("h_gen_cnv_ec50_factor_start_index %d %d\n", i, h_gen_cnv_ec50_factor_start_index[i]);
+  }
+  for(int i = 0; i < h_gen_multiplicative_ec50_factor_start_index.size(); i++){
+    printf("h_gen_multiplicative_ec50_factor_start_index %d %d\n", i, h_gen_multiplicative_ec50_factor_start_index[i]);
+  }
+  for(int i = 0; i < h_gen_ec50_factor.size(); i++){
+    printf("h_gen_ec50_factor %d %d %f %f\n", i, thrust::get<0>(h_gen_ec50_factor[i]), thrust::get<1>(h_gen_ec50_factor[i]),thrust::get<2>(h_gen_ec50_factor[i]));
+  }
+  for (int chr_index = 0; chr_index < Model::CONFIG->pf_genotype_info().chromosome_infos.size(); chr_index++) {
+    for (int gene_index = 0; gene_index < Model::CONFIG->pf_genotype_info().chromosome_infos[chr_index].gene_infos.size(); gene_index++) {
+      int last_gene_size = 0;
+      int last_aa_pos_size = 0;
+      if(gene_index >= 1){
+        last_gene_size = Model::CONFIG->pf_genotype_info().chromosome_infos[chr_index]
+            .gene_infos[gene_index - 1].aa_position_infos.size();
+      }
+      for (int aa_pos_index = 0; aa_pos_index < Model::CONFIG->pf_genotype_info().chromosome_infos[chr_index]
+          .gene_infos[gene_index].aa_position_infos.size(); aa_pos_index++) {
+        for(int ec50_index = 0; ec50_index < Model::CONFIG->pf_genotype_info().chromosome_infos[chr_index]
+            .gene_infos[gene_index].aa_position_infos[aa_pos_index].multiplicative_effect_on_EC50.size(); ec50_index++){
+//          printf("chr %d gene %d %d EC50 start %d aa_pos_index %d ec50_index %d %d EC50 %d %f %f\n",
+//                 chr_index, gene_index,last_gene_size,h_gen_ec50_factor_start_index[chr_index],aa_pos_index,ec50_index,
+//                 h_gen_multiplicative_ec50_factor_start_index[chr_index] + last_gene_size + aa_pos_index + ec50_index,
+//                 thrust::get<0>(h_gen_ec50_factor[h_gen_multiplicative_ec50_factor_start_index[chr_index] + last_gene_size + aa_pos_index + ec50_index]),
+//                 thrust::get<1>(h_gen_ec50_factor[h_gen_multiplicative_ec50_factor_start_index[chr_index] + last_gene_size + aa_pos_index + ec50_index]),
+//                 thrust::get<2>(h_gen_ec50_factor[h_gen_multiplicative_ec50_factor_start_index[chr_index] + last_gene_size + aa_pos_index + ec50_index]));
+          printf("chr %d gene %d last gene index %d aa_pos_index %d start %d  last_aa_pos_index %d, ec50_index %d final_index %d\n",
+                 chr_index,gene_index,last_gene_size,aa_pos_index, h_gen_ec50_factor_start_index[chr_index], last_aa_pos_size, ec50_index,
+                 h_gen_ec50_factor_start_index[chr_index] + last_aa_pos_size + ec50_index);
+        }
+        last_aa_pos_size += Model::CONFIG->pf_genotype_info().chromosome_infos[chr_index]
+            .gene_infos[gene_index].aa_position_infos[aa_pos_index].multiplicative_effect_on_EC50.size();
+      }
+//      if(Model::CONFIG->pf_genotype_info().chromosome_infos[chr_index].gene_infos[gene_index].cnv_multiplicative_effect_on_EC50.size() > 0){
+//        int cnv_index = Model::CONFIG->pf_genotype_info().chromosome_infos[chr_index]
+//            .gene_infos[gene_index].aa_position_infos.size();
+//        printf("chr %d gene %d %d CNV start %d cnv_index %d EC50 %d %f %f\n",
+//               chr_index, gene_index,last_gene_size,h_gen_ec50_factor_start_index[chr_index],cnv_index,
+//               thrust::get<0>(h_gen_ec50_factor[h_gen_cnv_ec50_factor_start_index[chr_index] + last_gene_size + cnv_index]),
+//               thrust::get<1>(h_gen_ec50_factor[h_gen_cnv_ec50_factor_start_index[chr_index] + last_gene_size + cnv_index]),
+//               thrust::get<2>(h_gen_ec50_factor[h_gen_cnv_ec50_factor_start_index[chr_index] + last_gene_size + cnv_index]));
+//      }
+//      if(Model::CONFIG->pf_genotype_info().chromosome_infos[chr_index].gene_infos[gene_index].multiplicative_effect_on_EC50_for_2_or_more_mutations.size() > 0){
+//        int cnv_index = Model::CONFIG->pf_genotype_info().chromosome_infos[chr_index]
+//            .gene_infos[gene_index].aa_position_infos.size();
+//        printf("chr %d gene %d %d Multiplicative start %d multiplicative_index %d EC50 %d %f %f\n",
+//               chr_index, gene_index,last_gene_size,h_gen_ec50_factor_start_index[chr_index],cnv_index,
+//               thrust::get<0>(h_gen_ec50_factor[h_gen_multiplicative_ec50_factor_start_index[chr_index] + last_gene_size + cnv_index]),
+//               thrust::get<1>(h_gen_ec50_factor[h_gen_multiplicative_ec50_factor_start_index[chr_index] + last_gene_size + cnv_index]),
+//               thrust::get<2>(h_gen_ec50_factor[h_gen_multiplicative_ec50_factor_start_index[chr_index] + last_gene_size + cnv_index]));
+//      }
     }
   }
   d_gen_gene_size = h_gen_gene_size;
   d_gen_aa_size = h_gen_aa_size;
   d_gen_max_copies = h_gen_max_copies;
-  d_gen_aa_int = h_gen_aa_int;
-  d_gen_crs = h_gen_crs;
-  d_gen_aa_start_index = h_gen_aa_start_index;
+  d_gen_aa_as_int = h_gen_aa_as_int;
+  d_gen_aa_as_int_start_index = h_gen_aa_as_int_start_index;
+  d_gen_ec50_factor = h_gen_ec50_factor;
+  d_gen_ec50_factor_start_index = h_gen_ec50_factor_start_index;
 
   /*
    * Here we don't copy Model::CONFIG->parasite_density_level()
@@ -218,6 +414,8 @@ void GPU::PopulationKernel::init() {
   individual_relative_biting_by_location = TVector<TVector<double>>(Model::CONFIG->number_of_locations(), TVector<double>());
   individual_relative_moving_by_location = TVector<TVector<double>>(Model::CONFIG->number_of_locations(), TVector<double>());
   individual_foi_by_location = TVector<TVector<double>>(Model::CONFIG->number_of_locations(), TVector<double>());
+
+  exit(0);
 }
 
 /*
@@ -432,11 +630,11 @@ struct CopyNotZero : public thrust::unary_function<unsigned int, bool> {
 struct CirculateLessThan {
     __host__ __device__
     bool operator()(const thrust::tuple<int, int, int, unsigned int> &t1, thrust::tuple<int, int, int, unsigned int> &t2) {
-      if (t1.get<3>() < t2.get<3>())
+      if (thrust::get<3>(t1) < thrust::get<3>(t2))
         return true;
-      if (t1.get<3>() > t2.get<3>())
+      if (thrust::get<3>(t1) > thrust::get<3>(t2))
         return false;
-      return t1.get<3>() < t2.get<3>();
+      return thrust::get<3>(t1) < thrust::get<3>(t2);
     }
 };
 
@@ -726,14 +924,14 @@ void GPU::PopulationKernel::perform_circulation_event() {
   ThrustTuple5VectorHost<int, int, int, unsigned int, int> h_circulate_person_indices_today = d_circulate_person_indices_today;
   auto *pi = Model::GPU_POPULATION->get_person_index<GPU::PersonIndexByLocationMovingLevel>();
   for (int i = 0; i < d_circulate_all_loc_ml_today.size(); i++) {
-    int from_location = h_circulate_person_indices_today[i].get<0>();
-    int target_location = h_circulate_person_indices_today[i].get<1>();
-    int moving_level = h_circulate_person_indices_today[i].get<2>();
-    int n_persons = h_circulate_person_indices_today[i].get<3>();
+    int from_location = thrust::get<0>(h_circulate_person_indices_today[i]);
+    int target_location = thrust::get<1>(h_circulate_person_indices_today[i]);
+    int moving_level = thrust::get<2>(h_circulate_person_indices_today[i]);
+    int n_persons = thrust::get<3>(h_circulate_person_indices_today[i]);
     auto size = static_cast<int>(pi->vPerson()[from_location][moving_level].size());
     if (size == 0) continue;
     if (n_persons == 1) {
-      int p_index = h_circulate_person_indices_today[i].get<4>();
+      int p_index = thrust::get<4>(h_circulate_person_indices_today[i]);
       GPU::Person *p = pi->vPerson()[from_location][moving_level][p_index];
       assert(p->host_state() != GPU::Person::DEAD);
       p->today_target_locations()->push_back(target_location);
@@ -832,8 +1030,8 @@ __global__ void update_all_individuals_kernel_stream_1(int offset,
                                                      int *d_gen_gene_size,
                                                      int *d_gen_max_copies,
                                                      int *d_gen_aa_size,
-                                                     int *d_gen_aa_int,
-                                                     int *d_gen_aa_start_index,
+                                                     int *d_gen_aa_as_int,
+                                                     int *d_gen_aa_as_int_start_index,
                                                      GPU::PersonUpdateInfo *d_person_update_info) {
   int index = offset + threadIdx.x + blockIdx.x * blockDim.x;
   if (index < offset + size) {
@@ -964,10 +1162,10 @@ __global__ void update_all_individuals_kernel_stream_1(int offset,
                         candidate_gen_aa[d_drug_res_aa_loc[aa_pos_id].aa_index_in_aa_string] = char((new_copy_number) + 48);
                       }
                     } else {
-                      int aa_start_index = d_gen_aa_start_index[d_drug_res_aa_loc[aa_pos_id].chromosome_id];
-                      int aa_int_index = aa_start_index + d_drug_res_aa_loc[aa_pos_id].aa_id;
+                      int aa_start_index = d_gen_aa_as_int_start_index[d_drug_res_aa_loc[aa_pos_id].chromosome_id];
+                      int aa_as_in_index = aa_start_index + d_drug_res_aa_loc[aa_pos_id].aa_id;
                       int aa_list_int[2];
-                      decode_int_to_arr2(d_gen_aa_int[aa_int_index], aa_list_int);
+                      decode_int_to_arr2(d_gen_aa_as_int[aa_as_in_index], aa_list_int);
                       char old_aa = char(aa_list_int[d_drug_res_aa_loc[aa_pos_id].gene_id] + 48);
                       // draw random aa id
                       int new_aa_id = curand_gsl_uniform_int(curand_uniform_double(&local_state), 0, 1);
@@ -1095,8 +1293,8 @@ void GPU::PopulationKernel::update_all_individuals_1() {
                                                                                                thrust::raw_pointer_cast(d_gen_gene_size.data()),
                                                                                                thrust::raw_pointer_cast(d_gen_max_copies.data()),
                                                                                                thrust::raw_pointer_cast(d_gen_aa_size.data()),
-                                                                                               thrust::raw_pointer_cast(d_gen_aa_int.data()),
-                                                                                               thrust::raw_pointer_cast(d_gen_aa_start_index.data()),
+                                                                                               thrust::raw_pointer_cast(d_gen_aa_as_int.data()),
+                                                                                               thrust::raw_pointer_cast(d_gen_aa_as_int_start_index.data()),
                                                                                                d_buffer_person_update_info_stream);
         check_cuda_error(cudaDeviceSynchronize());
         check_cuda_error(cudaMemcpyAsync(thrust::raw_pointer_cast(pi->h_person_update_info().data()) + batch_offset,
@@ -1142,8 +1340,8 @@ void GPU::PopulationKernel::update_all_individuals_1() {
                                                                                              thrust::raw_pointer_cast(d_gen_gene_size.data()),
                                                                                              thrust::raw_pointer_cast(d_gen_max_copies.data()),
                                                                                              thrust::raw_pointer_cast(d_gen_aa_size.data()),
-                                                                                             thrust::raw_pointer_cast(d_gen_aa_int.data()),
-                                                                                             thrust::raw_pointer_cast(d_gen_aa_start_index.data()),
+                                                                                             thrust::raw_pointer_cast(d_gen_aa_as_int.data()),
+                                                                                             thrust::raw_pointer_cast(d_gen_aa_as_int_start_index.data()),
                                                                                              d_buffer_person_update_info_stream);
       check_cuda_error(cudaDeviceSynchronize());
       check_cuda_error(cudaMemcpyAsync(thrust::raw_pointer_cast(pi->h_person_update_info().data()) + batch_offset,
@@ -1201,8 +1399,8 @@ __global__ void update_all_individuals_kernel_stream_2(int offset,
                                                        int *d_gen_gene_size,
                                                        int *d_gen_max_copies,
                                                        int *d_gen_aa_size,
-                                                       int *d_gen_aa_int,
-                                                       int *d_gen_aa_start_index,
+                                                       int *d_gen_aa_as_int,
+                                                       int *d_gen_aa_as_int_start_index,
                                                        GPU::PersonUpdateInfo *d_person_update_info) {
   int index = offset + threadIdx.x + blockIdx.x * blockDim.x;
   if (index < offset + size) {
@@ -1411,8 +1609,8 @@ void GPU::PopulationKernel::update_all_individuals_2() {
                                                                                              thrust::raw_pointer_cast(d_gen_gene_size.data()),
                                                                                              thrust::raw_pointer_cast(d_gen_max_copies.data()),
                                                                                              thrust::raw_pointer_cast(d_gen_aa_size.data()),
-                                                                                             thrust::raw_pointer_cast(d_gen_aa_int.data()),
-                                                                                             thrust::raw_pointer_cast(d_gen_aa_start_index.data()),
+                                                                                             thrust::raw_pointer_cast(d_gen_aa_as_int.data()),
+                                                                                             thrust::raw_pointer_cast(d_gen_aa_as_int_start_index.data()),
                                                                                              d_buffer_person_update_info_stream);
         check_cuda_error(cudaDeviceSynchronize());
         check_cuda_error(cudaMemcpyAsync(thrust::raw_pointer_cast(pi->h_person_update_info().data()) + batch_offset,
@@ -1458,8 +1656,8 @@ void GPU::PopulationKernel::update_all_individuals_2() {
                                                                                            thrust::raw_pointer_cast(d_gen_gene_size.data()),
                                                                                            thrust::raw_pointer_cast(d_gen_max_copies.data()),
                                                                                            thrust::raw_pointer_cast(d_gen_aa_size.data()),
-                                                                                           thrust::raw_pointer_cast(d_gen_aa_int.data()),
-                                                                                           thrust::raw_pointer_cast(d_gen_aa_start_index.data()),
+                                                                                           thrust::raw_pointer_cast(d_gen_aa_as_int.data()),
+                                                                                           thrust::raw_pointer_cast(d_gen_aa_as_int_start_index.data()),
                                                                                            d_buffer_person_update_info_stream);
       check_cuda_error(cudaDeviceSynchronize());
       check_cuda_error(cudaMemcpyAsync(thrust::raw_pointer_cast(pi->h_person_update_info().data()) + batch_offset,
@@ -1672,7 +1870,7 @@ void GPU::PopulationKernel::persist_current_force_of_infection_to_use_N_days_lat
   for (auto loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
     force_of_infection_for_N_days_by_location[Model::GPU_SCHEDULER->current_time()
                                               % Model::CONFIG->number_of_tracking_days()][loc] =
-    h_sum_biting_moving_foi_by_loc[loc].get<3>();
+    thrust::get<3>(h_sum_biting_moving_foi_by_loc[loc]);
   }
   auto lapse = std::chrono::high_resolution_clock::now() - start;
   if(Model::CONFIG->debug_config().enable_debug_text){
