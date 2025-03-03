@@ -14,14 +14,14 @@ gpu_config:
   n_threads: 768
   n_streams: 16
   n_people_1_batch: 1000000
-  pre_allocated_mem_ratio: 1.5
+  pre_allocated_mem_ratio: 1.0
 
 #in order to display GUI, display_gui is true and pre_allocated_mem_ratio must be set to > 1.0
 render_config:
   window_width: 1280
   window_height: 720
-  display_gui: true
-  display_plot: true
+  display_gui: false
+  display_plot: false
   close_window_on_finish: true
   point_coord: 0.075
   shaders:
@@ -35,7 +35,7 @@ debug_config:
   enable_debug_text: true
   enable_debug_render: false
   enable_debug_render_text: false
-  log_interval: 30
+  log_interval: 1
 
 #set 0 to randomize seed using clock
 initial_seed_number: 123456789

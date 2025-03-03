@@ -26,8 +26,8 @@ RUN git clone https://github.com/microsoft/vcpkg.git
 # Bootstrap and integrate vcpkg
 RUN cd vcpkg && \
     ./bootstrap-vcpkg.sh && \
-	./vcpkg install glfw3 opengl glew glm imgui[core,glfw-binding,opengl3-binding] \
-	easyloggingpp date yaml-cpp fmt gsl args CLI11 gtest && \
+	./vcpkg install glfw3 opengl glew glm imgui[core,glfw-binding,opengl3-binding,docking-experimental] \
+	easyloggingpp date yaml-cpp fmt gsl args CLI11 gtest implot && \
     ./vcpkg integrate install
 
 # Add vcpkg to the PATH
@@ -64,6 +64,7 @@ CMD ["./MaSim", "-i", "/root/MaSimGPU/input/input_pfcrt_avg_crs_raster_gpu_dev.y
 
 #build cmd
 #docker build -t ktt878/masim_gpu .
+#docker tag ktt878/masim_gpu ktt878/masim_gpu:latest
 #docker push ktt878/masim_gpu
 
 #run cmd

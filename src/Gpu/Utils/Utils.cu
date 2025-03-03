@@ -380,7 +380,7 @@ __host__ int encode_vec2_to_int(TVector<int> int_vector) {
 /* Decode to array to use in device kernel and host,
  * remember to free result after calling this func in device
  * */
-__device__ int *decode_int_to_arr2(int encoded_value, int *result) {
+__device__ void *decode_int_to_arr2(int encoded_value, int *result) {
   result[1] = encoded_value & 0xFFFF;
   result[0] = (encoded_value >> 16) & 0xFFFF;
 }

@@ -410,11 +410,11 @@ struct CopyNotZero : public thrust::unary_function<unsigned int, bool> {
 struct CirculateLessThan {
     __host__ __device__
     bool operator()(const thrust::tuple<int, int, int, unsigned int> &t1, thrust::tuple<int, int, int, unsigned int> &t2) {
-      if (t1.get<3>() < t2.get<3>())
+      if (thrust::get<3>(t1) < thrust::get<3>(t2))
         return true;
-      if (t1.get<3>() > t2.get<3>())
+      if (thrust::get<3>(t1) > thrust::get<3>(t2))
         return false;
-      return t1.get<3>() < t2.get<3>();
+      return thrust::get<3>(t1) < thrust::get<3>(t2);
     }
 };
 
@@ -704,14 +704,14 @@ void GPU::PopulationKernel::perform_circulation_event() {
   ThrustTuple5VectorHost<int, int, int, unsigned int, int> h_circulate_person_indices_today = d_circulate_person_indices_today;
   auto *pi = Model::GPU_POPULATION->get_person_index<GPU::PersonIndexByLocationMovingLevel>();
   for (int i = 0; i < d_circulate_all_loc_ml_today.size(); i++) {
-    int from_location = h_circulate_person_indices_today[i].get<0>();
-    int target_location = h_circulate_person_indices_today[i].get<1>();
-    int moving_level = h_circulate_person_indices_today[i].get<2>();
-    int n_persons = h_circulate_person_indices_today[i].get<3>();
+    int from_location = thrust::get<0>(h_circulate_person_indices_today[i]);
+    int target_location = thrust::get<1>(h_circulate_person_indices_today[i]);
+    int moving_level = thrust::get<2>(h_circulate_person_indices_today[i]);
+    int n_persons = thrust::get<3>(h_circulate_person_indices_today[i]);
     auto size = static_cast<int>(pi->vPerson()[from_location][moving_level].size());
     if (size == 0) continue;
     if (n_persons == 1) {
-      int p_index = h_circulate_person_indices_today[i].get<4>();
+      int p_index = thrust::get<4>(h_circulate_person_indices_today[i]);
       GPU::Person *p = pi->vPerson()[from_location][moving_level][p_index];
       assert(p->host_state() != GPU::Person::DEAD);
       p->today_target_locations()->push_back(target_location);
@@ -1391,7 +1391,7 @@ void GPU::PopulationKernel::persist_current_force_of_infection_to_use_N_days_lat
   for (auto loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
     force_of_infection_for_N_days_by_location[Model::GPU_SCHEDULER->current_time()
                                               % Model::CONFIG->number_of_tracking_days()][loc] =
-    h_sum_biting_moving_foi_by_loc[loc].get<3>();
+    thrust::get<3>(h_sum_biting_moving_foi_by_loc[loc]);
   }
   auto lapse = std::chrono::high_resolution_clock::now() - start;
   if(Model::CONFIG->debug_config().enable_debug_text){
