@@ -52,6 +52,7 @@ GPU::PersonUpdateInfo GPU::PersonIndexGPU::init_person_update_info(GPU::Person *
         person_update_info.parasite_genotype_fitness_multiple_infection[i] = 1.0;
         person_update_info.parasite_gametocyte_level[i] = 0.0;
         person_update_info.parasite_log10_infectious_density[i] = GPU::ClonalParasitePopulation::LOG_ZERO_PARASITE_DENSITY;
+        person_update_info.parasite_genotype_daily_fitness_multiple_infection[i] = 1.0;
     }
     person_update_info.parasites_log10_total_infectious_density = GPU::ClonalParasitePopulation::LOG_ZERO_PARASITE_DENSITY;
     person_update_info.parasites_genotype_mutated_number = 0;

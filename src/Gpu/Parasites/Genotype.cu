@@ -113,7 +113,7 @@ void GPU::Genotype::calculate_daily_fitness(const PfGeneInfo &gene_info) {
 
             if (res_gene_info.average_daily_crs > 0) {
                 daily_fitness_multiple_infection *= (1 - res_gene_info.average_daily_crs*cr);
-                LOG(TRACE) << "Using average CRS chromosome_i: " << chromosome_i << " gene_i: " << gene_i << " aa_i: " << aa_i << " cr: " << cr
+                LOG(INFO) << "Using average CRS chromosome_i: " << chromosome_i << " gene_i: " << gene_i << " aa_i: " << aa_i << " cr: " << cr
                 << " average_daily_crs: " << res_gene_info.average_daily_crs
                 << " daily_fitness_multiple_infection: " << daily_fitness_multiple_infection;
             } else {

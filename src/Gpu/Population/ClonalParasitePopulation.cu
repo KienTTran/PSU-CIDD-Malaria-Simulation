@@ -101,13 +101,8 @@ GPU::Genotype *GPU::ClonalParasitePopulation::genotype() const {
 void GPU::ClonalParasitePopulation::set_genotype(GPU::Genotype *value) {
   if (genotype_ != value) {
     genotype_ = value;
-    /* Convert string to char[] with NULL terminated */
-    std::copy( genotype_->aa_sequence.begin(),
-               genotype_->aa_sequence.end(),
-               person_->person_index_gpu->h_person_update_info()[person_->index()].parasite_genotype[index_]);
-    person_->person_index_gpu->h_person_update_info()[person_->index()].parasite_genotype[index_][MAX_GENOTYPE_LOCUS] = '\0';
-    person_->person_index_gpu->h_person_update_info()[person_->index()].parasite_genotype_fitness_multiple_infection[index_]
-    = genotype_->daily_fitness_multiple_infection;
+    auto &person_update_info = person_->person_index_gpu->h_person_update_info()[person_->index()];
+    person_update_info.add_parasite_genotype(value,index_);
   }
 }
 
