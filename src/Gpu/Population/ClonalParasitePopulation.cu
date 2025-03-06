@@ -36,7 +36,10 @@ GPU::ClonalParasitePopulation::~ClonalParasitePopulation() = default;
 
 
 double GPU::ClonalParasitePopulation::get_current_parasite_density(const int &current_time) {
-//  printf("GPU::ClonalParasitePopulation::get_current_parasite_density %f\n",last_update_log10_parasite_density_);
+  LOG_IF(person_->index() >= 1000 && person_->index() <= 1085,INFO) <<
+  fmt::format("{} GPU::ClonalParasitePopulation::get_current_parasite_density CPU {}",
+              person_->index(),
+              last_update_log10_parasite_density_);
   const auto duration = current_time - parasite_population_->person()->latest_update_time();
   if (duration == 0) {
       printf("duration == 0\n");
@@ -49,7 +52,7 @@ double GPU::ClonalParasitePopulation::get_current_parasite_density(const int &cu
     return last_update_log10_parasite_density_;
   }
 
-//  LOG_IF(person_->index() >= 1040 && person_->index() <= 1045,INFO)
+//  LOG_IF(person_->index() >= 1000 && person_->index() <= 1085,INFO)
 //    << fmt::format("{} GPU::ClonalParasitePopulation::get_current_parasite_density {} {} {} {} {} {} {}",
 //           person_->index(),
 //           index_,

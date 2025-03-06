@@ -74,6 +74,7 @@ namespace GPU{
         double drug_rand_uniform_1[MAX_DRUG_NUMBER];
         double drug_rand_uniform_2[MAX_DRUG_NUMBER];
         int drug_in_blood_type_id[MAX_DRUG_PER_ACT];
+        int drug_in_blood_type_id_current_index;
         /* for immune system update */
         double immune_system_component_latest_value;
         int immune_system_component_type;

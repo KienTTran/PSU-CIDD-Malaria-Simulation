@@ -57,7 +57,10 @@ public:
 
   void calculate_EC50_power_n(const PfGeneInfo& info, GPU::DrugDatabase* pDatabase);
 
-  GPU::Genotype* perform_mutation_by_drug(Config* pConfig, ::Random* pRandom, GPU::DrugType* pDrugType, double mutation_probability_by_locus) const;
+  GPU::Genotype* perform_mutation_by_drug(Config* pConfig, ::Random* pRandom, GPU::DrugType* pDrugType,
+                                          double mutation_probability_by_locus,
+                                          int person_index = 0,
+                                          int parasite_index = 0) const;
 
   friend std::ostream& operator<<(std::ostream& os, const GPU::Genotype& e);
 

@@ -35,6 +35,7 @@
 #include "Gpu/Strategies/IStrategy.cuh"
 #include "Gpu/MDC/ModelDataCollector.cuh"
 #include "Gpu/Renderer/Plot/PlotLines.cuh"
+#include "Gpu/Therapies/DrugDatabase.cuh"
 
 Model* Model::MODEL = nullptr;
 Config* Model::CONFIG = nullptr;
@@ -382,8 +383,13 @@ void Model::begin_time_step() {
 }
 
 void Model::daily_update() {
-//  gpu_population_->update_all_individuals();
-  gpu_population_kernel_->update_all_individuals();
+  for(auto [g_index, genotype] : Model::CONFIG->gpu_genotype_db){
+    for (int d_index = 0; d_index < Model::CONFIG->gpu_drug_db()->size(); d_index++){
+      printf("Genotype %lu Drug %d EC50: %f\n",g_index,d_index,genotype->get_EC50_power_n( Model::CONFIG->gpu_drug_db()->at(d_index)));
+    }
+  }
+  gpu_population_->update_all_individuals();
+//  gpu_population_kernel_->update_all_individuals();
 
 //
 //  // for safety remove all dead by calling perform_death_event
@@ -398,8 +404,8 @@ void Model::daily_update() {
 //  gpu_population_kernel_->update_current_foi();
 
   gpu_population_->perform_infection_event();
-//  gpu_population_->perform_circulation_event();
-  gpu_population_kernel_->perform_circulation_event();
+  gpu_population_->perform_circulation_event();
+//  gpu_population_kernel_->perform_circulation_event();
 
 //  // infect new mosquito cohort in prmc must be run after population perform infection event and update current foi
 //  // because the prmc at the tracking index will be overridden with new cohort to use N days later and

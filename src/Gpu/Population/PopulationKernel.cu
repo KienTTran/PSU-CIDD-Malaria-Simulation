@@ -410,11 +410,11 @@ struct CopyNotZero : public thrust::unary_function<unsigned int, bool> {
 struct CirculateLessThan {
     __host__ __device__
     bool operator()(const thrust::tuple<int, int, int, unsigned int> &t1, thrust::tuple<int, int, int, unsigned int> &t2) {
-      if (t1.get<3>() < t2.get<3>())
+      if (thrust::get<3>(t1) < thrust::get<3>(t2))
         return true;
-      if (t1.get<3>() > t2.get<3>())
+      if (thrust::get<3>(t1) > thrust::get<3>(t2))
         return false;
-      return t1.get<3>() < t2.get<3>();
+      return thrust::get<3>(t1) < thrust::get<3>(t2);
     }
 };
 
@@ -704,14 +704,14 @@ void GPU::PopulationKernel::perform_circulation_event() {
   ThrustTuple5VectorHost<int, int, int, unsigned int, int> h_circulate_person_indices_today = d_circulate_person_indices_today;
   auto *pi = Model::GPU_POPULATION->get_person_index<GPU::PersonIndexByLocationMovingLevel>();
   for (int i = 0; i < d_circulate_all_loc_ml_today.size(); i++) {
-    int from_location = h_circulate_person_indices_today[i].get<0>();
-    int target_location = h_circulate_person_indices_today[i].get<1>();
-    int moving_level = h_circulate_person_indices_today[i].get<2>();
-    int n_persons = h_circulate_person_indices_today[i].get<3>();
+    int from_location = thrust::get<0>(h_circulate_person_indices_today[i]);
+    int target_location = thrust::get<1>(h_circulate_person_indices_today[i]);
+    int moving_level = thrust::get<2>(h_circulate_person_indices_today[i]);
+    int n_persons = thrust::get<3>(h_circulate_person_indices_today[i]);
     auto size = static_cast<int>(pi->vPerson()[from_location][moving_level].size());
     if (size == 0) continue;
     if (n_persons == 1) {
-      int p_index = h_circulate_person_indices_today[i].get<4>();
+      int p_index = thrust::get<4>(h_circulate_person_indices_today[i]);
       GPU::Person *p = pi->vPerson()[from_location][moving_level][p_index];
       assert(p->host_state() != GPU::Person::DEAD);
       p->today_target_locations()->push_back(target_location);
@@ -817,9 +817,15 @@ __global__ void update_all_individuals_kernel_stream(int offset,
   if (index < offset + size) {
     curandState local_state = d_state[index];
     if (d_person_update_info[index].person_latest_update_time == current_time) return;
+    if (d_person_update_info[index].person_host_state == GPU::Person::DEAD) return;
     /* Parasite */
     for (int p_index = 0; p_index < d_person_update_info[index].parasites_size; p_index++) {
       if (d_person_update_info[index].parasite_id[p_index] != -1) {
+        if(index >= 1000 && index < 1045){
+          printf("%d update_all_individuals_kernel_stream GPU %f\n",
+                 index,
+                 d_person_update_info[index].parasite_last_update_log10_parasite_density[p_index]);
+        }
         int duration = current_time - d_person_update_info[index].person_latest_update_time;
         if (d_person_update_info[index].parasite_update_function_type[p_index] == 1) {
           d_person_update_info[index].parasite_last_update_log10_parasite_density[p_index] = h_parasite_density_level.log_parasite_density_asymptomatic;
@@ -833,208 +839,217 @@ __global__ void update_all_individuals_kernel_stream(int offset,
         }
       }
     }
-    /* Drug */
-    if (d_person_update_info[index].person_has_drug_in_blood) {
-      for (int d_index = 0; d_index < d_person_update_info[index].drug_in_blood_size; d_index++) {
-        const int d_type_id = d_person_update_info[index].drug_in_blood_type_id[d_index];
-        if (d_type_id >= 0 && d_type_id < d_person_update_info[index].drug_in_blood_size) {
-          d_person_update_info[index].drug_last_update_time[d_type_id] = current_time;
-          const auto days = current_time - d_person_update_info[index].drug_start_time[d_type_id];
-          if (days == 0) {
-            d_person_update_info[index].drug_last_update_value[d_type_id] = 0;
-          } else if (days <= d_person_update_info[index].drug_dosing_days[d_type_id]) {
-            if (d_type_id == 0) {
-              // drug is artemisinin
-              d_person_update_info[index].drug_last_update_value[d_type_id] =
-                  d_person_update_info[index].drug_starting_value[d_type_id] + d_person_update_info[index].drug_rand_uniform_1[d_type_id];
-            } else {
-              d_person_update_info[index].drug_starting_value[d_type_id] += days >= 1 ? d_person_update_info[index].drug_rand_uniform_2[d_type_id] : 0;
-              d_person_update_info[index].drug_last_update_value[d_type_id] = d_person_update_info[index].drug_starting_value[d_type_id];
-            }
-          } else {
-            const auto temp = is_equal(d_person_update_info[index].drug_half_life[d_type_id], 0.0, d_person_update_info[index].limit_epsilon)
-                              ? -100
-                              : -(days - d_person_update_info[index].drug_dosing_days[d_type_id]) * logf(2)
-                                / d_person_update_info[index].drug_half_life[d_type_id];  //-ai*t = - t* ln2 / tstar
-            if (exp(temp) <= (10.0 / 100.0)) {
-              d_person_update_info[index].drug_last_update_value[d_type_id] = 0;
-            } else {
-              d_person_update_info[index].drug_last_update_value[d_type_id] = d_person_update_info[index].drug_starting_value[d_type_id] * exp(temp);
-            }
-          }
-        }
+    if(index >= 1000 && index < 1045){
+      for (int p_index = 0; p_index < d_person_update_info[index].parasites_size; p_index++) {
+          printf("%d GPU person index %d:\n\tp_index %d parasite_last_update_log10_parasite_density uf %d %f\n",
+                 current_time,
+                 index,p_index,
+                 d_person_update_info[index].parasite_update_function_type[p_index],
+                 d_person_update_info[index].parasite_last_update_log10_parasite_density[p_index]);
       }
     }
-    /* Parasite by drug */
-    d_person_update_info[index].parasites_genotype_mutated_number = 0;
-    for (int p_index = 0; p_index < d_person_update_info[index].parasites_size; p_index++) {
-      if (d_person_update_info[index].parasite_id[p_index] != -1) {
-        char *new_gen_aa = d_person_update_info[index].parasite_genotype[p_index];
-        if (d_person_update_info[index].person_has_drug_in_blood) {
-          for (int d_index = 0; d_index < d_person_update_info[index].drug_in_blood_size; d_index++) {
-            const int d_type_id = d_person_update_info[index].drug_in_blood_type_id[d_index];
-            if (d_type_id >= 0 && d_drug_res_aa_loc_index[d_type_id] != -1
-                && d_type_id < d_person_update_info[index].drug_in_blood_size) {
-              int *d_drug_res_aa_loc_index_int = (int *) malloc(2 * sizeof(int));
-              decode_int_to_arr2(d_drug_res_aa_loc_index[d_type_id], d_drug_res_aa_loc_index_int);
-              for (int aa_pos_id = d_drug_res_aa_loc_index_int[0];
-                   aa_pos_id < d_drug_res_aa_loc_index_int[1];
-                   aa_pos_id++) {
-                if (d_gen_mutation_mask[d_drug_res_aa_loc[aa_pos_id].aa_index_in_aa_string] == '1') {
-                  const double p = curand_gsl_uniform_double(curand_uniform_double(&local_state), 0.0, 1.0);
-                  if (p < mutation_probability_by_locus) {
-                    if (d_drug_res_aa_loc[aa_pos_id].is_copy_number) {
-                      int max_copies = -1;
-                      if (d_gen_gene_size[d_drug_res_aa_loc[aa_pos_id].chromosome_id] > 1) {
-                        int *max_copies_int = (int *) malloc(2 * sizeof(int));
-                        decode_int_to_arr2(d_gen_max_copies[d_drug_res_aa_loc[aa_pos_id].chromosome_id], max_copies_int);
-                        max_copies = max_copies_int[d_drug_res_aa_loc[aa_pos_id].gene_id];
-                        free(max_copies_int);
-                      } else {
-                        max_copies = d_gen_max_copies[d_drug_res_aa_loc[aa_pos_id].chromosome_id];
-                      }
-                      int old_copy_number = (int) (new_gen_aa[d_drug_res_aa_loc[aa_pos_id].aa_index_in_aa_string]) - 48;
-                      if (old_copy_number == 1) {
-                        new_gen_aa[d_drug_res_aa_loc[aa_pos_id].aa_index_in_aa_string] = char((old_copy_number + 1) + 48);
-                      } else if (old_copy_number == max_copies) {
-                        new_gen_aa[d_drug_res_aa_loc[aa_pos_id].aa_index_in_aa_string] = char((old_copy_number - 1) + 48);
-                      } else {
-                        int new_copy_number = curand_gsl_uniform_double(curand_uniform_double(&local_state), 0.0, 1.0) < 0.5 ?
-                                              old_copy_number - 1 : old_copy_number + 1;
-                        new_gen_aa[d_drug_res_aa_loc[aa_pos_id].aa_index_in_aa_string] = char((new_copy_number) + 48);
-                      }
-                    } else {
-                      int aa_start_index = d_gen_aa_int_start_index[d_drug_res_aa_loc[aa_pos_id].chromosome_id];
-                      int aa_int_index = aa_start_index + d_drug_res_aa_loc[aa_pos_id].aa_id;
-                      int *aa_list_int = (int *) malloc(2 * sizeof(int));
-                      decode_int_to_arr2(d_gen_aa_int[aa_int_index], aa_list_int);
-                      int aa_list_size = sizeof(aa_list_int) / sizeof(int);
-                      char old_aa = char(aa_list_int[d_drug_res_aa_loc[aa_pos_id].gene_id] + 48);
-                      // draw random aa id
-                      int new_aa_id = curand_gsl_uniform_int(curand_uniform_double(&local_state), 0, aa_list_size - 1);
-                      char new_aa = char(aa_list_int[new_aa_id] + 48);
-                      if (new_aa == old_aa) {
-                        new_aa = char(aa_list_int[new_aa_id + 1] + 48);
-                      }
-                      new_gen_aa[d_drug_res_aa_loc[aa_pos_id].aa_index_in_aa_string] = new_aa;
-                      free(aa_list_int);
-                    }
-                    d_person_update_info[index].parasites_genotype_mutated_number += 1;
-                  }
-                }
-              }
-              free(d_drug_res_aa_loc_index_int);
-            }
-          }
-        }
-      }
-    }
-    /* Immune */
-    auto immune_component_temp = 0.0;
-    if (d_person_update_info[index].immune_system_is_increased) {
-      //increase I(t) = 1 - (1-I0)e^(-b1*t)
-      double immune_component_acquire_rate = 0.0;
-      if (d_person_update_info[index].immune_system_component_type == 1) {
-        /* from InfantImmuneComponent acquire */
-        immune_component_acquire_rate = 0.0;
-      }
-      if (d_person_update_info[index].immune_system_component_type == 2) {
-        /* from NonInfantImmuneComponent acquire */
-        immune_component_acquire_rate = (d_person_update_info[index].person_age > 80)
-                                        ? d_immune_system_information->acquire_rate_by_age[80]
-                                        : d_immune_system_information->acquire_rate_by_age[d_person_update_info[index].person_age];
-      }
-      immune_component_temp = 1.0 - (1.0 - d_person_update_info[index].immune_system_component_latest_value)
-                                    * exp(-immune_component_acquire_rate * (current_time - d_person_update_info[index].person_latest_update_time));
-    } else {
-      //decrease I(t) = I0 * e ^ (-b2*t);
-      double immune_component_decay_rate = 0.0;
-      if (d_person_update_info[index].immune_system_component_type == 1) {
-        /* from InfantImmuneComponent decay */
-        immune_component_decay_rate = 0.0315;
-      }
-      if (d_person_update_info[index].immune_system_component_type == 2) {
-        /* from NonInfantImmuneComponent decay */
-        immune_component_decay_rate = d_immune_system_information->decay_rate;
-      }
-      immune_component_temp = d_person_update_info[index].immune_system_component_latest_value
-                              * exp(-immune_component_decay_rate * (current_time - d_person_update_info[index].person_latest_update_time));
-      immune_component_temp = (immune_component_temp < 0.00001) ? 0.0 : immune_component_temp;
-    }
-    d_person_update_info[index].immune_system_component_latest_value = immune_component_temp;
-    /* Cutoff */
-    if (d_person_update_info[index].person_has_drug_in_blood) {
-      for (int d_index = 0; d_index < d_person_update_info[index].drug_in_blood_size; d_index++) {
-        const int d_type_id = d_person_update_info[index].drug_in_blood_type_id[d_index];
-        if (d_type_id >= 0 && d_type_id < d_person_update_info[index].drug_in_blood_size) {
-          if (d_person_update_info[index].drug_last_update_value[d_type_id] <= DRUG_CUT_OFF_VALUE) {
-            d_person_update_info[index].drug_in_blood_type_id[d_type_id] = -1;
-          }
-        }
-      }
-    }
-    /* Clear cured */
-    for (int p_index = 0; p_index < d_person_update_info[index].parasites_size; p_index++) {
-      if (d_person_update_info[index].parasite_id[p_index] != -1) {
-        if (d_person_update_info[index].parasite_last_update_log10_parasite_density[p_index]
-            <= h_parasite_density_level.log_parasite_density_cured + 0.00001) {
-          d_person_update_info[index].parasite_id[p_index] = -1;
-          d_person_update_info[index].parasite_update_function_type[p_index] = 0;
-          d_person_update_info[index].parasite_last_update_log10_parasite_density[p_index] = GPU::ClonalParasitePopulation::LOG_ZERO_PARASITE_DENSITY;
-          d_person_update_info[index].parasite_genotype_fitness_multiple_infection[p_index] = 1.0;
-          d_person_update_info[index].parasite_gametocyte_level[p_index] = 0.0;
-          d_person_update_info[index].parasite_log10_infectious_density[p_index] = GPU::ClonalParasitePopulation::LOG_ZERO_PARASITE_DENSITY;
-          d_person_update_info[index].parasites_current_index -= 1;
-          d_person_update_info[index].parasites_size -= 1;
-        } else {
-          /* From GPU::ClonalParasitePopulation::get_log10_infectious_density() */
-          if (is_equal(d_person_update_info[index].parasite_last_update_log10_parasite_density[p_index],
-                       d_person_update_info[index].LOG_ZERO_PARASITE_DENSITY,
-                       d_person_update_info[index].limit_epsilon)
-              || is_equal(d_person_update_info[index].parasite_last_update_log10_parasite_density[p_index],
-                          0.0,
-                          d_person_update_info[index].limit_epsilon)) {
-            d_person_update_info[index].parasite_last_update_log10_parasite_density[p_index]
-                = d_person_update_info[index].LOG_ZERO_PARASITE_DENSITY;
-          }
-          d_person_update_info[index].parasite_log10_infectious_density[p_index]
-              = d_person_update_info[index].parasite_last_update_log10_parasite_density[p_index]
-                + log10(d_person_update_info[index].parasite_gametocyte_level[p_index]);
-
-          /* From GPU::SingleHostClonalParasitePopulations::clear_cured_parasites() */
-          if (d_person_update_info[index].parasites_log10_total_infectious_density == d_person_update_info[index].LOG_ZERO_PARASITE_DENSITY) {
-            d_person_update_info[index].parasites_log10_total_infectious_density
-                = d_person_update_info[index].parasite_log10_infectious_density[p_index];
-          } else {
-            d_person_update_info[index].parasites_log10_total_infectious_density
-                += log10(pow(10, d_person_update_info[index].parasite_log10_infectious_density[p_index]
-                                 - d_person_update_info[index].parasites_log10_total_infectious_density) + 1);
-          }
-        }
-      }
-    }
-    /* Change state */
-    if (d_person_update_info[index].parasites_size == 0) {
-      if (d_person_update_info[index].person_liver_parasite_genotype[0] == '\0') {
-        d_person_update_info[index].person_host_state = static_cast<int>(GPU::Person::SUSCEPTIBLE);
-      } else {
-        d_person_update_info[index].person_host_state = static_cast<int>(GPU::Person::EXPOSED);
-      }
-      d_person_update_info[index].immune_system_is_increased = false;
-    } else {
-      d_person_update_info[index].immune_system_is_increased = true;
-    }
-    if (d_person_update_info[index].person_using_age_dependent_biting_level) {
-      d_person_update_info[index].person_current_relative_biting_rate
-          = d_person_update_info[index].person_innate_relative_biting_rate
-            * get_age_dependent_biting_factor(d_person_update_info[index].person_age,
-                                              d_person_update_info[index].person_birthday,
-                                              current_time,
-                                              365);
-    } else {
-      d_person_update_info[index].person_current_relative_biting_rate
-          = d_person_update_info[index].person_innate_relative_biting_rate;
-    }
+//    /* Drug */
+//    if (d_person_update_info[index].person_has_drug_in_blood) {
+//      for (int d_index = 0; d_index < d_person_update_info[index].drug_in_blood_size; d_index++) {
+//        const int d_type_id = d_person_update_info[index].drug_in_blood_type_id[d_index];
+//        if (d_type_id >= 0 && d_type_id < d_person_update_info[index].drug_in_blood_size) {
+//          d_person_update_info[index].drug_last_update_time[d_type_id] = current_time;
+//          const auto days = current_time - d_person_update_info[index].drug_start_time[d_type_id];
+//          if (days == 0) {
+//            d_person_update_info[index].drug_last_update_value[d_type_id] = 0;
+//          } else if (days <= d_person_update_info[index].drug_dosing_days[d_type_id]) {
+//            if (d_type_id == 0) {
+//              // drug is artemisinin
+//              d_person_update_info[index].drug_last_update_value[d_type_id] =
+//                  d_person_update_info[index].drug_starting_value[d_type_id] + d_person_update_info[index].drug_rand_uniform_1[d_type_id];
+//            } else {
+//              d_person_update_info[index].drug_starting_value[d_type_id] += days >= 1 ? d_person_update_info[index].drug_rand_uniform_2[d_type_id] : 0;
+//              d_person_update_info[index].drug_last_update_value[d_type_id] = d_person_update_info[index].drug_starting_value[d_type_id];
+//            }
+//          } else {
+//            const auto temp = is_equal(d_person_update_info[index].drug_half_life[d_type_id], 0.0, d_person_update_info[index].limit_epsilon)
+//                              ? -100
+//                              : -(days - d_person_update_info[index].drug_dosing_days[d_type_id]) * logf(2)
+//                                / d_person_update_info[index].drug_half_life[d_type_id];  //-ai*t = - t* ln2 / tstar
+//            if (exp(temp) <= (10.0 / 100.0)) {
+//              d_person_update_info[index].drug_last_update_value[d_type_id] = 0;
+//            } else {
+//              d_person_update_info[index].drug_last_update_value[d_type_id] = d_person_update_info[index].drug_starting_value[d_type_id] * exp(temp);
+//            }
+//          }
+//        }
+//      }
+//    }
+//    /* Parasite by drug */
+//    d_person_update_info[index].parasites_genotype_mutated_number = 0;
+//    for (int p_index = 0; p_index < d_person_update_info[index].parasites_size; p_index++) {
+//      if (d_person_update_info[index].parasite_id[p_index] != -1) {
+//        char *new_gen_aa = d_person_update_info[index].parasite_genotype[p_index];
+//        if (d_person_update_info[index].person_has_drug_in_blood) {
+//          for (int d_index = 0; d_index < d_person_update_info[index].drug_in_blood_size; d_index++) {
+//            const int d_type_id = d_person_update_info[index].drug_in_blood_type_id[d_index];
+//            if (d_type_id >= 0 && d_drug_res_aa_loc_index[d_type_id] != -1
+//                && d_type_id < d_person_update_info[index].drug_in_blood_size) {
+//              int *d_drug_res_aa_loc_index_int = (int *) malloc(2 * sizeof(int));
+//              decode_int_to_arr2(d_drug_res_aa_loc_index[d_type_id], d_drug_res_aa_loc_index_int);
+//              for (int aa_pos_id = d_drug_res_aa_loc_index_int[0];
+//                   aa_pos_id < d_drug_res_aa_loc_index_int[1];
+//                   aa_pos_id++) {
+//                if (d_gen_mutation_mask[d_drug_res_aa_loc[aa_pos_id].aa_index_in_aa_string] == '1') {
+//                  const double p = curand_gsl_uniform_double(curand_uniform_double(&local_state), 0.0, 1.0);
+//                  if (p < mutation_probability_by_locus) {
+//                    if (d_drug_res_aa_loc[aa_pos_id].is_copy_number) {
+//                      int max_copies = -1;
+//                      if (d_gen_gene_size[d_drug_res_aa_loc[aa_pos_id].chromosome_id] > 1) {
+//                        int *max_copies_int = (int *) malloc(2 * sizeof(int));
+//                        decode_int_to_arr2(d_gen_max_copies[d_drug_res_aa_loc[aa_pos_id].chromosome_id], max_copies_int);
+//                        max_copies = max_copies_int[d_drug_res_aa_loc[aa_pos_id].gene_id];
+//                        free(max_copies_int);
+//                      } else {
+//                        max_copies = d_gen_max_copies[d_drug_res_aa_loc[aa_pos_id].chromosome_id];
+//                      }
+//                      int old_copy_number = (int) (new_gen_aa[d_drug_res_aa_loc[aa_pos_id].aa_index_in_aa_string]) - 48;
+//                      if (old_copy_number == 1) {
+//                        new_gen_aa[d_drug_res_aa_loc[aa_pos_id].aa_index_in_aa_string] = char((old_copy_number + 1) + 48);
+//                      } else if (old_copy_number == max_copies) {
+//                        new_gen_aa[d_drug_res_aa_loc[aa_pos_id].aa_index_in_aa_string] = char((old_copy_number - 1) + 48);
+//                      } else {
+//                        int new_copy_number = curand_gsl_uniform_double(curand_uniform_double(&local_state), 0.0, 1.0) < 0.5 ?
+//                                              old_copy_number - 1 : old_copy_number + 1;
+//                        new_gen_aa[d_drug_res_aa_loc[aa_pos_id].aa_index_in_aa_string] = char((new_copy_number) + 48);
+//                      }
+//                    } else {
+//                      int aa_start_index = d_gen_aa_int_start_index[d_drug_res_aa_loc[aa_pos_id].chromosome_id];
+//                      int aa_int_index = aa_start_index + d_drug_res_aa_loc[aa_pos_id].aa_id;
+//                      int *aa_list_int = (int *) malloc(2 * sizeof(int));
+//                      decode_int_to_arr2(d_gen_aa_int[aa_int_index], aa_list_int);
+//                      int aa_list_size = sizeof(aa_list_int) / sizeof(int);
+//                      char old_aa = char(aa_list_int[d_drug_res_aa_loc[aa_pos_id].gene_id] + 48);
+//                      // draw random aa id
+//                      int new_aa_id = curand_gsl_uniform_int(curand_uniform_double(&local_state), 0, aa_list_size - 1);
+//                      char new_aa = char(aa_list_int[new_aa_id] + 48);
+//                      if (new_aa == old_aa) {
+//                        new_aa = char(aa_list_int[new_aa_id + 1] + 48);
+//                      }
+//                      new_gen_aa[d_drug_res_aa_loc[aa_pos_id].aa_index_in_aa_string] = new_aa;
+//                      free(aa_list_int);
+//                    }
+//                    d_person_update_info[index].parasites_genotype_mutated_number += 1;
+//                  }
+//                }
+//              }
+//              free(d_drug_res_aa_loc_index_int);
+//            }
+//          }
+//        }
+//      }
+//    }
+//    /* Immune */
+//    auto immune_component_temp = 0.0;
+//    if (d_person_update_info[index].immune_system_is_increased) {
+//      //increase I(t) = 1 - (1-I0)e^(-b1*t)
+//      double immune_component_acquire_rate = 0.0;
+//      if (d_person_update_info[index].immune_system_component_type == 1) {
+//        /* from InfantImmuneComponent acquire */
+//        immune_component_acquire_rate = 0.0;
+//      }
+//      if (d_person_update_info[index].immune_system_component_type == 2) {
+//        /* from NonInfantImmuneComponent acquire */
+//        immune_component_acquire_rate = (d_person_update_info[index].person_age > 80)
+//                                        ? d_immune_system_information->acquire_rate_by_age[80]
+//                                        : d_immune_system_information->acquire_rate_by_age[d_person_update_info[index].person_age];
+//      }
+//      immune_component_temp = 1.0 - (1.0 - d_person_update_info[index].immune_system_component_latest_value)
+//                                    * exp(-immune_component_acquire_rate * (current_time - d_person_update_info[index].person_latest_update_time));
+//    } else {
+//      //decrease I(t) = I0 * e ^ (-b2*t);
+//      double immune_component_decay_rate = 0.0;
+//      if (d_person_update_info[index].immune_system_component_type == 1) {
+//        /* from InfantImmuneComponent decay */
+//        immune_component_decay_rate = 0.0315;
+//      }
+//      if (d_person_update_info[index].immune_system_component_type == 2) {
+//        /* from NonInfantImmuneComponent decay */
+//        immune_component_decay_rate = d_immune_system_information->decay_rate;
+//      }
+//      immune_component_temp = d_person_update_info[index].immune_system_component_latest_value
+//                              * exp(-immune_component_decay_rate * (current_time - d_person_update_info[index].person_latest_update_time));
+//      immune_component_temp = (immune_component_temp < 0.00001) ? 0.0 : immune_component_temp;
+//    }
+//    d_person_update_info[index].immune_system_component_latest_value = immune_component_temp;
+//    /* Cutoff */
+//    if (d_person_update_info[index].person_has_drug_in_blood) {
+//      for (int d_index = 0; d_index < d_person_update_info[index].drug_in_blood_size; d_index++) {
+//        const int d_type_id = d_person_update_info[index].drug_in_blood_type_id[d_index];
+//        if (d_type_id >= 0 && d_type_id < d_person_update_info[index].drug_in_blood_size) {
+//          if (d_person_update_info[index].drug_last_update_value[d_type_id] <= DRUG_CUT_OFF_VALUE) {
+//            d_person_update_info[index].drug_in_blood_type_id[d_type_id] = -1;
+//          }
+//        }
+//      }
+//    }
+//    /* Clear cured */
+//    for (int p_index = 0; p_index < d_person_update_info[index].parasites_size; p_index++) {
+//      if (d_person_update_info[index].parasite_id[p_index] != -1) {
+//        if (d_person_update_info[index].parasite_last_update_log10_parasite_density[p_index]
+//            <= h_parasite_density_level.log_parasite_density_cured + 0.00001) {
+//          d_person_update_info[index].parasite_id[p_index] = -1;
+//          d_person_update_info[index].parasite_update_function_type[p_index] = 0;
+//          d_person_update_info[index].parasite_last_update_log10_parasite_density[p_index] = GPU::ClonalParasitePopulation::LOG_ZERO_PARASITE_DENSITY;
+//          d_person_update_info[index].parasite_genotype_fitness_multiple_infection[p_index] = 1.0;
+//          d_person_update_info[index].parasite_gametocyte_level[p_index] = 0.0;
+//          d_person_update_info[index].parasite_log10_infectious_density[p_index] = GPU::ClonalParasitePopulation::LOG_ZERO_PARASITE_DENSITY;
+//          d_person_update_info[index].parasites_current_index -= 1;
+//          d_person_update_info[index].parasites_size -= 1;
+//        } else {
+//          /* From GPU::ClonalParasitePopulation::get_log10_infectious_density() */
+//          if (is_equal(d_person_update_info[index].parasite_last_update_log10_parasite_density[p_index],
+//                       d_person_update_info[index].LOG_ZERO_PARASITE_DENSITY,
+//                       d_person_update_info[index].limit_epsilon)
+//              || is_equal(d_person_update_info[index].parasite_last_update_log10_parasite_density[p_index],
+//                          0.0,
+//                          d_person_update_info[index].limit_epsilon)) {
+//            d_person_update_info[index].parasite_last_update_log10_parasite_density[p_index]
+//                = d_person_update_info[index].LOG_ZERO_PARASITE_DENSITY;
+//          }
+//          d_person_update_info[index].parasite_log10_infectious_density[p_index]
+//              = d_person_update_info[index].parasite_last_update_log10_parasite_density[p_index]
+//                + log10(d_person_update_info[index].parasite_gametocyte_level[p_index]);
+//
+//          /* From GPU::SingleHostClonalParasitePopulations::clear_cured_parasites() */
+//          if (d_person_update_info[index].parasites_log10_total_infectious_density == d_person_update_info[index].LOG_ZERO_PARASITE_DENSITY) {
+//            d_person_update_info[index].parasites_log10_total_infectious_density
+//                = d_person_update_info[index].parasite_log10_infectious_density[p_index];
+//          } else {
+//            d_person_update_info[index].parasites_log10_total_infectious_density
+//                += log10(pow(10, d_person_update_info[index].parasite_log10_infectious_density[p_index]
+//                                 - d_person_update_info[index].parasites_log10_total_infectious_density) + 1);
+//          }
+//        }
+//      }
+//    }
+//    /* Change state */
+//    if (d_person_update_info[index].parasites_size == 0) {
+//      if (d_person_update_info[index].person_liver_parasite_genotype[0] == '\0') {
+//        d_person_update_info[index].person_host_state = static_cast<int>(GPU::Person::SUSCEPTIBLE);
+//      } else {
+//        d_person_update_info[index].person_host_state = static_cast<int>(GPU::Person::EXPOSED);
+//      }
+//      d_person_update_info[index].immune_system_is_increased = false;
+//    } else {
+//      d_person_update_info[index].immune_system_is_increased = true;
+//    }
+//    if (d_person_update_info[index].person_using_age_dependent_biting_level) {
+//      d_person_update_info[index].person_current_relative_biting_rate
+//          = d_person_update_info[index].person_innate_relative_biting_rate
+//            * get_age_dependent_biting_factor(d_person_update_info[index].person_age,
+//                                              d_person_update_info[index].person_birthday,
+//                                              current_time,
+//                                              365);
+//    } else {
+//      d_person_update_info[index].person_current_relative_biting_rate
+//          = d_person_update_info[index].person_innate_relative_biting_rate;
+//    }
     /* Latest update time */
     d_person_update_info[index].person_latest_update_time = current_time;
 //        if(index == offset + size - 1) printf("GPU all_individuals_kernel_stream (%d -> %d) index %d last_time %d curr_time %d\n",
@@ -1391,7 +1406,7 @@ void GPU::PopulationKernel::persist_current_force_of_infection_to_use_N_days_lat
   for (auto loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
     force_of_infection_for_N_days_by_location[Model::GPU_SCHEDULER->current_time()
                                               % Model::CONFIG->number_of_tracking_days()][loc] =
-    h_sum_biting_moving_foi_by_loc[loc].get<3>();
+    thrust::get<3>(h_sum_biting_moving_foi_by_loc[loc]);
   }
   auto lapse = std::chrono::high_resolution_clock::now() - start;
   if(Model::CONFIG->debug_config().enable_debug_text){

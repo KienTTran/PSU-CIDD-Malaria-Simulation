@@ -201,13 +201,16 @@ void GPU::Genotype::calculate_EC50_power_n(const PfGeneInfo &gene_info, GPU::Dru
   }
 }
 
-GPU::Genotype *GPU::Genotype::perform_mutation_by_drug(Config *pConfig, ::Random *pRandom, GPU::DrugType *pDrugType, double mutation_probability_by_locus) const {
+GPU::Genotype *GPU::Genotype::perform_mutation_by_drug(Config *pConfig, ::Random *pRandom, GPU::DrugType *pDrugType,
+                                                       double mutation_probability_by_locus,
+                                                       int person_index,
+                                                       int parasite_index) const {
   std::string new_aa_sequence { aa_sequence };
   for(int aa_pos_id = 0; aa_pos_id < pDrugType->resistant_aa_locations.size(); aa_pos_id++) {
     // get aa position info (aa index in aa string, is copy number)
     auto aa_pos = pDrugType->resistant_aa_locations[aa_pos_id];
     if(pConfig->mutation_mask()[aa_pos.aa_index_in_aa_string] == '1'){
-        const auto p = pRandom->random_flat(0.0, 1.0);
+        const auto p = 0.00005;//pRandom->random_flat(0.0, 1.0);
         if (p < mutation_probability_by_locus){
           if (aa_pos.is_copy_number) {
                 // increase or decrease by 1 step
@@ -221,7 +224,8 @@ GPU::Genotype *GPU::Genotype::perform_mutation_by_drug(Config *pConfig, ::Random
                                    .max_copies) {
                     new_aa_sequence[aa_pos.aa_index_in_aa_string] = NumberHelpers::single_digit_number_to_char(old_copy_number - 1);
                 } else {
-                    auto new_copy_number = pRandom->random_uniform() < 0.5 ? old_copy_number - 1 : old_copy_number + 1;
+                    double rand = 0.6; //pRandom->random_uniform()
+                    auto new_copy_number = rand < 0.5 ? old_copy_number - 1 : old_copy_number + 1;
                     new_aa_sequence[aa_pos.aa_index_in_aa_string] = NumberHelpers::single_digit_number_to_char(new_copy_number);
                 }
 
@@ -232,22 +236,28 @@ GPU::Genotype *GPU::Genotype::perform_mutation_by_drug(Config *pConfig, ::Random
                         .aa_position_infos[aa_pos.aa_id]
                         .amino_acids;
                 // draw random aa id
+//                printf("aa_list.size() %zu\n", aa_list.size());
                 auto new_aa_id = pRandom->random_uniform(aa_list.size() - 1);
                 auto old_aa = aa_sequence[aa_pos.aa_index_in_aa_string];
+//                printf("old_aa %c\n", old_aa);
                 auto new_aa = aa_list[new_aa_id];
                 if (new_aa == old_aa) {
                     new_aa = aa_list[new_aa_id + 1];
                 }
+//                printf("new_aa %c\n", new_aa);
                 new_aa_sequence[aa_pos.aa_index_in_aa_string] = new_aa;
             }
         }
     }
   }
-//  printf("CPU perform_mutation_by_drug\n"
-//         "genotype old %s\n"
-//         "genotype new %s\n",
-//         aa_sequence.c_str(),
-//         new_aa_sequence.c_str());
+  LOG_IF(person_index >= 1000 && person_index <= 1085,INFO)
+  << fmt::format("Person {} p_index {} drug {}\n\tCPU perform_mutation_by_drug\n"
+         "\tgenotype old {}\n"
+         "\tgenotype new {} (by drug {})",
+          person_index, parasite_index, pDrugType->id(),
+          aa_sequence.c_str(),
+          new_aa_sequence.c_str(),
+          pDrugType->id());
   // get genotype pointer from gene database based on aa sequence
   return pConfig->gpu_genotype_db.get_genotype(new_aa_sequence, pConfig);
 }

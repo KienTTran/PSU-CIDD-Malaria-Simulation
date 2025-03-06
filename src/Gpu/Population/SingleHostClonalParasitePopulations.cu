@@ -146,7 +146,9 @@ void GPU::SingleHostClonalParasitePopulations::update_by_drugs(GPU::DrugsInBlood
       // remember to use mask to turn on and off mutation location
       // for a specific time
       GPU::Genotype* candidate_genotype = new_genotype->perform_mutation_by_drug(Model::CONFIG, Model::RANDOM, drug->drug_type(),
-                                                                            Model::CONFIG->mutation_probability_by_locus());
+                                                                            Model::CONFIG->mutation_probability_by_locus(),
+                                                                            person_->index(),
+                                                                            blood_parasite->index());
 
       if (candidate_genotype->get_EC50_power_n(drug->drug_type())
           > new_genotype->get_EC50_power_n(drug->drug_type())) {
@@ -168,6 +170,8 @@ void GPU::SingleHostClonalParasitePopulations::update_by_drugs(GPU::DrugsInBlood
       percent_parasite_remove = percent_parasite_remove + p_temp - percent_parasite_remove * p_temp;
     }
     if (percent_parasite_remove > 0) {
+      LOG_IF(person_->index() >= 1000 && person_->index() <= 1085,INFO)
+      << fmt::format("percent_parasite_remove: {}\n", percent_parasite_remove);
       blood_parasite->perform_drug_action(percent_parasite_remove);
     }
   }

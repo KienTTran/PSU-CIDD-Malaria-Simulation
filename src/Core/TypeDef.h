@@ -160,6 +160,7 @@ struct GPUConfig{
     int n_streams {8};
     int n_people_1_batch {1000000};
     double pre_allocated_mem_ratio {1.0};
+    double population_scale;
     friend std::ostream &operator<<(std::ostream &os, const GPUConfig &mcf) {
         os << "gpu_config";
         return os;
