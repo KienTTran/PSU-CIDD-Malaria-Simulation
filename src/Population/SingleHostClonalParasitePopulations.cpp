@@ -154,13 +154,13 @@ void SingleHostClonalParasitePopulations::update_by_drugs(DrugsInBlood* drugs_in
           new_genotype = candidate_genotype;
         }
         if (new_genotype != blood_parasite->genotype()) {
-            if(blood_parasite->genotype()->get_aa_sequence()[9] == 'K'
-               && new_genotype->get_aa_sequence()[9] == 'T'){
-              LOG(INFO) << "76 K -> T";
-            }
-            if(new_genotype->get_aa_sequence()[9] == 'T'){
-                LOG(INFO) << "new 76T " << blood_parasite->genotype()->aa_sequence << " -> " << new_genotype->aa_sequence;
-            }
+            // if(blood_parasite->genotype()->get_aa_sequence()[9] == 'K'
+            //    && new_genotype->get_aa_sequence()[9] == 'T'){
+            //   LOG(INFO) << "76 K -> T";
+            // }
+            // if(new_genotype->get_aa_sequence()[9] == 'T'){
+            //     LOG(INFO) << "new 76T " << blood_parasite->genotype()->aa_sequence << " -> " << new_genotype->aa_sequence;
+            // }
           // mutation occurs
           Model::DATA_COLLECTOR->record_1_mutation(person_->location(), blood_parasite->genotype(), new_genotype);
           Model::DATA_COLLECTOR->record_1_mutation_by_drug(person_->location(), blood_parasite->genotype(), new_genotype, drug_id);
@@ -189,6 +189,26 @@ bool SingleHostClonalParasitePopulations::has_detectable_parasite() const {
         >= Model::CONFIG->parasite_density_level().log_parasite_density_detectable_pfpr) {
       return true;
     }
+  }
+  return false;
+}
+
+bool SingleHostClonalParasitePopulations::has_detectable_parasite_sub_0p01() const {
+  for (auto& parasite : *parasites_) {
+    if (parasite->last_update_log10_parasite_density()
+        >= Model::CONFIG->parasite_density_level().log_parasite_density_detectable_pfpr_sub_0p01) {
+      return true;
+        }
+  }
+  return false;
+}
+
+bool SingleHostClonalParasitePopulations::has_detectable_parasite_sub_0p2() const {
+  for (auto& parasite : *parasites_) {
+    if (parasite->last_update_log10_parasite_density()
+        >= Model::CONFIG->parasite_density_level().log_parasite_density_detectable_pfpr_sub_0p2) {
+      return true;
+        }
   }
   return false;
 }

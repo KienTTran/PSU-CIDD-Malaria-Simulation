@@ -71,6 +71,10 @@ public:
 
   bool has_detectable_parasite() const;
 
+  bool has_detectable_parasite_sub_0p01() const;
+
+  bool has_detectable_parasite_sub_0p2() const;
+
   bool is_gametocytaemic() const;
 };
 

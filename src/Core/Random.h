@@ -128,6 +128,7 @@ std::vector<T *> Random::multinomial_sampling(int size, std::vector<double> &dis
   return samples;
 }
 
+/* Roulette sampling is without replacement, means 1 person can be selected multiple times */
 template <class T>
 std::vector<T *> Random::roulette_sampling(int number_of_samples, std::vector<double> &distribution,
                                            std::vector<T *> &all_objects, bool is_shuffled, double sum_distribution) {

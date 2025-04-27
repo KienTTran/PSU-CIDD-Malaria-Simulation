@@ -173,7 +173,7 @@ circulation_info:
     mean: 5
     sd: 10
 
-mutation_mask: "||||000||0000000,0||||||110010000110|0"
+mutation_mask: "||||000||0000000,0||||||000000000010|0"
 
 # the appearance of gene should be in order
 # the appearance of gene should be in order

@@ -31,7 +31,10 @@ DrugType::~DrugType() = default;
 
 double DrugType::get_parasite_killing_rate_by_concentration(const double &concentration, const double &EC50_power_n) {
   const auto con_power_n = pow(concentration, n_);
-  return maximum_parasite_killing_rate_ * con_power_n / (con_power_n + EC50_power_n);
+  // std::cout << "c: " << concentration << " n: " << n_ << " p_max: " << maximum_parasite_killing_rate_ << " EC50_power_n: " << EC50_power_n << " con_power_n: " << con_power_n << std::endl;
+  const auto killing_perday =  maximum_parasite_killing_rate_ * (con_power_n / (con_power_n + EC50_power_n));
+  // std::cout<< "c: " << concentration << " n: " << n_ << " ppr: "<< killing_perday << std::endl;
+  return killing_perday;
 }
 
 double DrugType::n() {

@@ -200,6 +200,10 @@ public:
 
   bool has_detectable_parasite() const;
 
+  bool has_detectable_parasite_sub_0p01() const;
+
+  bool has_detectable_parasite_sub_0p2() const;
+
   void increase_number_of_times_bitten();
 
   void move_to_population(Population *target_population);

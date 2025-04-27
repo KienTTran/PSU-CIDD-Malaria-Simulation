@@ -113,9 +113,9 @@ void immune_system_information::set_value(const YAML::Node &node) {
   value_.max_clinical_probability = is_node["max_clinical_probability"].as<double>();
 
   value_.immune_effect_on_progression_to_clinical = is_node["immune_effect_on_progression_to_clinical"].as<double>();
-
-  //    std::cout << value_.c_min << std::endl;
-  //    std::cout << value_.c_max << std::endl;
+  //
+  // std::cout << value_.c_min << std::endl;
+  // std::cout << value_.c_max << std::endl;
 
   value_.age_mature_immunity = is_node["age_mature_immunity"].as<double>();
   value_.factor_effect_age_mature_immunity = is_node["factor_effect_age_mature_immunity"].as<double>();
@@ -139,12 +139,14 @@ void immune_system_information::set_value(const YAML::Node &node) {
   }
   assert(value_.acquire_rate_by_age.size() == 81);
 
-  value_.c_min = pow(10, -(config_->parasite_density_level().log_parasite_density_asymptomatic
-                           - config_->parasite_density_level().log_parasite_density_cured)
+  value_.c_min = pow(10, -(config_->parasite_density_level().log_parasite_density_asymptomatic - config_->parasite_density_level().log_parasite_density_cured)
                              / value_.duration_for_fully_immune);
   value_.c_max = pow(10, -(config_->parasite_density_level().log_parasite_density_asymptomatic
                            - config_->parasite_density_level().log_parasite_density_cured)
-                             / value_.duration_for_naive);
+                           / value_.duration_for_naive);
+
+  std::cout << value_.c_min << std::endl;
+  std::cout << value_.c_max << std::endl;
 }
 
 drug_db::~drug_db() {

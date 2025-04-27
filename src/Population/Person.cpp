@@ -246,19 +246,6 @@ void Person::cancel_all_events_except(Event* event) const {
   }
 }
 
-// void Person::record_treatment_failure_for_test_treatment_failure_events() {
-//
-//     for(Event* e :  *events()) {
-//         if (dynamic_cast<TestTreatmentFailureEvent*> (e) != nullptr && e->executable()) {
-//             //            e->set_dispatcher(nullptr);
-//             //record treatment failure
-//             Model::DATA_COLLECTOR->record_1_treatment_failure_by_therapy(location_, age_,
-//             ((TestTreatmentFailureEvent*) e)->therapyId());
-//
-//         }
-//     }
-// }
-
 void Person::change_all_parasite_update_function(ParasiteDensityUpdateFunction* from,
                                                  ParasiteDensityUpdateFunction* to) const {
   all_clonal_parasite_populations_->change_all_parasite_update_function(from, to);
@@ -603,6 +590,16 @@ void Person::cancel_all_return_to_residence_events() const {
 
 bool Person::has_detectable_parasite() const {
   return all_clonal_parasite_populations_->has_detectable_parasite();
+}
+
+
+bool Person::has_detectable_parasite_sub_0p01() const {
+  return all_clonal_parasite_populations_->has_detectable_parasite_sub_0p01();
+}
+
+
+bool Person::has_detectable_parasite_sub_0p2() const {
+  return all_clonal_parasite_populations_->has_detectable_parasite_sub_0p2();
 }
 
 void Person::increase_number_of_times_bitten() {

@@ -43,18 +43,32 @@ PROPERTY_REF(IntVector2, popsize_by_location_hoststate)
 PROPERTY_REF(IntVector3, popsize_by_location_hoststate_age_class)
 
 PROPERTY_REF(DoubleVector, blood_slide_prevalence_by_location)
+PROPERTY_REF(DoubleVector, blood_slide_prevalence_by_location_sub_0p01)
+PROPERTY_REF(DoubleVector, blood_slide_prevalence_by_location_sub_0p2)
 
 PROPERTY_REF(DoubleVector2, blood_slide_number_by_location_age_group)
+PROPERTY_REF(DoubleVector2, blood_slide_number_by_location_age_group_sub_0p01)
+PROPERTY_REF(DoubleVector2, blood_slide_number_by_location_age_group_sub_0p2)
 
 PROPERTY_REF(DoubleVector2, blood_slide_prevalence_by_location_age_group)
+PROPERTY_REF(DoubleVector2, blood_slide_prevalence_by_location_age_group_sub_0p01)
+PROPERTY_REF(DoubleVector2, blood_slide_prevalence_by_location_age_group_sub_0p2)
 
 PROPERTY_REF(DoubleVector2, blood_slide_number_by_location_age_group_by_5)
+PROPERTY_REF(DoubleVector2, blood_slide_number_by_location_age_group_by_5_sub_0p01)
+PROPERTY_REF(DoubleVector2, blood_slide_number_by_location_age_group_by_5_sub_0p2)
 
 PROPERTY_REF(DoubleVector2, blood_slide_prevalence_by_location_age_group_by_5)
+PROPERTY_REF(DoubleVector2, blood_slide_prevalence_by_location_age_group_by_5_sub_0p01)
+PROPERTY_REF(DoubleVector2, blood_slide_prevalence_by_location_age_group_by_5_sub_0p2)
 
 PROPERTY_REF(DoubleVector2, blood_slide_prevalence_by_location_age)
+PROPERTY_REF(DoubleVector2, blood_slide_prevalence_by_location_age_sub_0p01)
+PROPERTY_REF(DoubleVector2, blood_slide_prevalence_by_location_age_sub_0p2)
 
 PROPERTY_REF(DoubleVector2, blood_slide_number_by_location_age)
+PROPERTY_REF(DoubleVector2, blood_slide_number_by_location_age_sub_0p01)
+PROPERTY_REF(DoubleVector2, blood_slide_number_by_location_age_sub_0p2)
 
 PROPERTY_REF(DoubleVector, fraction_of_positive_that_are_clinical_by_location)
 
@@ -291,6 +305,8 @@ public:
   void record_AMU_AFU(Person* person, Therapy* therapy, ClonalParasitePopulation* clinical_caused_parasite);
 
   double get_blood_slide_prevalence(const int& location, const int& age_from, const int& age_to);
+  double get_blood_slide_prevalence_sub_0p01(const int& location, const int& age_from, const int& age_to);
+  double get_blood_slide_prevalence_sub_0p2(const int& location, const int& age_from, const int& age_to);
 
 private:
   void update_average_number_bitten(const int& location, const int& birthday, const int& number_of_times_bitten);

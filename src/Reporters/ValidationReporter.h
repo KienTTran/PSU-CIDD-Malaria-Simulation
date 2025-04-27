@@ -21,8 +21,8 @@ public:
     std::ofstream summary_data_file;
     std::ofstream gene_db_file;
     std::ofstream gene_freq_file;
-    std::ofstream prmc_db_file;
-    std::ofstream prmc_freq_file;
+    // std::ofstream prmc_db_file;
+    // std::ofstream prmc_freq_file;
     std::ofstream monthly_mutation_file;
     std::ofstream mosquito_res_count_file;
 
@@ -42,6 +42,10 @@ public:
     void monthly_report() override;
 
     void print_EIR_PfPR_by_location(std::stringstream& ss);
+
+    void print_EIR_PfPR_by_location_sub_0p01(std::stringstream& ss);
+
+    void print_EIR_PfPR_by_location_sub_0p2(std::stringstream& ss);
 
     //  void print_monthly_incidence_by_location();
 };

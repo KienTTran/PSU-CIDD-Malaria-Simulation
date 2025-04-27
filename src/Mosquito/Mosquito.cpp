@@ -182,24 +182,26 @@ void Mosquito::infect_new_cohort_in_PRMC(Config *config, Random *random, Populat
       genotypes_table[tracking_index][loc][if_index] = sampled_genotype;
 
 
-      //Count DHA-PPQ(8) ASAQ(7) AL(6)
-      //Count if male genotype resists to one drug and female genotype resists to another drug only, right now work on double and triple resistant only
-      //when genotype ec50_power_n == min_ec50, it is sensitive to that drug
+      if (config->mosquito_config().record_recombination_events) {
+        //Count DHA-PPQ(8) ASAQ(7) AL(6)
+        //Count if male genotype resists to one drug and female genotype resists to another drug only, right now work on double and triple resistant only
+        //when genotype ec50_power_n == min_ec50, it is sensitive to that drug
         if (Model::SCHEDULER->current_time() >= Model::CONFIG->start_of_comparison_period())
         {
-            /*
-             * Print our recombination for counting later
-             * */
-            auto resistant_tracker_info = std::make_tuple(Model::SCHEDULER->current_time(),parent_genotypes[0]->genotype_id, parent_genotypes[1]->genotype_id, sampled_genotype->genotype_id);
-//            if (std::find(Model::DATA_COLLECTOR->mosquito_recombined_resistant_genotype_tracker[loc].begin(),
-//                          Model::DATA_COLLECTOR->mosquito_recombined_resistant_genotype_tracker[loc].end(), resistant_tracker_info)
-//                == Model::DATA_COLLECTOR->mosquito_recombined_resistant_genotype_tracker[loc].end()){
-//                Model::DATA_COLLECTOR->mosquito_recombined_resistant_genotype_tracker[loc].push_back(resistant_tracker_info);
-//            }
-            Model::DATA_COLLECTOR->mosquito_recombined_resistant_genotype_tracker[loc].push_back(resistant_tracker_info);
+          /*
+           * Print our recombination for counting later
+           * */
+          auto resistant_tracker_info = std::make_tuple(Model::SCHEDULER->current_time(),parent_genotypes[0]->genotype_id, parent_genotypes[1]->genotype_id, sampled_genotype->genotype_id);
+          //            if (std::find(Model::DATA_COLLECTOR->mosquito_recombined_resistant_genotype_tracker[loc].begin(),
+          //                          Model::DATA_COLLECTOR->mosquito_recombined_resistant_genotype_tracker[loc].end(), resistant_tracker_info)
+          //                == Model::DATA_COLLECTOR->mosquito_recombined_resistant_genotype_tracker[loc].end()){
+          //                Model::DATA_COLLECTOR->mosquito_recombined_resistant_genotype_tracker[loc].push_back(resistant_tracker_info);
+          //            }
+          Model::DATA_COLLECTOR->mosquito_recombined_resistant_genotype_tracker[loc].push_back(resistant_tracker_info);
         }
-      //Count number of bites
-      Model::DATA_COLLECTOR->mosquito_recombination_events_count()[loc][1]++;
+        //Count number of bites
+        Model::DATA_COLLECTOR->mosquito_recombination_events_count()[loc][1]++;
+      }
     }
   }
 }

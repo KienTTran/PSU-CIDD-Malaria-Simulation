@@ -115,6 +115,14 @@ struct convert<ParasiteDensityLevel> {
     parasite_density_level.log_parasite_density_detectable_pfpr =
         node["log_parasite_density_detectable_pfpr"] ? node["log_parasite_density_detectable_pfpr"].as<double>()
                                                      : node["log_parasite_density_detectable"].as<double>();
+
+    parasite_density_level.log_parasite_density_detectable_pfpr_sub_0p01 =
+        node["log_parasite_density_detectable_pfpr_sub_0p01"] ? node["log_parasite_density_detectable_pfpr_sub_0p01"].as<double>()
+                                                     : node["log_parasite_density_detectable_pfpr"].as<double>();
+
+    parasite_density_level.log_parasite_density_detectable_pfpr_sub_0p2 =
+        node["log_parasite_density_detectable_pfpr_sub_0p2"] ? node["log_parasite_density_detectable_pfpr_sub_0p2"].as<double>()
+                                                     : node["log_parasite_density_detectable_pfpr"].as<double>();
     parasite_density_level.log_parasite_density_pyrogenic = node["log_parasite_density_pyrogenic"].as<double>();
 
     return true;
@@ -264,6 +272,11 @@ struct convert<MosquitoConfig> {
     }
     if (!node["interrupted_feeding_rate"] && !node["interrupted_feeding_rate_raster"]) {
       LOG(FATAL) << "Either interrupted feeding rate or raster file needs to be supplied";
+    }
+    if (!node["record_recombination_events"]) {
+      mcf.record_recombination_events = false;
+    } else {
+      mcf.record_recombination_events = node["record_recombination_events"].as<bool>();
     }
     return true;
   }

@@ -1,0 +1,7 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="DxGGenerator v4 K13 EC50 Eff after calibration" type="CMakeRunConfiguration" factoryName="Application" PROGRAM_PARAMS="-i ../../run/DxG_And_EE/input_EE_K13_EC50_from_calibration.yml --of ../../run/output.txt --tl 0 -g &quot;||||NY1||KTHFIMG,x||||||INCMYRIPRPYA|1&quot;" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" WORKING_DIR="file://$PROJECT_DIR$/cmake-build-release/bin" PASS_PARENT_ENVS_2="true" PROJECT_NAME="POMS" TARGET_NAME="DxGGenerator" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="POMS" RUN_TARGET_NAME="DxGGenerator">
+    <method v="2">
+      <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+    </method>
+  </configuration>
+</component>

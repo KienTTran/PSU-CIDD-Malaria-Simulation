@@ -122,6 +122,8 @@ struct ParasiteDensityLevel {
   double log_parasite_density_clinical_to;
   double log_parasite_density_detectable;
   double log_parasite_density_detectable_pfpr;
+  double log_parasite_density_detectable_pfpr_sub_0p01;
+  double log_parasite_density_detectable_pfpr_sub_0p2;
   double log_parasite_density_pyrogenic;
 
   friend std::ostream &operator<<(std::ostream &os, const ParasiteDensityLevel &pdl) {
@@ -216,6 +218,7 @@ struct ChromosomeInfo {
 
   friend std::ostream &operator<<(std::ostream &os, const ChromosomeInfo &chromosome) { return os; }
 };
+
 struct PfGeneInfo {
   std::array<ChromosomeInfo, 14> chromosome_infos {};
 
@@ -264,6 +267,7 @@ struct MosquitoConfig{
   std::vector<double> interrupted_feeding_rate;
   std::string interrupted_feeding_rate_raster {""};
   int prmc_size {20};
+  bool record_recombination_events {false};
   friend std::ostream &operator<<(std::ostream &os, const MosquitoConfig &mcf) {
     for(auto rate : mcf.interrupted_feeding_rate){
       os << "Mosquito size: " << mcf.prmc_size << ", IF rate: " << rate;
