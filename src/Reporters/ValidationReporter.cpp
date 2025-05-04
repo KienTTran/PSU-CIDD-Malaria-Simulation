@@ -343,12 +343,19 @@ void ValidationReporter::after_run() {
     print_EIR_PfPR_by_location_sub_0p2(ss);
     summary_data_file << ss.str() << std::endl;
 
-    if (Model::CONFIG->mosquito_config().record_recombination_events) {
-        for (auto [g_id, genotype] : Model::CONFIG->genotype_db) {
-            gene_db_file << g_id << sep << genotype->aa_sequence << std::endl;
-            // prmc_db_file << g_id << sep << genotype->aa_sequence << std::endl;
-        }
+    for (auto [g_id, genotype] : Model::CONFIG->genotype_db) {
+        gene_db_file << g_id << sep << genotype->aa_sequence << std::endl;
+        // prmc_db_file << g_id << sep << genotype->aa_sequence << std::endl;
+    }
 
+    gene_db_file.close();
+    gene_freq_file.close();
+    // prmc_db_file.close();
+    // prmc_freq_file.close();
+    monthly_data_file.close();
+    summary_data_file.close();
+
+    if (Model::CONFIG->mosquito_config().record_recombination_events) {
         for (auto [g_id, genotype] : Model::CONFIG->genotype_db) {
             LOG(INFO) << genotype->aa_sequence << ": " << genotype->daily_fitness_multiple_infection;
         }
@@ -387,13 +394,6 @@ void ValidationReporter::after_run() {
         monthly_mutation_file.close();
         mosquito_res_count_file.close();
     }
-
-    gene_db_file.close();
-    gene_freq_file.close();
-    // prmc_db_file.close();
-    // prmc_freq_file.close();
-    monthly_data_file.close();
-    summary_data_file.close();
 }
 
 void ValidationReporter::print_EIR_PfPR_by_location(std::stringstream& ss) {

@@ -78,21 +78,43 @@ void MonthlyReporter::monthly_report() {
 }
 
 void MonthlyReporter::after_run() {
+  // output NTF
+  const auto total_time_in_years = (Model::SCHEDULER->current_time() - Model::CONFIG->start_of_comparison_period())
+                                   / static_cast<double>(Constants::DAYS_IN_YEAR());
   std::stringstream ss;
-
   ss.str("");
   ss << Model::RANDOM->seed() << sep << Model::CONFIG->number_of_locations() << sep;
   ss << Model::CONFIG->location_db()[0].beta << sep;
   ss << Model::CONFIG->location_db()[0].population_size << sep;
+  ss << group_sep;
+  for (auto loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
+    for (auto age = 0; age < 11; age++) {
+      ss << static_cast<double>(
+                Model::DATA_COLLECTOR->cumulative_clinical_episodes_by_location_age()[loc][age])
+         << sep;
+    }
+    ss << group_sep;
+  }
+  ss << group_sep;
+  for (auto location = 0; location < Model::CONFIG->number_of_locations(); location++)
+  {
+    for (auto age = 0; age < 11; age++){
+      ss << static_cast<double>(
+                Model::DATA_COLLECTOR->cumulative_clinical_episodes_by_location_age()[location][age])
+      << "/" << total_time_in_years
+      << "/" << Model::DATA_COLLECTOR->popsize_by_location_age()[location][location]
+      << "=" << static_cast<double>(
+               Model::DATA_COLLECTOR->cumulative_clinical_episodes_by_location_age()[location][age])
+                / total_time_in_years / Model::DATA_COLLECTOR->popsize_by_location_age()[location][age]
+         << sep;
+    }
+    ss << group_sep;
+  }
+  ss << group_sep;
   print_EIR_PfPR_by_location(ss);
-
   ss << group_sep;
   // output last strategy information
   ss << Model::TREATMENT_STRATEGY->id << sep;
-
-  // output NTF
-  const auto total_time_in_years = (Model::SCHEDULER->current_time() - Model::CONFIG->start_of_comparison_period())
-                                   / static_cast<double>(Constants::DAYS_IN_YEAR());
 
   auto sum_ntf = 0.0;
   ul pop_size = 0;
@@ -101,14 +123,6 @@ void MonthlyReporter::after_run() {
     pop_size += Model::DATA_COLLECTOR->popsize_by_location()[location];
   }
   ss << (sum_ntf * 100 / pop_size) / total_time_in_years << sep;
-
-  ss << group_sep;
-  for (auto location = 0; location < Model::CONFIG->number_of_locations(); location++)
-  {
-    for (auto age = 0; age < 60; age++){
-      ss << Model::DATA_COLLECTOR->cumulative_clinical_episodes_by_location_age()[location][age]/total_time_in_years/Model::DATA_COLLECTOR->popsize_by_location_age()[location][age] << sep;
-    }
-  }
   summary_data_file << ss.str() << std::endl;
 
   for (auto [g_id, genotype] : Model::CONFIG->genotype_db) {

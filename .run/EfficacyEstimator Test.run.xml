@@ -1,0 +1,7 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="EfficacyEstimator Test" type="CMakeRunConfiguration" factoryName="Application" PROGRAM_PARAMS="-i input_EE_K13_EC50_Template.yml -p 10000 -f -a -d 3 -t 0.0 -k 0.999 -e 1.2 -n 25 -g &quot;||||NY1||KTHIIMG,x||||||FNCMYRIPRPYA|1&quot;" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" WORKING_DIR="file://$PROJECT_DIR$/cmake-build-release/bin" PASS_PARENT_ENVS_2="true" PROJECT_NAME="POMS" TARGET_NAME="EfficacyEstimator" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="POMS" RUN_TARGET_NAME="EfficacyEstimator">
+    <method v="2">
+      <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+    </method>
+  </configuration>
+</component>
