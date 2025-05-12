@@ -65,10 +65,10 @@ location_db:
 
   #transmission intensity
   #if the number of values less than number of locations, the first value will be applied for all locations
-  beta_by_location: [ 0.089 ]
+  beta_by_location: [ 0.63 ]
 
   #if the number of values less than number of locations, the first value will be applied for all locations
-  population_size_by_location: [ 10000 ]
+  population_size_by_location: [ 50000 ]
   #spatial_model could be Gravity, Barabasi, or Wesolowski
 
 # seasonality parameters for all location

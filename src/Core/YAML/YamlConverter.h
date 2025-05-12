@@ -118,11 +118,11 @@ struct convert<ParasiteDensityLevel> {
 
     parasite_density_level.log_parasite_density_detectable_pfpr_sub_0p01 =
         node["log_parasite_density_detectable_pfpr_sub_0p01"] ? node["log_parasite_density_detectable_pfpr_sub_0p01"].as<double>()
-                                                     : node["log_parasite_density_detectable_pfpr"].as<double>();
+                                                     : -1; //default value of 0.01 parasites per microliter
 
     parasite_density_level.log_parasite_density_detectable_pfpr_sub_0p2 =
         node["log_parasite_density_detectable_pfpr_sub_0p2"] ? node["log_parasite_density_detectable_pfpr_sub_0p2"].as<double>()
-                                                     : node["log_parasite_density_detectable_pfpr"].as<double>();
+                                                     : -0.698; //default value of 0.2 parasites per microliter
     parasite_density_level.log_parasite_density_pyrogenic = node["log_parasite_density_pyrogenic"].as<double>();
 
     return true;
