@@ -219,7 +219,7 @@ void ValidationReporter::monthly_report() {
         ss << group_sep;///747
     }
     print_EIR_PfPR_by_location_sub_0p01(ss);
-    ss << group_sep;//9
+    ss << group_sep;//753
     print_EIR_PfPR_by_location_sub_0p2(ss);
 
     monthly_data_file << ss.str() << std::endl;

@@ -65,10 +65,10 @@ location_db:
 
   #transmission intensity
   #if the number of values less than number of locations, the first value will be applied for all locations
-  beta_by_location: [ 0.63 ]
+  beta_by_location: [ 0.089 ]
 
   #if the number of values less than number of locations, the first value will be applied for all locations
-  population_size_by_location: [ 50000 ]
+  population_size_by_location: [ 10000 ]
   #spatial_model could be Gravity, Barabasi, or Wesolowski
 
 # seasonality parameters for all location
@@ -157,6 +157,8 @@ immune_system_information:
 
   # parameter kappa in supplement of 2015 LGH paper
   factor_effect_age_mature_immunity: 0.3
+
+  midpoint: 0.4
 
 
 # this functionality works, but it was not used in any analyses for the 2015 LGH paper

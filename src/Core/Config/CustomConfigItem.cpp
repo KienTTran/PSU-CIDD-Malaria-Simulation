@@ -120,6 +120,10 @@ void immune_system_information::set_value(const YAML::Node &node) {
   value_.age_mature_immunity = is_node["age_mature_immunity"].as<double>();
   value_.factor_effect_age_mature_immunity = is_node["factor_effect_age_mature_immunity"].as<double>();
 
+  if (is_node["midpoint"]) {
+    value_.midpoint = is_node["midpoint"].as<double>();
+  }
+
   // implement inlation rate
   double acR = value_.acquire_rate;
   value_.acquire_rate_by_age.clear();

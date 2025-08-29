@@ -103,6 +103,8 @@ struct ImmuneSystemInformation {
 
   double immune_effect_on_progression_to_clinical { -1 };
 
+  double midpoint{0.4};
+
   double c_min { -1 };
   double c_max { -1 };
 
