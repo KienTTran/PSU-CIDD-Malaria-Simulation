@@ -169,6 +169,8 @@ immune_system_information:
   # parameter kappa in supplement of 2015 LGH paper
   factor_effect_age_mature_immunity: 1
 
+  midpoint: 0.4
+
 
 # this functionality works, but it was not used in any analyses for the 2015 LGH paper
 #this applies for all locations

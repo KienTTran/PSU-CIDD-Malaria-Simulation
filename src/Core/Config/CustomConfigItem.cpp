@@ -115,6 +115,10 @@ void immune_system_information::set_value(const YAML::Node &node) {
   value_.immune_effect_on_progression_to_clinical = is_node[
     "immune_effect_on_progression_to_clinical"].as<double>();
 
+  if (is_node["midpoint"]) {
+    value_.midpoint = is_node["midpoint"].as<double>();
+  }
+
   //    std::cout << value_.c_min << std::endl;
   //    std::cout << value_.c_max << std::endl;
 
