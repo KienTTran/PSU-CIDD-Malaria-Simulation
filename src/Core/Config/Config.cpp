@@ -22,11 +22,7 @@
 using namespace Spatial;
 
 Config::Config(Model *model)
-    : model_(model),
-      modified_mutation_factor_(-1),
-      modified_drug_half_life_(-1),
-      modified_daily_cost_of_resistance_(-1),
-      modified_mutation_probability_(-1) {}
+    : model_(model){}
 
 Config::~Config() {
 //  for (auto *therapy : therapy_db()) {

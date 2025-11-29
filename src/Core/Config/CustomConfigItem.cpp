@@ -149,8 +149,8 @@ void immune_system_information::set_value(const YAML::Node &node) {
                            - config_->parasite_density_level().log_parasite_density_cured)
                            / value_.duration_for_naive);
 
-  std::cout << value_.c_min << std::endl;
-  std::cout << value_.c_max << std::endl;
+  std::cout << "alpha_immune " << value_.alpha_immune << " beta_immune " << value_.beta_immune << std::endl;
+  std::cout << "cmin " << value_.c_min << " cmax " << value_.c_max << std::endl;
 }
 
 drug_db::~drug_db() {

@@ -100,8 +100,8 @@ void ValidationReporter::monthly_report() {
     }
     for (auto loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
         ss << Model::DATA_COLLECTOR->total_number_of_bites_by_location()[loc] << sep;
+        ss << group_sep;//151
     }
-    ss << group_sep;//151
     for (auto loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
         ss << Model::DATA_COLLECTOR->total_number_of_bites_by_location_year()[loc] << sep;
         ss << group_sep;//153
@@ -221,6 +221,12 @@ void ValidationReporter::monthly_report() {
     print_EIR_PfPR_by_location_sub_0p01(ss);
     ss << group_sep;//753
     print_EIR_PfPR_by_location_sub_0p2(ss);
+    ss << group_sep;//760
+    for (int loc = 0; loc < Model::CONFIG->number_of_locations(); loc++) {
+        ss << Model::DATA_COLLECTOR->person_days_by_location_year()[loc] << sep;
+        ss << Model::POPULATION->current_force_of_infection_by_location[loc] << sep;
+        ss << group_sep;//762
+    }
 
     monthly_data_file << ss.str() << std::endl;
 

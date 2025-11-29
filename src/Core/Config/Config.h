@@ -148,14 +148,6 @@ public:
 
   CUSTOM_CONFIG_ITEM(prob_individual_present_at_mda_distribution, std::vector<beta_distribution_params>())
 
-  VIRTUAL_PROPERTY_REF(double, modified_mutation_factor)
-
-  VIRTUAL_PROPERTY_REF(double, modified_drug_half_life)
-
-  VIRTUAL_PROPERTY_REF(double, modified_daily_cost_of_resistance)
-
-  VIRTUAL_PROPERTY_REF(double, modified_mutation_probability)
-
 public:
   GenotypeDatabase genotype_db {};
 
