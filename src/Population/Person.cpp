@@ -447,7 +447,7 @@ void Person::determine_clinical_or_not(ClonalParasitePopulation* clinical_caused
       clinical_caused_parasite->set_update_function(Model::MODEL->progress_to_clinical_update_function());
       clinical_caused_parasite->set_last_update_log10_parasite_density(
           Model::CONFIG->parasite_density_level().log_parasite_density_asymptomatic);
-      schedule_relapse_event(clinical_caused_parasite, Model::CONFIG->relapse_duration());
+      schedule_progress_to_clinical_event_by(clinical_caused_parasite);
 
     } else {
       // progress to clearance
